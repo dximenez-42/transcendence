@@ -12,13 +12,13 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - api
+      - back_net
 
   api:
     build: ./backend
     command: python manage.py runserver 0.0.0.0:8000
     networks:
-      - api
+      - back_net
     volumes:
       - ./backend:/app
     ports:
@@ -33,8 +33,20 @@ services:
       - DB_SERVICE=db
       - DB_PORT=5432
 
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    networks:
+      - back_net
+
 volumes:
   postgres_data:
 
 networks:
-  api:
+  back_net:
