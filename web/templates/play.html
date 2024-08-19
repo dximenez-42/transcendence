@@ -1,0 +1,39 @@
+<div class="d-flex w-100 h-100 justify-content-between">
+    <div class="container-pala">
+        <div id="leftBar" class="pala"></div>
+    </div>
+    <div>
+        <h1 class="tc-text-primary tc-title text-light">P<span>O</span>NG</h1>
+        <div onclick="" id="playButton" class="tc-btn mt-4"><h1 class="tc-text-primary">PLAY</h1></div>
+    </div>
+    <div class="container-pala">
+        <div id="rightBar" class="pala"></div>
+    </div>
+</div>
+<script>
+    function initScripts() {
+        const leftBar = document.getElementById('leftBar');
+        const rightBar = document.getElementById('rightBar');
+        const playButton = document.getElementById('playButton');
+
+        console.log(playButton);
+        console.log("playButton");
+
+        // Agregar la clase de animación al hacer hover en playButton
+        playButton.addEventListener('mouseover', () => {
+            console.log("mouse in");
+            leftBar.classList.add('animate-bar');
+            rightBar.classList.add('animate-bar');
+        });
+
+        // Eliminar la clase de animación cuando el hover termina
+        playButton.addEventListener('mouseout', () => {
+            console.log("mouse out");
+            leftBar.classList.remove('animate-bar');
+            rightBar.classList.remove('animate-bar');
+        });
+    }
+
+    // Llama a esta función después de que el contenido haya sido inyectado
+    initScripts();
+</script>
