@@ -43,6 +43,9 @@
     filter: drop-shadow(4px 6px 0px #6b6b6b);
     background-color: var(--white);
     padding: 1rem 2rem;
+    color: var(--black);
+    font-family: "Pixelify Sans", sans-serif;
+
 }
 
 .tc-btn:hover{
@@ -65,4 +68,12 @@
     width: 4rem;
 }
 
-.tc-
+.tc-input {
+    display: flex;
+    padding: 10px;
+    border: 4px solid var(--white);
+    background-color: transparent;
+    outline: none;
+    color: #ddd;
+    font-family: "Exo 2", sans-serif;
+}

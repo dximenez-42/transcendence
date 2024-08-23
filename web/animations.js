@@ -7,3 +7,4 @@ function animate_bars() {
     playButton.addEventListener('click', console.log("Play button hovered"))
 
 }
+
