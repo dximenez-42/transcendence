@@ -1,0 +1,13 @@
+Crear carpeta contenedora.
+Añadir Dockerfile y requirements.txt
+
+cd backend/ms (auth)
+django-admin startproject ms (auth)
+python manage.py startapp ms_app (auth_app)
+
+Cambiar ms/settings.py:
+ - Importar "os"
+ - Añadir "ms" (auth) a INSTALLED_APPS
+ - Añadir "rest_framework" a INSTALLED_APPS
+ - Añadir configuracion basica de DRF (djangorestframework) para JSON
+ - Actualizar base de datos (copiar de auth)
