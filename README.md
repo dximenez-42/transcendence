@@ -1,3 +1,5 @@
+# Structure
+```
 ft_transcendence/
 │
 ├── Makefile
@@ -37,3 +39,4 @@ ft_transcendence/
 │
 │
 └── pgadmin/
+```
