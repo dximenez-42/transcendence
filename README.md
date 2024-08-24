@@ -27,15 +27,11 @@ ft_transcendence/
 │   │       └── views.py
 │   └── service-two
 │
+├── nginx/
+│   ├── default.conf
+│   └── nginx.conf
 │
 ├── frontend/
-│   ├── Dockerfile
-│   ├── package.json
-│   ├── src/
-│   │   ├── index.js
-│   │   └── App.js
-│   └── public/
-│       └── index.html
 │
 │
 └── pgadmin/
