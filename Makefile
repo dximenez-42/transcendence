@@ -25,3 +25,5 @@ fclean:
 	docker network rm $$(docker network ls -q) 2>/dev/null
 
 
+auth:
+	$(DOCKER) up auth-backend --detach --build
