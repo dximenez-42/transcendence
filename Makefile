@@ -27,3 +27,6 @@ fclean:
 
 auth:
 	$(DOCKER) up auth-backend --detach --build
+
+games:
+	$(DOCKER) up games-backend --detach --build

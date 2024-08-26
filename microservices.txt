@@ -1,13 +1,21 @@
 Crear carpeta contenedora.
-Añadir Dockerfile y requirements.txt
 
-cd backend/ms (auth)
+Añadir Dockerfile y requirements.txt
+Duplicar servicio docker-compose.yml
+Cambiar ruta y nombres en docker-compose.yml
+Cambiar nombre del servicio en Dockerfile
+
+cd backend/
 django-admin startproject ms (auth)
+cd ms/
 python manage.py startapp ms_app (auth_app)
+
+Copiar middleware.py
 
 Cambiar ms/settings.py:
  - Importar "os"
  - Añadir "ms" (auth) a INSTALLED_APPS
  - Añadir "rest_framework" a INSTALLED_APPS
  - Añadir configuracion basica de DRF (djangorestframework) para JSON
+ - Incluir "ms_app.middleware.IsAuthenticatedMiddleware" a MIDDLEWARE
  - Actualizar base de datos (copiar de auth)
