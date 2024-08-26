@@ -29,6 +29,21 @@ services:
     env_file:
       - .env
 
+  games-backend:
+    container_name: games-backend
+    build:
+      context: ./backend/games
+    command: gunicorn games.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./backend/games:/app
+    networks:
+      - backend
+      - database
+    depends_on:
+      - db
+    env_file:
+      - .env
+
   db:
     container_name: db
     image: postgres:13

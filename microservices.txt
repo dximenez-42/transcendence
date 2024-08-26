@@ -1,8 +1,9 @@
 Crear carpeta contenedora.
 Añadir Dockerfile y requirements.txt
 
-cd backend/ms (auth)
+cd backend/
 django-admin startproject ms (auth)
+cd ms/
 python manage.py startapp ms_app (auth_app)
 
 Cambiar ms/settings.py:
