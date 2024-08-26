@@ -1,6 +1,7 @@
 from django.shortcuts import render
 
 import os
+import datetime
 
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
@@ -53,17 +54,20 @@ def auth(request):
                         'id': user.id,
                         'name': user.name,
                         'username': user.username,
-                        'email': user.email
+                        'email': user.email,
+                        'token': user.token
                     }, status=200)
 
-                user = User.objects.create(name=name, username=username, email=email)
+                token = hash(datetime.datetime.now().timestamp())
+                user = User.objects.create(name=name, username=username, email=email, token=token)
                 if not user:
                     return JsonResponse({'error': 'Failed to create user.'}, status=500)
                 return JsonResponse({
                     'id': user.id,
-                    'name': name,
-                    'username': username,
-                    'email': email
+                    'name': user.name,
+                    'username': user.username,
+                    'email': user.email,
+                    'token': user.token
                 }, status=201)
 
             except json.JSONDecodeError:

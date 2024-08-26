@@ -6,7 +6,9 @@ class User(models.Model):
     name = models.CharField(max_length=255)
     username = models.CharField(max_length=255, unique=True)
     email = models.EmailField(unique=True)
+    token = models.CharField(max_length=255, null=True, blank=True)    
     
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

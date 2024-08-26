@@ -4,6 +4,7 @@ import os
 
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
+from django.views.decorators.csrf import csrf_exempt
 import requests
 
 import json
@@ -20,10 +21,10 @@ import string
 def create(request):
     data = json.loads(request.body)
 
-    if not all([data.get('host_id'), data.get('tournament')]) and (data.get('tournament') == True and not data.get('tournament_name')):
+    if not all([data.get('tournament')]) and (data.get('tournament') == True and not data.get('tournament_name')):
         return JsonResponse({'error': 'Missing required fields.'}, status=400)
 
-    if not User.objects.filter(id=data['host_id']).exists():
+    if not User.objects.filter(id=request.user.id).exists():
         return JsonResponse({'error': 'User not found.'}, status=404)
     
     tournament_id = None
@@ -44,7 +45,7 @@ def create(request):
         game = Game.objects.filter(room_id=room_id).first()
 
     game = Game.objects.create(
-        host_id=data['host_id'],
+        host_id=request.user.id,
         room_id=room_id,
         tournament_id=tournament_id,
     )
@@ -89,25 +90,25 @@ def list(request):
 def join(request):
     data = json.loads(request.body)
 
-    if not all([data.get('game_id'), data.get('player_id')]):
+    if not all([data.get('game_id')]):
         return JsonResponse({'error': 'Missing required fields.'}, status=400)
 
     if not Game.objects.filter(id=data['game_id']).exists():
         return JsonResponse({'error': 'Game not found.'}, status=404)
 
-    if not User.objects.filter(id=data['player_id']).exists():
+    if not User.objects.filter(id=request.user.id).exists():
         return JsonResponse({'error': 'User not found.'}, status=404)
 
     game = Game.objects.get(id=data['game_id'])
     if game.status != 'open':
         return JsonResponse({'error': 'Game is not open.'}, status=400)
 
-    if GamePlayer.objects.filter(game_id=game.id, player_id=data['player_id']).exists():
+    if GamePlayer.objects.filter(game_id=game.id, player_id=request.user.id).exists():
         return JsonResponse({'error': 'Player already in game.'}, status=400)
 
     game_player = GamePlayer.objects.create(
         game_id=game.id,
-        player_id=data['player_id']
+        player_id=request.user.id
     )
     if not game_player:
         return JsonResponse({'error': 'Error creating game player.'}, status=500)
@@ -123,20 +124,20 @@ def join(request):
 def start(request):
     data = json.loads(request.body)
 
-    if not all([data.get('game_id'), data.get('player_id')]):
+    if not all([data.get('game_id')]):
         return JsonResponse({'error': 'Missing required fields.'}, status=400)
 
     if not Game.objects.filter(id=data['game_id']).exists():
         return JsonResponse({'error': 'Game not found.'}, status=404)
 
-    if not User.objects.filter(id=data['player_id']).exists():
+    if not User.objects.filter(id=request.user.id).exists():
         return JsonResponse({'error': 'User not found.'}, status=404)
 
     game = Game.objects.get(id=data['game_id'])
     if game.status != 'open':
         return JsonResponse({'error': 'Game is not open.'}, status=400)
 
-    if game.host_id != data['player_id']:
+    if game.host_id != request.user.id:
         return JsonResponse({'error': 'Only the host can start the game.'}, status=400)
 
     game.status = 'ready'
@@ -152,13 +153,13 @@ def start(request):
 def leave(request):
     data = json.loads(request.body)
 
-    if not all([data.get('game_id'), data.get('player_id')]):
+    if not all([data.get('game_id')]):
         return JsonResponse({'error': 'Missing required fields.'}, status=400)
 
     if not Game.objects.filter(id=data['game_id']).exists():
         return JsonResponse({'error': 'Game not found.'}, status=404)
 
-    if not User.objects.filter(id=data['player_id']).exists():
+    if not User.objects.filter(id=request.user.id).exists():
         return JsonResponse({'error': 'User not found.'}, status=404)
 
     game = Game.objects.get(id=data['game_id'])
@@ -167,7 +168,7 @@ def leave(request):
 
     game_player = GamePlayer.objects.filter(
         game_id=game.id,
-        player_id=data['player_id']
+        player_id=request.user.id
     ).first()
     if not game_player:
         return JsonResponse({'error': 'Game player not found.'}, status=404)
