@@ -7,7 +7,7 @@ from rest_framework.decorators import api_view
 import requests
 
 import json
-from django.db import connection
+from .models import User
 
 # Create your views here.
 @api_view(['GET'])
@@ -29,10 +29,8 @@ def auth(request):
         responseOauth = requests.post('https://api.intra.42.fr/oauth/token', data=payloadOauth)
         responseOauth.raise_for_status()  # Raises HTTPError for bad responses (4xx or 5xx)
 
-        accessToken = responseOauth.json()['access_token']
-
         payloadData = {
-            'access_token': accessToken,
+            'access_token': responseOauth.json()['access_token'],
         }
 
         try:
@@ -40,46 +38,29 @@ def auth(request):
             responseData.raise_for_status()  # Raises HTTPError for bad responses (4xx or 5xx)
 
             try:
-                # Parse the request body as JSON
                 data = responseData.json()
 
-                # Extract user data from the request
                 name = data.get('displayname')
                 username = data.get('login')
                 email = data.get('email')
 
-                # Validate required fields
                 if not all([name, username, email]):
                     return JsonResponse({'error': 'Missing required fields.'}, status=400)
 
-                # Insert the user into the database using raw SQL
-                with connection.cursor() as cursor:
-                    cursor.execute('''
-                        SELECT id FROM users WHERE username = %s OR email = %s;
-                    ''', [username, email])
+                user = User.objects.filter(username=username, email=email).first()
+                if user:
+                    return JsonResponse({
+                        'id': user.id,
+                        'name': user.name,
+                        'username': user.username,
+                        'email': user.email
+                    }, status=200)
 
-                    # Fetch the user's ID if it already exists
-                    user = cursor.fetchone()
-                    if user:
-                        return JsonResponse({
-                            'id': user[0],
-                            'name': name,
-                            'username': username,
-                            'email': email
-                        }, status=200)
-
-                    cursor.execute('''
-                        INSERT INTO users (name, username, email)
-                        VALUES (%s, %s, %s)
-                        RETURNING id;
-                    ''', [name, username, email])
-                    
-                    # Fetch the new user's ID
-                    user_id = cursor.fetchone()[0]
-
-                # Return success response
+                user = User.objects.create(name=name, username=username, email=email)
+                if not user:
+                    return JsonResponse({'error': 'Failed to create user.'}, status=500)
                 return JsonResponse({
-                    'id': user_id,
+                    'id': user.id,
                     'name': name,
                     'username': username,
                     'email': email
