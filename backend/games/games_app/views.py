@@ -53,7 +53,7 @@ def create(request):
 
 @api_view(['GET'])
 def list(request):
-    games = Game.objects.all()
+    games = Game.objects.all().filter(status='open')
 
     data = []
     for game in games:
