@@ -19,26 +19,8 @@ import string
 # Create your views here.
 @api_view(['POST'])
 def create(request):
-    data = json.loads(request.body)
-
-    if not all([data.get('tournament')]) and (data.get('tournament') == True and not data.get('tournament_name')):
-        return JsonResponse({'error': 'Missing required fields.'}, status=400)
-
-    if not User.objects.filter(id=request.user.id).exists():
-        return JsonResponse({'error': 'User not found.'}, status=404)
-    
-    if Game.objects.filter(host_id=request.user.id, status='open').exists():
-        return JsonResponse({'error': 'User already hosting a game.'}, status=400)
-    
-    # TODO: manage tournaments
-    tournament_id = None
-    if data['tournament'] == True:
-        tournament = Tournament.objects.create(
-            name=data['tournament_name'],
-        )
-        if not tournament:
-            return JsonResponse({'error': 'Error creating tournament.'}, status=500)
-        tournament_id = tournament.id
+    if Game.objects.filter(host_id=request.user.id, status='open').count() >= 5:
+        return JsonResponse({'error': 'User cannot host more than 5 games.'}, status=400)
 
     letters = string.ascii_uppercase
     game = True
@@ -50,7 +32,7 @@ def create(request):
     game = Game.objects.create(
         host_id=request.user.id,
         room_id=room_id,
-        tournament_id=tournament_id,
+        tournament_id=None,
     )
     if not game:
         return JsonResponse({'error': 'Error creating game.'}, status=500)
@@ -65,7 +47,7 @@ def create(request):
     return JsonResponse({
         'game_id': game.id,
         'room_id': game.room_id,
-    }, status=200)
+    }, status=201)
 
 
 
@@ -94,20 +76,15 @@ def list(request):
 
 
 @api_view(['POST'])
-def join(request):
-    data = json.loads(request.body)
-
-    if not all([data.get('game_id')]):
-        return JsonResponse({'error': 'Missing required fields.'}, status=400)
-
-    if not Game.objects.filter(id=data['game_id']).exists():
+def join(request, id):
+    if not Game.objects.filter(id=id).exists():
         return JsonResponse({'error': 'Game not found.'}, status=404)
 
     if not User.objects.filter(id=request.user.id).exists():
         return JsonResponse({'error': 'User not found.'}, status=404)
 
     # Check if game is open
-    game = Game.objects.get(id=data['game_id'])
+    game = Game.objects.get(id=id)
     if game.status != 'open':
         return JsonResponse({'error': 'Game is not open.'}, status=400)
 
@@ -134,19 +111,14 @@ def join(request):
 
 
 @api_view(['PUT'])
-def start(request):
-    data = json.loads(request.body)
-
-    if not all([data.get('game_id')]):
-        return JsonResponse({'error': 'Missing required fields.'}, status=400)
-
-    if not Game.objects.filter(id=data['game_id']).exists():
+def start(request, id):
+    if not Game.objects.filter(id=id).exists():
         return JsonResponse({'error': 'Game not found.'}, status=404)
 
     if not User.objects.filter(id=request.user.id).exists():
         return JsonResponse({'error': 'User not found.'}, status=404)
 
-    game = Game.objects.get(id=data['game_id'])
+    game = Game.objects.get(id=id)
     if game.status != 'open':
         return JsonResponse({'error': 'Game is not open.'}, status=400)
 
@@ -166,19 +138,14 @@ def start(request):
 
 
 @api_view(['DELETE'])
-def leave(request):
-    data = json.loads(request.body)
-
-    if not all([data.get('game_id')]):
-        return JsonResponse({'error': 'Missing required fields.'}, status=400)
-
-    if not Game.objects.filter(id=data['game_id']).exists():
+def leave(request, id):
+    if not Game.objects.filter(id=id).exists():
         return JsonResponse({'error': 'Game not found.'}, status=404)
 
     if not User.objects.filter(id=request.user.id).exists():
         return JsonResponse({'error': 'User not found.'}, status=404)
 
-    game = Game.objects.get(id=data['game_id'])
+    game = Game.objects.get(id=id)
     if game.status != 'open':
         return JsonResponse({'error': 'Cannot leave game.'}, status=400)
 
