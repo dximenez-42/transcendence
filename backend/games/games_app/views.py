@@ -27,8 +27,11 @@ def create(request):
     if not User.objects.filter(id=request.user.id).exists():
         return JsonResponse({'error': 'User not found.'}, status=404)
     
+    if Game.objects.filter(host_id=request.user.id, status='open').exists():
+        return JsonResponse({'error': 'User already hosting a game.'}, status=400)
+    
+    # TODO: manage tournaments
     tournament_id = None
-
     if data['tournament'] == True:
         tournament = Tournament.objects.create(
             name=data['tournament_name'],
@@ -73,12 +76,16 @@ def list(request):
     data = []
     for game in games:
         username = User.objects.get(id=game.host_id).username
+        players = GamePlayer.objects.filter(game_id=game.id).count()
+        joined = GamePlayer.objects.filter(game_id=game.id, player_id=request.user.id).exists()
 
         data.append({
             'game_id': game.id,
             'room_id': game.room_id,
             'host_username': username,
             'status': game.status,
+            'players': players,
+            'joined': joined,
             'tournament_id': game.tournament_id,
         })
 
@@ -99,12 +106,18 @@ def join(request):
     if not User.objects.filter(id=request.user.id).exists():
         return JsonResponse({'error': 'User not found.'}, status=404)
 
+    # Check if game is open
     game = Game.objects.get(id=data['game_id'])
     if game.status != 'open':
         return JsonResponse({'error': 'Game is not open.'}, status=400)
 
+    # Check if player is already in game
     if GamePlayer.objects.filter(game_id=game.id, player_id=request.user.id).exists():
         return JsonResponse({'error': 'Player already in game.'}, status=400)
+
+    # Check if game is full
+    if GamePlayer.objects.filter(game_id=game.id).count() >= 2:
+        return JsonResponse({'error': 'Game is full.'}, status=400)
 
     game_player = GamePlayer.objects.create(
         game_id=game.id,
@@ -139,12 +152,15 @@ def start(request):
 
     if game.host_id != request.user.id:
         return JsonResponse({'error': 'Only the host can start the game.'}, status=400)
+    
+    if GamePlayer.objects.filter(game_id=game.id).count() < 2:
+        return JsonResponse({'error': 'Game is not full.'}, status=400)
 
     game.status = 'ready'
     game.save()
 
     return JsonResponse({
-        'game_id': game.id
+        'game_id': game.id  # TODO: Return game socket
     }, status=200)
 
 
@@ -166,15 +182,21 @@ def leave(request):
     if game.status != 'open':
         return JsonResponse({'error': 'Cannot leave game.'}, status=400)
 
-    game_player = GamePlayer.objects.filter(
-        game_id=game.id,
-        player_id=request.user.id
-    ).first()
+    game_player = GamePlayer.objects.filter(game_id=game.id, player_id=request.user.id).first()
     if not game_player:
         return JsonResponse({'error': 'Game player not found.'}, status=404)
 
-    game_player.delete()
+    if game_player.player_id == game.host_id:
+        if GamePlayer.objects.filter(game_id=game.id).count() > 1:
+            return JsonResponse({'error': 'Game must be empty for the host to leave.'}, status=400)
+        game_player.delete()
+        game.delete()
+        return JsonResponse({
+            'message': 'Game deleted.'
+        }, status=200)
+    else:
+        game_player.delete()
 
     return JsonResponse({
-        'game_id': game.id
+        'message': 'Player left the game.'
     }, status=200)
