@@ -46,6 +46,51 @@ services:
     env_file:
       - .env
 
+  tournaments-backend:
+    container_name: tournaments-backend
+    build:
+      context: ./backend/tournaments
+    command: gunicorn tournaments.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./backend/tournaments:/app
+    networks:
+      - backend
+      - database
+    depends_on:
+      - db
+    env_file:
+      - .env
+
+  users-backend:
+    container_name: users-backend
+    build:
+      context: ./backend/users
+    command: gunicorn users.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./backend/users:/app
+    networks:
+      - backend
+      - database
+    depends_on:
+      - db
+    env_file:
+      - .env
+
+  chat-backend:
+    container_name: chat-backend
+    build:
+      context: ./backend/chat
+    command: gunicorn chat.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./backend/chat:/app
+    networks:
+      - backend
+      - database
+    depends_on:
+      - db
+    env_file:
+      - .env
+
   db:
     container_name: db
     image: postgres:13

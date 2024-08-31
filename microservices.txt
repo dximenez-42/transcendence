@@ -5,6 +5,8 @@ Duplicar servicio docker-compose.yml
 Cambiar ruta y nombres en docker-compose.yml
 Cambiar nombre del servicio en Dockerfile
 
+Crear enrutamiento en nginx
+
 cd backend/
 django-admin startproject ms (auth)
 cd ms/
@@ -14,8 +16,32 @@ Copiar middleware.py
 
 Cambiar ms/settings.py:
  - Importar "os"
+ - Añadir variables de entorno a SECRET_KEY y DEBUG
+ - Poner el nombre del servicio en ALLOWED_HOSTS
  - Añadir "ms" (auth) a INSTALLED_APPS
  - Añadir "rest_framework" a INSTALLED_APPS
  - Añadir configuracion basica de DRF (djangorestframework) para JSON
  - Incluir "ms_app.middleware.IsAuthenticatedMiddleware" a MIDDLEWARE
  - Actualizar base de datos (copiar de auth)
+
+
+En urls del proyecto:
+ - Eliminar path admin
+ - Importar include junto con path
+ - Crear path ms (path('games/', include('games_app.urls')),)
+
+
+Crear urls.py en _app:
+
+`
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('create', views.create, name='create'),
+    path('join/<int:id>', views.join, name='join'),
+]
+`
+
+
+Copiar modelos a models.py

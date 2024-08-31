@@ -31,3 +31,15 @@ auth:
 
 games:
 	$(DOCKER) up games-backend --detach --build
+
+tournaments:
+	$(DOCKER) up tournaments-backend --detach --build
+
+users:
+	$(DOCKER) up users-backend --detach --build
+
+chat:
+	$(DOCKER) up chat-backend --detach --build
+
+
+.PHONY: all up start down stop clean fclean auth games tournaments users chat
