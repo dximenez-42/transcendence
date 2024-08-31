@@ -6,9 +6,9 @@ services:
     container_name: nginx
     #image: nginx:latest
     volumes:
-      - website:/usr/share/nginx/html/
-      #- ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      #- ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./frontend:/usr/share/nginx/html
     ports:
       - "8086:80"
     networks:
@@ -23,6 +23,21 @@ services:
     command: gunicorn auth.wsgi:application --bind 0.0.0.0:8000
     volumes:
       - ./backend/auth:/app
+    networks:
+      - backend
+      - database
+    depends_on:
+      - db
+    env_file:
+      - .env
+
+  games-backend:
+    container_name: games-backend
+    build:
+      context: ./backend/games
+    command: gunicorn games.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./backend/games:/app
     networks:
       - backend
       - database
