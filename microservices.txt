@@ -30,7 +30,8 @@ En urls del proyecto:
  - Importar include junto con path
  - Crear path ms (path('games/', include('games_app.urls')),)
 
-Crear urls en _app:
+
+Crear urls.py en _app:
 
 `
 from django.urls import path
@@ -41,3 +42,6 @@ urlpatterns = [
     path('join/<int:id>', views.join, name='join'),
 ]
 `
+
+
+Copiar modelos a models.py

@@ -60,6 +60,21 @@ services:
     env_file:
       - .env
 
+  users-backend:
+    container_name: users-backend
+    build:
+      context: ./backend/users
+    command: gunicorn users.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./backend/users:/app
+    networks:
+      - backend
+      - database
+    depends_on:
+      - db
+    env_file:
+      - .env
+
   db:
     container_name: db
     image: postgres:13

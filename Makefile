@@ -33,3 +33,6 @@ games:
 
 tournaments:
 	$(DOCKER) up tournaments-backend --detach --build
+
+users:
+	$(DOCKER) up users-backend --detach --build
