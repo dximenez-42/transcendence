@@ -6,6 +6,7 @@ import datetime
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
 import requests
+from django.shortcuts import redirect
 
 import json
 from .models import User
@@ -50,29 +51,14 @@ def auth(request):
 
                 user = User.objects.filter(username=username, email=email).first()
                 if user:
-                    return redirect(f'/#login?code={code}')
-
-                    return JsonResponse({
-                        'id': user.id,
-                        'name': user.name,
-                        'username': user.username,
-                        'email': user.email,
-                        'token': user.token
-                    }, status=200)
+                    return redirect(f'/#login?token={user.token}')
 
                 token = hash(datetime.datetime.now().timestamp())
                 user = User.objects.create(name=name, username=username, email=email, token=token)
                 if not user:
                     return JsonResponse({'error': 'Failed to create user.'}, status=500)
-                return redirect(f'/#login?code={code}')
 
-                return JsonResponse({
-                    'id': user.id,
-                    'name': user.name,
-                    'username': user.username,
-                    'email': user.email,
-                    'token': user.token
-                }, status=201)
+                return redirect(f'/#login?token={user.token}')
 
             except json.JSONDecodeError:
                 return JsonResponse({'error': 'Invalid JSON.'}, status=400)
