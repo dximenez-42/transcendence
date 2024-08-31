@@ -2,14 +2,15 @@ version: '3.8'
 
 services:
   nginx:
+    build: ./nginx
     container_name: nginx
-    image: nginx:latest
+    #image: nginx:latest
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./frontend:/usr/share/nginx/html
     ports:
-      - "80:80"
+      - "8086:80"
     networks:
       - backend
     depends_on:
@@ -88,3 +89,8 @@ volumes:
     name: pgdata
   pgadmin_data:
     name: pgadmin_data
+  website:
+    driver_opts:
+      type: none
+      device: /home/user4t/website
+      o: bind
