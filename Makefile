@@ -26,6 +26,9 @@ fclean:
 
 re: fclean up
 
+nginx:
+	docker exec -it nginx service nginx reload
+
 auth:
 	$(DOCKER) up auth-backend --detach --build
 
@@ -42,4 +45,4 @@ chat:
 	$(DOCKER) up chat-backend --detach --build
 
 
-.PHONY: all up start down stop clean fclean auth games tournaments users chat
+.PHONY: all up start down stop clean fclean nginx auth games tournaments users chat
