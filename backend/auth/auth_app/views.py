@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 import os
 import datetime
@@ -50,6 +50,8 @@ def auth(request):
 
                 user = User.objects.filter(username=username, email=email).first()
                 if user:
+                    return redirect(f'/#login?code={code}')
+
                     return JsonResponse({
                         'id': user.id,
                         'name': user.name,
@@ -62,6 +64,8 @@ def auth(request):
                 user = User.objects.create(name=name, username=username, email=email, token=token)
                 if not user:
                     return JsonResponse({'error': 'Failed to create user.'}, status=500)
+                return redirect(f'/#login?code={code}')
+
                 return JsonResponse({
                     'id': user.id,
                     'name': user.name,
