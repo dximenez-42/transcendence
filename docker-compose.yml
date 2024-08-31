@@ -75,6 +75,21 @@ services:
     env_file:
       - .env
 
+  chat-backend:
+    container_name: chat-backend
+    build:
+      context: ./backend/chat
+    command: gunicorn chat.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./backend/chat:/app
+    networks:
+      - backend
+      - database
+    depends_on:
+      - db
+    env_file:
+      - .env
+
   db:
     container_name: db
     image: postgres:13
