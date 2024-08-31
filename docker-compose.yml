@@ -45,6 +45,21 @@ services:
     env_file:
       - .env
 
+  tournaments-backend:
+    container_name: tournaments-backend
+    build:
+      context: ./backend/tournaments
+    command: gunicorn tournaments.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./backend/tournaments:/app
+    networks:
+      - backend
+      - database
+    depends_on:
+      - db
+    env_file:
+      - .env
+
   db:
     container_name: db
     image: postgres:13

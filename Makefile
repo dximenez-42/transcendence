@@ -30,3 +30,6 @@ auth:
 
 games:
 	$(DOCKER) up games-backend --detach --build
+
+tournaments:
+	$(DOCKER) up tournaments-backend --detach --build
