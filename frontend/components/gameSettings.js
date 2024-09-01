@@ -1,37 +1,16 @@
-const URL_API='http://localhost:8080/api'
-
-
-async function getGames() {
-    const url = `${URL_API}/games/list`;
-    const token = sessionStorage.getItem('auth_token');
-    try {
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Authorization': token,
-            },
-        });
-
-        if (response.ok) {
-            const games = await response.json();
-            return games.data;
-        } else {
-            console.error("Fetch failed with status:", response.status);
-            console.log("Response",response);
-            return [];
-        }
-    } catch (error) {
-        console.error("There was a problem with the Fetch request:", error.message);
-        return [];
-    }
-}
+import { createGame, getGames } from '../api/game.js'
 
 
 function gameSettings() {
-    const button = document.getElementById('vs_settings_button');
-    console.log(button)
-    button.addEventListener('click', (e) => {
+    const vs_button = document.getElementById('vs_settings_button');
+    const tournament_button = document.getElementById('tournament_settings_button');
+
+    vs_button.addEventListener('click', (e) => {
         window.location.hash = "vs_settings"
+    })
+
+    tournament_button.addEventListener('click', (e) => {
+        window.location.hash = "tournament_settings"
     })
 }
 
@@ -55,7 +34,7 @@ export async function gamesList() {
                 <h2>${game.host_username}</h2>
             </div>
             <div class="col-4">
-                <p>Age: ${game.age}</p>
+                <p>6 points</p>
             </div>
             `;
 
@@ -77,8 +56,8 @@ export async function gamesList() {
 
     const button = document.getElementById('create_game_button');
 
-    button.addEventListener('click', (e) => {
-        window.location.hash = "create_game";
+    button.addEventListener('click', () => {
+            window.location.hash = "create_game";
     });
 }
 
@@ -101,8 +80,10 @@ export function setMatchPoints() {
     });
 
     const submit = document.getElementById('create_game_submit');
-    submit.addEventListener('click', () => {
-        window.location.hash = "vs_settings";
+    submit.addEventListener('click', async () => {
+        const response = await createGame()
+        if (response)
+            window.location.hash = "vs_settings";
     })
 };
 

@@ -385,20 +385,12 @@ justify-content: end;
 
 /*404*/
 
-#error_page {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: #111;
-}
 
 .error {
     display: inline-block;
     text-align: center;
     padding: 20px;
-    border: 2px solid #fff;
-    background-color: #222;
+    height: 100%;
 }
 
 .error-code {

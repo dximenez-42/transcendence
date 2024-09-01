@@ -64,7 +64,7 @@ function router() {
         '#game': { url: 'game.html', render: renderGame },
         '#game_settings': { url: 'game_settings.html', render: renderGameSettings},
         '#create_game': { url: 'create_game.html', render: setMatchPoints},
-        '#tournament': { url: 'tournament.html', render: () => console.log('Tournament page loaded') }
+        '#tournament_settings': { url: 'tournament_settings.html', render: () => console.log('Tournament page loaded') }
     };
 
     const route = routes[hash];

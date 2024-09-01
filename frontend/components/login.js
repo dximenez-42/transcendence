@@ -17,7 +17,6 @@ window.onload = function() {
     if (code) {
         sessionStorage.setItem('auth_token', code);
 
-        // Optionally, redirect to a different page after storing the code
-        window.location.hash = 'home'; // Replace with your desired route
+        window.location.hash = 'home';
     }
 };
