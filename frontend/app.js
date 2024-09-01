@@ -3,6 +3,7 @@ import { renderGame } from './components/game.js';
 import { renderHome } from './components/home.js';
 import { renderUsers } from './components/users.js'
 import { renderLogin } from './components/login.js';
+import { renderGameSettings, gamesList, renderCreateGame, setMatchPoints } from './components/gameSettings.js';
 
 // Load and render content based on URL
 function loadContent(url, callback) {
@@ -45,7 +46,7 @@ function executeInlineScripts(container) {
 
 function router() {
     // Check if the user is logged in
-    const userId = sessionStorage.getItem('auth_code');
+    const userId = sessionStorage.getItem('auth_token');
     const hash = window.location.hash;
 
     if (!userId && hash !== '#login') {
@@ -59,8 +60,10 @@ function router() {
         '#chat': { url: 'chat.html', render: renderChat },
         '#login': { url: 'login.html', render: renderLogin },
         '#users': { url: 'users.html', render: renderUsers },
+        '#vs_settings': { url: '1vs1_settings.html', render:gamesList },
         '#game': { url: 'game.html', render: renderGame },
-        '#game_settings': { url: 'game_settings.html', render: ()  => {console.log('game settings')}},
+        '#game_settings': { url: 'game_settings.html', render: renderGameSettings},
+        '#create_game': { url: 'create_game.html', render: setMatchPoints},
         '#tournament': { url: 'tournament.html', render: () => console.log('Tournament page loaded') }
     };
 
