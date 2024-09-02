@@ -1,10 +1,12 @@
-function initScripts() {
+import { getUser } from "../api/users.js";
+
+
+async function initScripts() {
     const leftBar = document.getElementById('leftBar');
     const rightBar = document.getElementById('rightBar');
     const playButton = document.getElementById('playButton');
+    const greeting_username = document.getElementById('greeting_username');
 
-    console.log(playButton);
-    console.log("playButton");
 
     // Agregar la clase de animación al hacer hover en playButton
     playButton.addEventListener('mouseover', () => {
@@ -21,6 +23,9 @@ function initScripts() {
     playButton.addEventListener('click', () => {
         window.location.hash = '#game_settings'
     });
+    const username = sessionStorage.getItem('username');;
+
+    greeting_username.innerHTML = `Welcome ${username}`;
 }
 
 function setMatchPoints() {

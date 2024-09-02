@@ -1,4 +1,5 @@
 import { setUserSession } from "../api/session.js";
+import { getUser } from "../api/users.js";
 
 export function renderLogin() {
 
@@ -10,12 +11,18 @@ export function renderLogin() {
     });
 }
 
-window.onload = function() {
+window.onload = async function() {
     const fragment = window.location.hash;
     const params = new URLSearchParams(fragment.slice(fragment.indexOf('?') + 1));
     const code = params.get('token');
     if (code) {
         sessionStorage.setItem('auth_token', code);
+
+        const user = await getUser();
+        sessionStorage.setItem('username', user.username);
+        sessionStorage.setItem('email', user.email);
+        sessionStorage.setItem('name', user.name);
+
 
         window.location.hash = 'home';
     }

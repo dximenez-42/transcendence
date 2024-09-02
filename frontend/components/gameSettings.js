@@ -24,42 +24,75 @@ export async function gamesList() {
     const container = document.getElementById('gameList');
     container.innerHTML = '';
 
-    console.log(games);
+    const storedUsername = sessionStorage.getItem('username'); // Retrieve the username from sessionStorage
+
+    let userGame = null;
+
     games.forEach(game => {
-        const gameDiv = document.createElement('div');
-        gameDiv.className = 'game-card';
-        
-        gameDiv.innerHTML = `
+        if (game.host_username === storedUsername) {
+            // Store the user's game to replace the create game button later
+            userGame = game;
+        } else {
+            const gameDiv = document.createElement('div');
+            gameDiv.className = 'game-card';
+
+            gameDiv.innerHTML = `
+                <div class="col-4">
+                    <h2>${game.host_username}</h2>
+                </div>
+                <div class="col-4">
+                    <p>6 points</p>
+                </div>
+            `;
+
+            gameDiv.innerHTML += `
+                <div class="col-4">
+                    <div>
+                        <button class="tc-btn my-2 py-2"><h4><b>JOIN</b></h4></button>
+                    </div>
+                </div>`;
+
+            container.appendChild(gameDiv);
+        }
+    });
+
+    const buttonContainer = document.getElementById('create_game_button').parentNode;
+
+    if (userGame) {
+        // Replace the "CREATE GAME" button with the user's game details
+        const userGameDiv = document.createElement('div');
+        userGameDiv.className = 'game-card';
+
+        userGameDiv.innerHTML = `
             <div class="col-4">
-                <h2>${game.host_username}</h2>
+                <h2>${userGame.host_username}</h2>
             </div>
             <div class="col-4">
                 <p>6 points</p>
             </div>
-            `;
+            <div class="col-4">
+                <p id="waiting-text">Waiting<span id="dots"></span></p>
+            </div>`;
 
-        if (game.host_username === 'carloga') {
-            gameDiv.innerHTML += `
-                <div class="col-4">
-                    <button class="tc-btn my-2 py-2"><h4><b>JOIN</b></h4></button>
-                </div>`;
-        } else {
-            gameDiv.innerHTML += `
-                <div class="col-4">
-                    <div>
-                        <p id="waiting-text">Waiting<span id="dots"></span></p>
-                    </div>
-                </div>`
-        }
-        container.appendChild(gameDiv);
-    });
-
-    const button = document.getElementById('create_game_button');
-
-    button.addEventListener('click', () => {
+        buttonContainer.replaceChild(userGameDiv, document.getElementById('create_game_button'));
+    } else {
+        const button = document.getElementById('create_game_button');
+        button.addEventListener('click', () => {
             window.location.hash = "create_game";
+        });
+    }
+
+    // Animation for "Waiting..."
+    document.querySelectorAll('#waiting-text').forEach(element => {
+        const dots = element.querySelector('#dots');
+        let count = 0;
+        setInterval(() => {
+            count = (count + 1) % 4; // Cycle between 0, 1, 2, 3
+            dots.textContent = '.'.repeat(count); // Add dots
+        }, 500); // Adjust the interval time as needed
     });
 }
+
 
 
 export function setMatchPoints() {

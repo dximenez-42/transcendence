@@ -445,6 +445,18 @@ justify-content: end;
 }
 
 
+.greeting {
+    width: 100%;
+    display: flex;
+    justify-content: end;
+    transform: translateY(-2rem);
+    font-family: "Exo 2", sans-serif;
+
+}
+
+.greeting p {
+    font-size: 2rem
+}
 
 /* Fuente pixelada (asegúrate de incluir la fuente en tu proyecto o usa una similar) */
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
