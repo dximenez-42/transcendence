@@ -13,3 +13,12 @@ from .models import GamePlayer
 @api_view(['GET'])
 def info(request, id):
     return JsonResponse({'error': 'Not implemented'}, status=501)
+
+@api_view(['GET'])
+def me(request):
+    user = {
+        'username': request.user.username,
+        'email': request.user.email,
+        'name': request.user.name,
+    }
+    return JsonResponse({'user': user}, status=200)
