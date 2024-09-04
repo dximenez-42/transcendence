@@ -1,4 +1,4 @@
-import { getUser } from "../api/users.js";
+import { loadLanguage } from "../api/languages.js";
 
 
 async function initScripts() {
@@ -8,13 +8,11 @@ async function initScripts() {
     const greeting_username = document.getElementById('greeting_username');
 
 
-    // Agregar la clase de animación al hacer hover en playButton
     playButton.addEventListener('mouseover', () => {
         leftBar.classList.add('animate-left-bar');
         rightBar.classList.add('animate-right-bar');
     });
 
-    // Eliminar la clase de animación cuando el hover termina
     playButton.addEventListener('mouseout', () => {
         leftBar.classList.remove('animate-left-bar');
         rightBar.classList.remove('animate-right-bar');
@@ -23,6 +21,7 @@ async function initScripts() {
     playButton.addEventListener('click', () => {
         window.location.hash = '#game_settings'
     });
+    
     const username = sessionStorage.getItem('username');;
 
     greeting_username.innerHTML = `Welcome ${username}`;
@@ -48,6 +47,7 @@ function setMatchPoints() {
 
 
 export function renderHome() {
+    loadLanguage();
     initScripts();
 }
 

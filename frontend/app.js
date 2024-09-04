@@ -1,9 +1,9 @@
 import { renderChat } from './components/chat.js';
 import { renderGame } from './components/game.js';
 import { renderHome } from './components/home.js';
-import { renderUsers } from './components/users.js'
-import { renderLogin } from './components/login.js';
+import { renderLogin, renderLogout } from './components/login.js';
 import { renderGameSettings, gamesList, renderCreateGame, setMatchPoints } from './components/gameSettings.js';
+import { renderProfile } from './components/profile.js';
 
 // Load and render content based on URL
 function loadContent(url, callback) {
@@ -45,21 +45,19 @@ function executeInlineScripts(container) {
 
 
 function router() {
-    // Check if the user is logged in
     const userId = sessionStorage.getItem('auth_token');
     const hash = window.location.hash;
 
     if (!userId && hash !== '#login') {
-        // Redirect to login if user is not authenticated and not already on the login page
         window.location.hash = '#login';
-        return; // Exit the router function early
+        return;
     }
 
     const routes = {
         '#home': { url: 'home.html', render: renderHome },
         '#chat': { url: 'chat.html', render: renderChat },
         '#login': { url: 'login.html', render: renderLogin },
-        '#users': { url: 'users.html', render: renderUsers },
+        '#profile': { url: 'profile.html', render: renderProfile },
         '#vs_settings': { url: '1vs1_settings.html', render:gamesList },
         '#game': { url: 'game.html', render: renderGame },
         '#game_settings': { url: 'game_settings.html', render: renderGameSettings},
@@ -77,7 +75,6 @@ function router() {
 }
 
 
-// Initialize router on page load and hash change
 window.addEventListener('hashchange', router);
 window.addEventListener('load', router);
 

@@ -77,3 +77,11 @@
     color: #ddd;
     font-family: "Exo 2", sans-serif;
 }
+
+.tc-upper  {
+    text-transform: uppercase;
+}
+
+.tc-capi  {
+    text-transform: capitalize;
+}

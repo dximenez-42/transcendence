@@ -1,4 +1,6 @@
 import { createGame, getGames } from '../api/game.js'
+import { loadLanguage } from '../api/languages.js';
+const URL_API='http://localhost:8080/api'
 
 
 function gameSettings() {
@@ -24,13 +26,12 @@ export async function gamesList() {
     const container = document.getElementById('gameList');
     container.innerHTML = '';
 
-    const storedUsername = sessionStorage.getItem('username'); // Retrieve the username from sessionStorage
+    const storedUsername = sessionStorage.getItem('username');
 
     let userGame = null;
 
     games.forEach(game => {
         if (game.host_username === storedUsername) {
-            // Store the user's game to replace the create game button later
             userGame = game;
         } else {
             const gameDiv = document.createElement('div');
@@ -41,7 +42,7 @@ export async function gamesList() {
                     <h2>${game.host_username}</h2>
                 </div>
                 <div class="col-4">
-                    <p>6 points</p>
+                    <p data-translate-key="points">6 points</p>
                 </div>
             `;
 
@@ -57,45 +58,59 @@ export async function gamesList() {
     });
 
     const buttonContainer = document.getElementById('create_game_button').parentNode;
-
+    
     if (userGame) {
-        // Replace the "CREATE GAME" button with the user's game details
         const userGameDiv = document.createElement('div');
-        userGameDiv.className = 'game-card';
+        userGameDiv.className = 'my-game-card';
 
         userGameDiv.innerHTML = `
             <div class="col-4">
-                <h2>${userGame.host_username}</h2>
+                6<h2 data-translate-key="points">points</h2>
             </div>
             <div class="col-4">
-                <p>6 points</p>
+                <p id="waiting-text">Waiting<span id="dots"></span></p> 
             </div>
             <div class="col-4">
-                <p id="waiting-text">Waiting<span id="dots"></span></p>
+                <button id="leave_game_button" class="tc-btn my-2 py-2"><h4><b data-translate-key="leave_game" class="tc-upper">LEAVE GAME</b></h4></button>
             </div>`;
 
         buttonContainer.replaceChild(userGameDiv, document.getElementById('create_game_button'));
+
+        document.getElementById('leave_game_button').addEventListener('click', async () => {
+            console.log("button pressed");
+            await leaveGame(userGame.game_id);
+            window.location.reload();
+        });
     } else {
         const button = document.getElementById('create_game_button');
         button.addEventListener('click', () => {
             window.location.hash = "create_game";
         });
     }
+    loadLanguage();
+}
 
-    // Animation for "Waiting..."
-    document.querySelectorAll('#waiting-text').forEach(element => {
-        const dots = element.querySelector('#dots');
-        let count = 0;
-        setInterval(() => {
-            count = (count + 1) % 4; // Cycle between 0, 1, 2, 3
-            dots.textContent = '.'.repeat(count); // Add dots
-        }, 500); // Adjust the interval time as needed
-    });
+async function leaveGame(gameId) {
+    try {
+        const response = await fetch(`${URL_API}/games/leave/${gameId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': sessionStorage.getItem('auth_token'),
+                'Content-Type': 'application/json',
+            },
+        });
+        if (!response.ok) {
+            throw new Error('Failed to leave game');
+        }
+        console.log('Game left successfully');
+    } catch (error) {
+        console.error('Error leaving game:', error.message);
+    }
 }
 
 
-
 export function setMatchPoints() {
+    loadLanguage();
     const matchPointsInput = document.getElementById('matchPoints');
     const incrementBtn = document.getElementById('increment');
     const decrementBtn = document.getElementById('decrement');
@@ -121,5 +136,6 @@ export function setMatchPoints() {
 };
 
 export function renderGameSettings() {
+    loadLanguage();
     gameSettings();
 }
