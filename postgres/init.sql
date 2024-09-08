@@ -10,20 +10,25 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TYPE status_enum AS ENUM ('open', 'preparing', 'ready', 'playing', 'finished');
+
 CREATE table IF NOT EXISTS tournaments (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
+    host_id INT NOT NULL,
+    FOREIGN KEY (host_id) REFERENCES users(id),
+    status status_enum DEFAULT 'open',
+    max_players INT NOT NULL,
+    room_id VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
-CREATE TYPE game_status AS ENUM ('open', 'ready', 'playing', 'finished');
 
 CREATE table IF NOT EXISTS games (
     id SERIAL PRIMARY KEY,
     host_id INT NOT NULL,
     FOREIGN KEY (host_id) REFERENCES users(id),
-    status game_status DEFAULT 'open',
+    status status_enum DEFAULT 'open',
     room_id VARCHAR(255) NOT NULL,
     tournament_id INT,
     FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
@@ -41,3 +46,27 @@ CREATE table IF NOT EXISTS game_players (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS tournament_players (
+    id SERIAL PRIMARY KEY,
+    tournament_id INT NOT NULL,
+    FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
+    player_id INT NOT NULL,
+    FOREIGN KEY (player_id) REFERENCES users(id),
+    eliminated BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- CREATE table IF NOT EXISTS game_rounds (
+--     id SERIAL PRIMARY KEY,
+--     game_id INT NOT NULL,
+--     FOREIGN KEY (game_id) REFERENCES games(id),
+--     round_number INT NOT NULL,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );
+
+INSERT INTO users (name, username, email, token) VALUES ('Admin', 'admin', 'admin@example.com', 'admin');
+INSERT INTO users (name, username, email, token) VALUES ('dani', 'dximenez', 'dximenez@student.42madrid.com', 'dximenez');
+INSERT INTO users (name, username, email, token) VALUES ('carlos', 'carlosga', 'carlosga@student.42madrid.com', 'carlosga');
