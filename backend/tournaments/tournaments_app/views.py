@@ -214,10 +214,13 @@ def prepare(request, id):
 def game(request):
     games = []
 
-    games_player = GamePlayer.objects.filter(player_id=request.user.id, game__status='ready').exclude(game__tournament_id=None)
+    games_player = GamePlayer.objects.filter(player_id=request.user.id).exclude(game__tournament_id=None).exclude(game__status='open').exclude(game__status='finished')
 
     for game_player in games_player:
-        oponent = User.objects.filter(id=GamePlayer.objects.filter(game_id=game_player.game.id).exclude(player_id=request.user.id).first().player_id).first()
+        oponent = None
+        if GamePlayer.objects.filter(game_id=game_player.game.id).exclude(player_id=request.user.id).exists() and User.objects.filter(id=GamePlayer.objects.filter(game_id=game_player.game.id).exclude(player_id=request.user.id).first().player_id).exists():
+            oponent = User.objects.filter(id=GamePlayer.objects.filter(game_id=game_player.game.id).exclude(player_id=request.user.id).first().player_id).first().username
+
         games.append({
             'game_id': game_player.game.id,
             'room_id': game_player.game.room_id,
@@ -228,8 +231,9 @@ def game(request):
                 'max_players': game_player.game.tournament.max_players,
                 'host_username': User.objects.filter(id=game_player.game.tournament.host_id).first().username,
             },
-            'oponent': oponent.username,
+            'oponent': oponent,
             'status': game_player.game.status,
+            'is_host': game_player.game.host_id == request.user.id,
         })
 
     return JsonResponse({
@@ -238,5 +242,28 @@ def game(request):
 
 @api_view(['DELETE'])
 def leave(request, id):
-    # only if status is open
-    return JsonResponse({'error': 'Not implemented'}, status=501)
+    tournament = Tournament.objects.filter(id=id).first()
+    if not tournament:
+        return JsonResponse({'error': 'Tournament not found.'}, status=404)
+    
+    tournament_player = TournamentPlayer.objects.filter(tournament_id=id, player_id=request.user.id).first()
+    if not tournament_player:
+        return JsonResponse({'error': 'User not in tournament.'}, status=400)
+    
+    if tournament.status != 'open':
+        return JsonResponse({'error': 'Cannot leave tournament.'}, status=400)
+    
+    if tournament_player.player_id == tournament.host_id:
+        if TournamentPlayer.objects.filter(tournament_id=id).count() > 1:
+            return JsonResponse({'error': 'Tournament must be empty for the host to leave.'}, status=400)
+        tournament_player.delete()
+        tournament.delete()
+        return JsonResponse({
+            'message': 'Tournament deleted.'
+        }, status=200)
+    else:
+        tournament_player.delete()
+
+    return JsonResponse({
+        'message': 'User left tournament.'
+    }, status=200)

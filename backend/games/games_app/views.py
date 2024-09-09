@@ -138,16 +138,16 @@ def start(request, id):
 
 @api_view(['DELETE'])
 def leave(request, id):
-    if not Game.objects.filter(id=id).exists():
+    game = Game.objects.filter(id=id).first()
+    if not game:
         return JsonResponse({'error': 'Game not found.'}, status=404)
-
-    game = Game.objects.get(id=id)
-    if game.status != 'open':
-        return JsonResponse({'error': 'Cannot leave game.'}, status=400)
 
     game_player = GamePlayer.objects.filter(game_id=game.id, player_id=request.user.id).first()
     if not game_player:
-        return JsonResponse({'error': 'Game player not found.'}, status=404)
+        return JsonResponse({'error': 'Player not in game.'}, status=400)
+
+    if game.status != 'open':
+        return JsonResponse({'error': 'Cannot leave game.'}, status=400)
 
     if game_player.player_id == game.host_id:
         if GamePlayer.objects.filter(game_id=game.id).count() > 1:
