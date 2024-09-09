@@ -69,7 +69,9 @@ def list(request):
             'is_host': game.host_id == request.user.id,
         })
 
-    return JsonResponse({'data': data}, status=200)
+    return JsonResponse({
+        'data': data
+    }, status=200)
 
 
 
@@ -77,9 +79,6 @@ def list(request):
 def join(request, id):
     if not Game.objects.filter(id=id).exists():
         return JsonResponse({'error': 'Game not found.'}, status=404)
-
-    if not User.objects.filter(id=request.user.id).exists():
-        return JsonResponse({'error': 'User not found.'}, status=404)
 
     # Check if game is open
     game = Game.objects.get(id=id)
@@ -116,9 +115,6 @@ def start(request, id):
     if not Game.objects.filter(id=id).exists():
         return JsonResponse({'error': 'Game not found.'}, status=404)
 
-    if not User.objects.filter(id=request.user.id).exists():
-        return JsonResponse({'error': 'User not found.'}, status=404)
-
     game = Game.objects.get(id=id)
     if game.status == 'ready':
         return JsonResponse({'error': 'Game is already ready.'}, status=400)
@@ -144,9 +140,6 @@ def start(request, id):
 def leave(request, id):
     if not Game.objects.filter(id=id).exists():
         return JsonResponse({'error': 'Game not found.'}, status=404)
-
-    if not User.objects.filter(id=request.user.id).exists():
-        return JsonResponse({'error': 'User not found.'}, status=404)
 
     game = Game.objects.get(id=id)
     if game.status != 'open':
