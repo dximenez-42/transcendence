@@ -212,8 +212,31 @@ def prepare(request, id):
 
 @api_view(['GET'])
 def game(request):
-    return JsonResponse({'error': 'Not implemented'}, status=501)
+    games = []
+
+    games_player = GamePlayer.objects.filter(player_id=request.user.id, game__status='ready').exclude(game__tournament_id=None)
+
+    for game_player in games_player:
+        oponent = User.objects.filter(id=GamePlayer.objects.filter(game_id=game_player.game.id).exclude(player_id=request.user.id).first().player_id).first()
+        games.append({
+            'game_id': game_player.game.id,
+            'room_id': game_player.game.room_id,
+            'tournament': {
+                'tournament_id': game_player.game.tournament.id,
+                'name': game_player.game.tournament.name,
+                'players': TournamentPlayer.objects.filter(tournament_id=game_player.game.tournament.id).count(),
+                'max_players': game_player.game.tournament.max_players,
+                'host_username': User.objects.filter(id=game_player.game.tournament.host_id).first().username,
+            },
+            'oponent': oponent.username,
+            'status': game_player.game.status,
+        })
+
+    return JsonResponse({
+        'games': games,
+    }, status=200)
 
 @api_view(['DELETE'])
 def leave(request, id):
+    # only if status is open
     return JsonResponse({'error': 'Not implemented'}, status=501)
