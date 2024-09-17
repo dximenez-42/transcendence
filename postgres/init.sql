@@ -58,14 +58,15 @@ CREATE TABLE IF NOT EXISTS tournament_players (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- CREATE table IF NOT EXISTS game_rounds (
---     id SERIAL PRIMARY KEY,
---     game_id INT NOT NULL,
---     FOREIGN KEY (game_id) REFERENCES games(id),
---     round_number INT NOT NULL,
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
--- );
+CREATE table IF NOT EXISTS users_blocked (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    blocked_id INT NOT NULL,
+    FOREIGN KEY (blocked_id) REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 INSERT INTO users (name, username, email, token) VALUES ('Admin', 'admin', 'admin@example.com', 'admin');
 INSERT INTO users (name, username, email, token) VALUES ('dani', 'dximenez', 'dximenez@student.42madrid.com', 'dximenez');
