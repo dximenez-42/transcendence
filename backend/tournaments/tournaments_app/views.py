@@ -9,6 +9,7 @@ from .models import Game
 from .models import Tournament
 from .models import GamePlayer
 from .models import TournamentPlayer
+from .models import UserBlocked
 
 import random
 import string
@@ -64,6 +65,9 @@ def list(request):
 
     data = []
     for tournament in tournaments:
+        if UserBlocked.objects.filter(user=request.user, blocked_id=tournament.host_id).exists():
+            continue
+
         username = User.objects.get(id=tournament.host_id).username
         players = TournamentPlayer.objects.filter(tournament_id=tournament.id).count()
         joined = TournamentPlayer.objects.filter(tournament_id=tournament.id, player_id=request.user.id).exists()
