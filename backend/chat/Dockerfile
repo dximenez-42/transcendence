@@ -1,4 +1,4 @@
-# Usa una imagen base de Python
+# Imagen base de Python
 FROM python:3.10-slim
 
 # Establecer variables de entorno
