@@ -128,10 +128,10 @@ services:
 
 networks:
   backend:
-  	name: backend
+    name: backend
     driver: bridge
   database:
-  	name: db
+    name: db
     driver: bridge
 
 volumes:

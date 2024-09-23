@@ -1,4 +1,4 @@
-DOCKER = docker compose -p ""
+DOCKER = docker compose 
 
 all: up
 
