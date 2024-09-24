@@ -91,8 +91,11 @@ services:
       - database
     depends_on:
       - db
+      - redis
     env_file:
       - .env
+    ports:
+      - "8000:8000"
 
   db:
     container_name: db
@@ -125,6 +128,14 @@ services:
       - database
     depends_on:
       - db
+
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - backend
 
 networks:
   backend:

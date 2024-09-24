@@ -4,3 +4,5 @@ requests
 gunicorn
 psycopg2-binary  # For PostgreSQL
 channels         # For Django Channels
+redis            # For Django Channels
+channels-redis   # For Django Channels
