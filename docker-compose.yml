@@ -83,7 +83,7 @@ services:
     container_name: chat-backend
     build:
       context: ./backend/chat
-    command: gunicorn chat.wsgi:application --bind 0.0.0.0:8000
+    command: python manage.py runserver 0.0.0.0:8000 
     volumes:
       - ./backend/chat:/app
     networks:
@@ -128,8 +128,10 @@ services:
 
 networks:
   backend:
+    name: backend
     driver: bridge
   database:
+    name: db
     driver: bridge
 
 volumes:
