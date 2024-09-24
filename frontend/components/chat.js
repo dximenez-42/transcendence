@@ -72,5 +72,44 @@ export function renderChat(userId) {
         });
     }
 
-    sendButton.addEventListener("click", sendMessage);
+    //sendButton.addEventListener("click", sendMessage);
+
+
+    
+    /*parte conexion web sockets chat Pablo*/
+
+    let url = `ws://${window.location.host}/ws/socket-server/`
+    
+    const chatSocket = new WebSocket(url)
+    
+    console.log(chatSocket);
+
+    chatSocket.onmessage = function(e) {
+        let data = JSON.parse(e.data)
+        console.log('Data:', data)
+    
+        if (data.type === 'chat'){
+            let messages = document.getElementById('messages')
+    
+            messages.insertAdjacentHTML('beforeend', `<div>
+                <strong>${data.username}:</strong> <p>${data.message}</p>
+            </div>`)
+    
+        }
+    }
+    
+    let messageInput = document.getElementById('messageInput');
+    
+    sendButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        let message = messageInput.value;
+    
+        if (message.trim() !== '') {
+            chatSocket.send(JSON.stringify({
+                'message': message
+            }));
+    
+            messageInput.value = '';
+        }
+    });
 }
