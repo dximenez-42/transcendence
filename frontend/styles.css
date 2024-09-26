@@ -355,7 +355,6 @@ justify-content: end;
 }
 
 .player-name {
-    font-size: 4rem;
     font-weight: bold;
 }
 
@@ -364,7 +363,7 @@ justify-content: end;
 }
 
 .timer{
-    padding: 0 3rem;
+    padding: 0 2rem;
     display: flex;
     align-items: center;
 }
@@ -375,7 +374,7 @@ justify-content: end;
 }
 
 .game-container {
-    height: 600px;
+    height: 400px;
     background-color: #000;
     border: 4px solid #fff;
     position: relative;

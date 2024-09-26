@@ -1,22 +1,29 @@
 <div id="game">
-
     <div class="header">
         <div class="scores">
             <div class="score">
-                <span class="player-name">Player 1</span>
-                <span class="score-value" id="player1-score">0</span>
+                <span class="player-name" id="playerName">PlayerNameUnknown</span>
+                <span class="score-value" id="playerScore">0</span>
             </div>
             <div class="timer">
                 <h4 id="timer-display">2:30</h4>
             </div>
             <div class="score">
-                <span class="score-value" id="player2-score">0</span>
-                <span class="player-name">Player 2</span>
+                <span class="score-value" id="enamyScore">0</span>
+                <span class="player-name" id="enamyName">EnamyNameUnknown</span>
             </div>
         </div>
     </div>
-    
+
+
     <div class="game-container" id="game-container">
-        <!-- The game canvas will be rendered here -->
+        <canvas id="gameWindow"></canvas>
+    </div>
+
+    <div class="tempStartGameButton">
+        <button id="localGameButton">Start local game</button>
+        <button id="pause">Start</button>
+        <button id="onlineGameButton">Start online game</button>
     </div>
 </div>
+
