@@ -45,6 +45,19 @@ function setMatchPoints() {
     });
 };
 
+export function hideNav()
+{
+    const nav = document.getElementById("navigator");
+
+    nav.classList.add("d-none");
+}
+
+export function showNav()
+{
+    const nav = document.getElementById("navigator");
+
+    nav.classList.remove("d-none");
+}
 
 export function renderHome() {
     loadLanguage();

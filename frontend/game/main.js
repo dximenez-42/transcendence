@@ -2,16 +2,137 @@ import { keyMovePad, setGameType, getGameType, meshPadEnamy, setPlayerId, meshBa
 import { FPS } from './constants.js';
 import { createWebSocket } from './socket.js';
 import { setPositionPad, setPositionBall } from './infoHandler.js';
+import { hideNav, showNav } from '../components/home.js';
+import { getGames, leaveGame } from '../api/game.js';
+import { loadLanguage } from '../api/languages.js';
 
+
+// ------------- GAME SETTINGS ----------------
+
+
+
+
+
+
+export async function gameList() {
+    const games = await getGames();
+    const container = document.getElementById('gameList');
+    container.innerHTML = '';
+
+    const storedUsername = sessionStorage.getItem('username');
+
+    let userGame = null;
+
+    games.forEach(game => {
+        if (game.host_username === storedUsername) {
+            userGame = game;
+        } else {
+            const gameDiv = document.createElement('div');
+            gameDiv.className = 'game-card';
+
+            gameDiv.innerHTML = `
+                <div class="col-4">
+                    <h2>${game.host_username}</h2>
+                </div>
+                <div class="col-4">
+                    <p data-translate-key="points">6 points</p>
+                </div>
+            `;
+
+            gameDiv.innerHTML += `
+                <div class="col-4">
+                    <div>
+                        <button class="tc-btn my-2 py-2"><h4><b>JOIN</b></h4></button>
+                    </div>
+                </div>`;
+
+            container.appendChild(gameDiv);
+        }
+    });
+
+    const buttonContainer = document.getElementById('create_game_button').parentNode;
+    
+    if (userGame) {
+        const userGameDiv = document.createElement('div');
+        userGameDiv.className = 'my-game-card';
+
+        userGameDiv.innerHTML = `
+            <div class="col-4">
+                6<h2 data-translate-key="points">points</h2>
+            </div>
+            <div class="col-4">
+                <p id="waiting-text">Waiting<span id="dots"></span></p> 
+            </div>
+            <div class="col-4">
+                <button id="leave_game_button" class="tc-btn my-2 py-2"><h4><b data-translate-key="leave_game" class="tc-upper">LEAVE GAME</b></h4></button>
+            </div>`;
+
+        buttonContainer.replaceChild(userGameDiv, document.getElementById('create_game_button'));
+
+        document.getElementById('leave_game_button').addEventListener('click', async () => {
+            console.log("button pressed");
+            await leaveGame(userGame.game_id);
+            window.location.reload();
+        });
+    } else {
+        const button = document.getElementById('create_game_button');
+        button.addEventListener('click', () => {
+            window.location.hash = "create_game";
+        });
+    }
+    loadLanguage();
+}
+
+
+export function selectMode() {
+	const buttonLocalGame = document.getElementById('localGameButton');
+	const buttonOnlineGame = document.getElementById('onlineGameButton');
+	showNav();
+	
+	//gameList() lleva la logica de crear partidas, listar las partidas disponibles y eliminarlas
+	gameList();
+
+
+	if (buttonLocalGame) {
+		buttonLocalGame.addEventListener('click', () => {
+			setGameType('local');
+			window.location.hash = "game";
+		});
+	}
+	if (buttonOnlineGame) {
+		buttonLocalGame.addEventListener('click', () => {
+			setGameType('online');
+		});	}
+}
+
+// ----------------------------------------
 
 export let startGame = createGameController();
 
 
+function startTimer(duration) {
+	let display = document.getElementById("timer-display");
+    let timer = duration, minutes, seconds;
+    const intervalId = setInterval(function () {
+        minutes = Math.floor(timer / 60);
+        seconds = timer % 60;
+
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        seconds = seconds < 10 ? '0' + seconds : seconds;
+
+        display.textContent = minutes + ":" + seconds;
+
+        if (--timer < 0) {
+            clearInterval(intervalId); // Stop the timer when it reaches 0
+        }
+    }, 1000);
+}
+
 export function renderGame(){
 	const buttonStart = document.getElementById('pause');
-	const buttonLocalGame = document.getElementById('localGameButton');
-	const buttonOnlineGame = document.getElementById('onlineGameButton');
-
+	hideNav();
+	
+	setGame('gameWindow', 'playerName', 'enamyName', 'playerScore', 'enamyScore')
 	if (buttonStart) {
 		buttonStart.addEventListener('click', function () {
 
@@ -20,26 +141,15 @@ export function renderGame(){
 				alert('Please select a game type first.');
 				return;
 			} else {
-
-					console.log('gameType:', getGameType());
-					startGame();
+				console.log('gameType:', getGameType());
+				startGame();
+				startTimer(150);
 			}
 		});
 	}else {
-		
 		console.log('buttonStart not found');
 	}
 
-
-	if (buttonLocalGame) {
-
-		buttonLocalGame.addEventListener('click', () => setGame('local', 'gameWindow', 'playerName', 'enamyName', 'playerScore', 'enamyScore'));
-	}
-
-	if (buttonOnlineGame) {
-
-		buttonOnlineGame.addEventListener('click', () => setGame('online', 'gameWindow', 'playerName', 'enamyName', 'playerScore', 'enamyScore'));
-	}
 }
 
 function infoHandler(newInfo, HTMLplayerNameID, HTMLenamyNameID) {
@@ -64,28 +174,28 @@ function infoHandler(newInfo, HTMLplayerNameID, HTMLenamyNameID) {
 	}
 }
 
-export function setGame(gameType, HTMLcanvasID, HTMLplayerNameID, HTMLenamyNameID, HTMLplayerScoreID, HTMLenamyScoreID) {
+export function setGame(HTMLcanvasID, HTMLplayerNameID, HTMLenamyNameID, HTMLplayerScoreID, HTMLenamyScoreID) {
 
 	setDomEnamyScore(HTMLenamyScoreID);
 	setDomPlayerScore(HTMLplayerScoreID);
 	setDomCanvas(HTMLcanvasID);
-
-	if (gameType === 'local') {
+	console.log(getGameType);
+	if (getGameType() === 'local') {
 
 		const elementPlayerName = document.getElementById(HTMLplayerNameID);
 		const elementEnamyName = document.getElementById(HTMLenamyNameID);
 		elementEnamyName.innerHTML = 'Player 2';
 		elementPlayerName.innerHTML = 'Player 1';
-		setGameType(gameType);
+		// setGameType(gameType);
 		console.log('Game type set to local');
-	} else if (gameType === 'online') {
+	} else if (getGameType() === 'online') {
 
-		setGameType(gameType);
+		// setGameType(gameType);
 		console.log('Game type set to online');
 		createWebSocket(infoHandler, HTMLplayerNameID, HTMLenamyNameID);
 	} else {
-
 		console.error('Invalid game type.');
+		window.location.href = "#vs_settings";
 	}
 }
 

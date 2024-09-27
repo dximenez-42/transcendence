@@ -1,8 +1,8 @@
 import { renderChat } from './components/chat.js';
-import { renderGame } from './game/main.js';
+import { renderGame, selectMode } from './game/main.js';
 import { renderHome } from './components/home.js';
 import { renderLogin, renderLogout } from './components/login.js';
-import { renderGameSettings, gamesList, renderCreateGame, setMatchPoints } from './components/gameSettings.js';
+import { renderGameSettings, setMatchPoints } from './components/gameSettings.js';
 import { renderProfile } from './components/profile.js';
 
 // Load and render content based on URL
@@ -59,7 +59,7 @@ function router() {
         '#login': { url: 'login.html', render: renderLogin },
         '#game': { url: 'game.html', render: renderGame },
         '#profile': { url: 'profile.html', render: renderProfile },
-        '#vs_settings': { url: '1vs1_settings.html', render:gamesList },
+        '#vs_settings': { url: '1vs1_settings.html', render:selectMode },
         '#game_settings': { url: 'game_settings.html', render: renderGameSettings},
         '#create_game': { url: 'create_game.html', render: setMatchPoints},
         '#tournament_settings': { url: 'tournament_settings.html', render: () => console.log('Tournament page loaded') }

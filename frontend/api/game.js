@@ -50,3 +50,21 @@ export async function createGame() {
         return [];
     }
 }
+
+export async function leaveGame(gameId) {
+    try {
+        const response = await fetch(`${URL_API}/games/leave/${gameId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': sessionStorage.getItem('auth_token'),
+                'Content-Type': 'application/json',
+            },
+        });
+        if (!response.ok) {
+            throw new Error('Failed to leave game');
+        }
+        console.log('Game left successfully');
+    } catch (error) {
+        console.error('Error leaving game:', error.message);
+    }
+}

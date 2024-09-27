@@ -179,6 +179,7 @@ function adjustBallSpeed() {
 export function setGameType(type) {
 
     gameType = type;
+    console.log("gameType selected: " + type);
 }
 
 export function getGameType() {
