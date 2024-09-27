@@ -42,7 +42,7 @@ export function setMatchPoints() {
     submit.addEventListener('click', async () => {
         const response = await createGame()
         if (response)
-            window.location.hash = "vs_settings";
+            window.location.hash = "online";
     })
 };
 

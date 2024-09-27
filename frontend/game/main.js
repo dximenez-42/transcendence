@@ -89,10 +89,8 @@ export function selectMode() {
 	const buttonOnlineGame = document.getElementById('onlineGameButton');
 	showNav();
 	
-	//gameList() lleva la logica de crear partidas, listar las partidas disponibles y eliminarlas
-	gameList();
-
-
+    console.log(buttonLocalGame);
+    console.log(buttonOnlineGame);
 	if (buttonLocalGame) {
 		buttonLocalGame.addEventListener('click', () => {
 			setGameType('local');
@@ -100,9 +98,11 @@ export function selectMode() {
 		});
 	}
 	if (buttonOnlineGame) {
-		buttonLocalGame.addEventListener('click', () => {
+		buttonOnlineGame.addEventListener('click', () => {
 			setGameType('online');
-		});	}
+			window.location.hash = "online";
+		});	
+    }
 }
 
 // ----------------------------------------
