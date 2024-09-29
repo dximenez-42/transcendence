@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+    <div class="container col-8">
+        <h2>Room: {{ room.name }}</h2>
+        <h4 class="text-danger">user: {{ request.user }}</h4>
+        <hr>
+        
+        <div id="boxMessages"></div>
+
+        <div id="chat">
+            <input  type="text" id="inputMessage" class="form-control" aria-label="Message input" placeholder="Write a message...">
+            
+            <button class="btn btn-success mt-2" type="submit" id="btnMessage" >Send</button>
+            
+            <a class="btn btn-primary mt-2" href="{% url 'home' %}">Back</a>
+        </div>
+    </div>
+    
+    <script>
+        var user = ('{{ request.user }}')
+        var room_id = ('{{ room.id }}')
+    </script>
+    
+    <script src="{% static '/api/jquery-3.7.1.min.js' %} "></script>
+    <script src="{% static '/api/chat.js' %} "></script>
+    
+{% endblock %}

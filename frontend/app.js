@@ -55,7 +55,8 @@ function router() {
 
     const routes = {
         '#home': { url: 'home.html', render: renderHome },
-        '#chat': { url: 'chat.html', render: renderChat },
+	'#base': { url: 'base.html', render: null }, 
+        '#chat': { url: '/chat/home.html', render: renderChat },
         '#login': { url: 'login.html', render: renderLogin },
         '#game': { url: 'game.html', render: renderGame },
         '#profile': { url: 'profile.html', render: renderProfile },
