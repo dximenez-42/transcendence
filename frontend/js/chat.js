@@ -4,10 +4,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const messageInput = document.getElementById('messageInput');
     const sendButton = document.getElementById('sendButton');
 
-    const ws = new WebSocket('ws://' + window.location.host + '/ws/room/2/');
+    const ws = new WebSocket('ws://' + window.location.host + '/ws/room/1/');
 
     ws.onopen = function() {
-        console.log('WebSocket conectado');
+		console.log('Conectando a WebSocket en:', ws.url);
     };
 
     ws.onmessage = function(event) {
