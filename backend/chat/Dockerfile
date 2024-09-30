@@ -1,23 +1,23 @@
-# Imagen base de Python
-FROM python:3.10-slim
+# Base image
+FROM python:3.11-slim
 
-# Establecer variables de entorno
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
-# Establecer el directorio de trabajo dentro del contenedor
+# Set work directory
 WORKDIR /app
 
-# Copiar el archivo de dependencias e instalarlas
+# Install dependencies
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar el resto del código de la aplicación
+# Copy the application code
 COPY . /app/
 
-# Exponer el puerto 8000 para acceder a la aplicación
+# Expose the Daphne port
 EXPOSE 8000
 
-# Comando para ejecutar el servidor de desarrollo de Django
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Set the entrypoint for Daphne
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "mywebsite.asgi:application"]
 

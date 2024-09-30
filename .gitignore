@@ -1,11 +1,41 @@
-.env
-venv/
-
+*.pyc
 __pycache__/
-*.py[cod]
-
 db.sqlite3
+.DS_Store
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+*.orig
 
-qodana.yaml
+# Django static and media files
+/static/
+/media/
 
+# If you are using PyCharm or other JetBrains products
 .idea/
+*.iml
+
+# If using Visual Studio Code
+.vscode/
+
+# macOS specific
+.DS_Store
+
+# Node modules if you're using Node.js in the project
+node_modules/
+
+# Jupyter notebook files if used
+.ipynb_checkpoints
+
+# Local environment variables
+.env
+
+# Database backup files
+*.bak
+
+backend/chat/staticfiles/

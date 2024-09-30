@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   nginx:
     container_name: nginx
@@ -8,6 +6,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./frontend:/usr/share/nginx/html
+      - ./backend/chat/staticfiles:/app/staticfiles
     ports:
       - "8080:80"
     networks:
@@ -83,16 +82,28 @@ services:
     container_name: chat-backend
     build:
       context: ./backend/chat
-    command: python manage.py runserver 0.0.0.0:8000 
+      dockerfile: Dockerfile
     volumes:
       - ./backend/chat:/app
     networks:
       - backend
       - database
+      - redis
     depends_on:
       - db
+      - redis
     env_file:
       - .env
+
+  redis:
+    container_name: redis
+    image: redis:alpine
+    networks:
+      - redis
+    ports:
+      - "6379:6379"
+    restart: always
+
 
   db:
     container_name: db
@@ -132,6 +143,9 @@ networks:
     driver: bridge
   database:
     name: db
+    driver: bridge
+  redis:
+    name: redis
     driver: bridge
 
 volumes:
