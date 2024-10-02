@@ -1,4 +1,5 @@
-const URL_API='http://localhost:8080/api'
+
+const URL_API='http://localhost:8080/api';
 
 export async function getGames() {
     const url = `${URL_API}/games/list`;

@@ -17,6 +17,7 @@ stop:
 clean:
 	$(DOCKER) down --volumes
 
+# TODO TIRA ERROR 
 fclean:
 	docker stop $$(docker ps -qa)
 	docker rm $$(docker ps -qa)

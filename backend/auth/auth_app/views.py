@@ -29,6 +29,9 @@ def auth(request):
 
     try:
         responseOauth = requests.post('https://api.intra.42.fr/oauth/token', data=payloadOauth)
+        print("HOOOOLAAAA")
+        print(responseOauth)
+
         responseOauth.raise_for_status()  # Raises HTTPError for bad responses (4xx or 5xx)
 
         payloadData = {
@@ -36,7 +39,9 @@ def auth(request):
         }
 
         try:
+            
             responseData = requests.get('https://api.intra.42.fr/v2/me', data=payloadData)
+            
             responseData.raise_for_status()  # Raises HTTPError for bad responses (4xx or 5xx)
 
             try:
