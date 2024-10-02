@@ -83,19 +83,18 @@ services:
     container_name: chat-backend
     build:
       context: ./backend/chat
-    command: gunicorn chat.wsgi:application --bind 0.0.0.0:8000
+      dockerfile: Dockerfile
     volumes:
       - ./backend/chat:/app
     networks:
       - backend
       - database
+      - redis
     depends_on:
       - db
       - redis
     env_file:
       - .env
-    ports:
-      - "8000:8000"
 
   db:
     container_name: db
@@ -142,6 +141,8 @@ networks:
     driver: bridge
   database:
     driver: bridge
+  redis:
+    name: redis
 
 volumes:
   pgdata:
