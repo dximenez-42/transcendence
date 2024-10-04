@@ -1,0 +1,9 @@
+Django>=4.0,<5.0
+djangorestframework
+requests
+# gunicorn
+daphne
+psycopg2-binary  # For PostgreSQL
+channels         # For Django Channels
+redis            # For Django Channels
+channels-redis   # For Django Channels
