@@ -1,11 +1,11 @@
 
-import * as THREE from './node_modules/three/build/three.module.js';
+import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
 import { keyStates, setupKeyControls} from './controls.js';
 import { padMoveStepLength, tableHeight, tableLength, padLength, FPS, RGB_BALL, RGB_PAD_ENAMY, RGB_PAD_PLAYER, RGB_TABLE, padWidth, BALL_RADIUS, getBallSpeed, setBallSpeed} from './constants.js';
 import { padEdgeCorrect} from './edgeJudge.js';
 import { getPositionPadJSON, getPositionBallJSON } from './infoHandler.js';
-import { sendInfoWS, closeWebSocket } from './socket.js';
-import { OrbitControls } from './node_modules/three/build/OrbitControls.js';
+import { sendInfoWS, closeWebSocket, sendData } from './socket.js';
+//import { OrbitControls } from './OrbitControls.js';
 
 
 
@@ -44,9 +44,22 @@ let fov;
 let aspect;
 let camera;
 let renderer;
-let controls;
+//let controls;
+let gameOver = false;
+let axesOn = false;
 
+export function openAxes() {
 
+    if (axesOn) {
+
+        scene.remove(axesHelper);
+        axesOn = false;
+    } else {
+
+        scene.add(axesHelper);
+        axesOn = true;
+    }
+}
 
 // 改进碰撞检测逻辑
 // improved collision detection logic
@@ -55,21 +68,21 @@ export function keyMovePad() {
     if (gameType === 'online') {
 
         if (keyStates['w'])
-            meshPadPlayer.position.set(-tableLength / 2 + padWidth / 2, 10, padEdgeCorrect(padYPositionPlayer -= padMoveStepLength, padLength, tableHeight));
+            resetPositionPadPlayer (padEdgeCorrect(padYPositionPlayer -= padMoveStepLength, padLength, tableHeight));
         if (keyStates['s'])
-            meshPadPlayer.position.set(-tableLength / 2 + padWidth / 2, 10, padEdgeCorrect(padYPositionPlayer += padMoveStepLength, padLength, tableHeight));
+            resetPositionPadPlayer (padEdgeCorrect(padYPositionPlayer += padMoveStepLength, padLength, tableHeight));
         sendInfoWS(getPositionPadJSON(meshPadPlayer, Id));
 
     } else if (gameType === 'local') {
 
         if (keyStates['w'])
-            meshPadPlayer.position.set(-tableLength / 2 + padWidth / 2, 10, padEdgeCorrect(padYPositionPlayer -= padMoveStepLength, padLength, tableHeight));
+            resetPositionPadPlayer (padEdgeCorrect(padYPositionPlayer -= padMoveStepLength, padLength, tableHeight));
         if (keyStates['s'])
-            meshPadPlayer.position.set(-tableLength / 2 + padWidth / 2, 10, padEdgeCorrect(padYPositionPlayer += padMoveStepLength, padLength, tableHeight));
+            resetPositionPadPlayer(padEdgeCorrect(padYPositionPlayer += padMoveStepLength, padLength, tableHeight));
         if (keyStates['p'] && gameType === 'local')
-            meshPadEnamy.position.set(tableLength / 2 - padWidth / 2, 10, padEdgeCorrect(padYPositionEnamy -= padMoveStepLength, padLength, tableHeight));
+            resetPositionPadEnamy (padEdgeCorrect(padYPositionEnamy -= padMoveStepLength, padLength, tableHeight));
         if (keyStates['l'] && gameType === 'local')
-            meshPadEnamy.position.set(tableLength / 2 - padWidth / 2, 10, padEdgeCorrect(padYPositionEnamy += padMoveStepLength, padLength, tableHeight));
+            resetPositionPadEnamy (padEdgeCorrect(padYPositionEnamy += padMoveStepLength, padLength, tableHeight));
     }
     
     let newPositionX = ballDirectionX + ballSpeedX;
@@ -93,17 +106,8 @@ export function keyMovePad() {
             ballSpeedY = getBallSpeed() * Math.sin(angle);
         } else {
 
-            resetBall(meshBall);
+            resetBall();
             domEnamyScore.innerHTML = ++enamyScore;
-            if (enamyScore === 5) {
-
-                if (gameType === 'online') {
-
-                    closeWebSocket();
-                }
-                alert('Game Over! Enamy wins!');
-            }
-            return;
         }
     }
 
@@ -120,18 +124,18 @@ export function keyMovePad() {
             ballSpeedY = getBallSpeed() * Math.sin(angle);
         } else {
 
-            resetBall(meshBall);
+            resetBall();
             domPlayerScore.innerHTML = ++playerScore;
-            if (playerScore === 5) {
-
-                if (gameType === 'online') {
-                        
-                        closeWebSocket();
-                }
-                alert('Game Over! Player wins!');
-            }
-            return;
         }
+    }
+
+    if (ifGameOver(playerScore, enamyScore, sendData ("gameOver", {
+
+        'userId': Id
+    }))) {
+
+        setTimeout(() => window.location.reload(), 0);
+        return;
     }
 
     // 检测球是否碰到桌子的上或下边界
@@ -145,18 +149,28 @@ export function keyMovePad() {
     ballDirectionX += ballSpeedX;
     ballDirectionY += ballSpeedY;
 
-    resetPositionBall(meshBall, ballDirectionX, ballDirectionY);
-    controls.update();
+    resetPositionBall(ballDirectionX, ballDirectionY);
+    //controls.update();
     renderer.render(scene, camera);
 }
 
 
-function resetPositionBall(objBall, newPositionX, newPositionY) {
+export function resetPositionBall(newPositionX, newPositionY) {
 
-    objBall.position.set(newPositionX, 10, newPositionY);
+    meshBall.position.set(newPositionX, 10, newPositionY);
 }
 
-function resetBall(objBall) {
+export function resetPositionPadPlayer(newPositionY) {
+    
+    meshPadPlayer.position.set(-tableLength / 2 + padWidth / 2, 10, newPositionY);
+}
+
+export function resetPositionPadEnamy(newPositionY) {
+    
+    meshPadEnamy.position.set(tableLength / 2 - padWidth / 2, 10, newPositionY);
+}
+
+export function resetBall() {
 
     ballDirectionX = 0;
     ballDirectionY = 0;
@@ -164,7 +178,7 @@ function resetBall(objBall) {
     adjustBallSpeed();
     // 更新球的位置
     // update the position of the ball
-    resetPositionBall(objBall, ballDirectionX, ballDirectionY);
+    resetPositionBall(ballDirectionX, ballDirectionY);
 }
 
 function adjustBallSpeed() {
@@ -280,7 +294,7 @@ export function setDomCanvas(id) {
     // 创建一个坐标轴
     // create an axes helper
     axesHelper = new THREE.AxesHelper(300);
-    scene.add(axesHelper);
+    //scene.add(axesHelper);
 
     // 创建一个光源
     // create a light
@@ -327,16 +341,16 @@ export function setDomCanvas(id) {
 
     /////////////////////////////////////////////////////
     //create controls
-    controls = new OrbitControls(camera, renderer.domElement);
+    // controls = new OrbitControls(camera, renderer.domElement);
 
-    //设置控制器的属性
-    controls.enableDamping = true; // 启用惯性
-    controls.dampingFactor = 0.05; // 惯性系数
-    controls.enableZoom = true;    // 启用缩放
-    controls.enablePan = false;    // 禁用平移
-    controls.minDistance = 50;     // 最小缩放距离
-    controls.maxDistance = 500;    // 最大缩放距离
-    controls.maxPolarAngle = Math.PI / 2; // 垂直旋转的最大角度（限制为 90 度）
+    // //设置控制器的属性
+    // controls.enableDamping = true; // 启用惯性
+    // controls.dampingFactor = 0.05; // 惯性系数
+    // controls.enableZoom = true;    // 启用缩放
+    // controls.enablePan = false;    // 禁用平移
+    // controls.minDistance = 50;     // 最小缩放距离
+    // controls.maxDistance = 500;    // 最大缩放距离
+    // controls.maxPolarAngle = Math.PI / 2; // 垂直旋转的最大角度（限制为 90 度）
     /////////////////////////////////////////////////////
 
 
@@ -348,4 +362,35 @@ export function setDomCanvas(id) {
     //window.onload = setupKeyControls;
 
     //setInterval(keyMovePad, 1000 / FPS);
+}
+
+function ifGameOver(scorePlayer, scoreEnamy, callback) {
+
+    if (gameOver) {
+        return false;
+    }
+
+    if (scorePlayer === 5) {
+
+        gameOver = true;
+        window.location.hash = '#vs_settings';
+        alert('Game Over! Player wins!');
+        if (typeof callback === 'function' && callback()) {
+            callback();
+        }
+        return true;
+    } else if (scoreEnamy === 5) {
+
+        gameOver = true;
+        window.location.hash = '#vs_settings';
+        alert('Game Over! Enamy wins!');
+        if (typeof callback === 'function' && callback()) {
+            callback();
+        }
+        return true;
+    } else
+        return false;
+
+    
+    
 }
