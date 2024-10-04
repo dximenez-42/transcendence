@@ -114,13 +114,13 @@ function startTimer(intervalIdTimerRef) {
     let minutes, seconds;
 
     if (intervalIdTimerRef.current) {
-        clearInterval(intervalIdTimerRef.current); // 清除之前的计时器
+        clearInterval(intervalIdTimerRef.current);
     }
 
     intervalIdTimerRef.current = setInterval(function () {
         if (--timer <= 0) {
             timer = GAME_TIME;
-            clearInterval(intervalIdTimerRef.current); // 当计时器到0时停止
+            clearInterval(intervalIdTimerRef.current);
             return;
         }
 
@@ -134,7 +134,7 @@ function startTimer(intervalIdTimerRef) {
 
 function pauseTimer(intervalIdTimerRef) {
     if (intervalIdTimerRef.current) {
-        clearInterval(intervalIdTimerRef.current); // 停止计时器
+        clearInterval(intervalIdTimerRef.current);
     }
 }
 

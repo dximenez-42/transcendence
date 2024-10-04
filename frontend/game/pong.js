@@ -44,7 +44,7 @@ let fov;
 let aspect;
 let camera;
 let renderer;
-//let controls;
+//let controls; // OrbitControls no funciona en este caso, por lo tanto lo emimino
 let gameOver = false;
 let axesOn = false;
 
@@ -61,7 +61,6 @@ export function openAxes() {
     }
 }
 
-// 改进碰撞检测逻辑
 // improved collision detection logic
 export function keyMovePad() {
 
@@ -88,12 +87,10 @@ export function keyMovePad() {
     let newPositionX = ballDirectionX + ballSpeedX;
     let newPositionY = ballDirectionY + ballSpeedY;
 
-    // 改进的碰撞检测逻辑，增加缓冲区
     // improved collision detection logic, add buffer
     const collisionBuffer = BALL_RADIUS ; // for x-axis
     const radiusBuffer = BALL_RADIUS ; // for y-axis
 
-    // 检测球是否碰到玩家的挡板
     // check if the ball hits the player's pad
     if (newPositionX < -tableLength / 2 + padWidth + collisionBuffer) {
         if (newPositionY < padYPositionPlayer + padLength / 2 + radiusBuffer && newPositionY > padYPositionPlayer - padLength / 2 - radiusBuffer) {
@@ -111,7 +108,6 @@ export function keyMovePad() {
         }
     }
 
-    // 检测球是否碰到敌方的挡板
     // check if the ball hits the enamy's pad
     if (newPositionX > tableLength / 2 - padWidth - collisionBuffer) {
         if (newPositionY < padYPositionEnamy + padLength / 2 + radiusBuffer && newPositionY > padYPositionEnamy - padLength / 2 - radiusBuffer) {
@@ -138,13 +134,11 @@ export function keyMovePad() {
         return;
     }
 
-    // 检测球是否碰到桌子的上或下边界
     // check if the ball hits the top or bottom edge of the table
     if (newPositionY > tableHeight / 2 - collisionBuffer || newPositionY < -tableHeight / 2 + collisionBuffer) {
         ballSpeedY = -ballSpeedY;
     }
 
-    // 更新球的位置
     // update the position of the ball
     ballDirectionX += ballSpeedX;
     ballDirectionY += ballSpeedY;
@@ -176,7 +170,7 @@ export function resetBall() {
     ballDirectionY = 0;
 
     adjustBallSpeed();
-    // 更新球的位置
+
     // update the position of the ball
     resetPositionBall(ballDirectionX, ballDirectionY);
 }
@@ -226,22 +220,17 @@ export function setDomEnamyScore(id) {
 export function setDomCanvas(id) {
 
     canvas = document.getElementById(id);
-
-    // 获取 canvas 元素
     // get the canvas element
 
-    // 创建场景
     // create a scene
     scene = new THREE.Scene();
 
-    // 创建一个长方形几何体
     // create a box geometry
     geometry = new THREE.BoxGeometry(tableLength, 10, tableHeight);
     padPlayer = new THREE.BoxGeometry(padWidth, 10, padLength);
     padEnamy = new THREE.BoxGeometry(padWidth, 10, padLength);
     ball = new THREE.SphereGeometry(BALL_RADIUS, 32, 32);
 
-    // 创建一个材质
     // create a material
     // const material = new THREE.MeshBasicMaterial({ 
 
@@ -271,11 +260,9 @@ export function setDomCanvas(id) {
     })
 
 
-    // 创建一个网格
     // create a mesh
     mesh = new THREE.Mesh(geometry, materialTable);
     mesh.position.set(0, 0, 0);
-    // 将网格添加到场景
     // add the mesh to the scene
     scene.add(mesh);
 
@@ -291,17 +278,13 @@ export function setDomCanvas(id) {
     meshBall.position.set(ballDirectionX, 10, ballDirectionY);
     scene.add(meshBall);
 
-    // 创建一个坐标轴
     // create an axes helper
     axesHelper = new THREE.AxesHelper(300);
     //scene.add(axesHelper);
 
-    // 创建一个光源
     // create a light
-
     //const light = new THREE.DirectionalLight(0xffffff, 1.0);
     light = new THREE.PointLight(0xffffff, 1.0);
-    // 设置光线不随距离的衰减
     // set the light decay with distance
     light.decay = 0.0;
     light.intensity = 2.0;
@@ -316,24 +299,15 @@ export function setDomCanvas(id) {
     fov = 65;
     aspect = width / height;
 
-    // 创建相机
     // create a camera
     camera = new THREE.PerspectiveCamera(fov, aspect, 0.1, 3000);
-    // 设置相机位置
     // set the camera position
     camera.position.set(0, 80, 140);
     //camera.position.set(-210, 90, 0); // player view
-    // 设置相机朝向
     // set the camera look at
     camera.lookAt(0, 0, 0);
 
 
-
-
-
-
-
-    // 创建渲染器
     // create a renderer
     renderer = new THREE.WebGLRenderer({ canvas });
     renderer.setSize(width, height);
@@ -354,7 +328,6 @@ export function setDomCanvas(id) {
     /////////////////////////////////////////////////////
 
 
-    // 进行渲染
     // render the scene
     renderer.render(scene, camera);
 

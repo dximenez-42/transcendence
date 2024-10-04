@@ -8,19 +8,17 @@ export function createWebSocket(onMessageCallback) {
 
         socket = new WebSocket('ws://' + window.location.host + './ws/games/');
 
-        // 连接成功时的回调函数
         // when the connection is established
         socket.onopen = function(event) {
 
             console.log("Client WebSocket connection established.");
-            // 发送初始化信息
+
             // send the initialization message
             socket.send(JSON.stringify({
                 action: 'requestBattleInfo',
             }));
         };
 
-        // 当接收到服务器发送的消息时的回调函数
         // when the client receives a message from the server
         socket.onmessage = function(event) {
             try {
@@ -35,19 +33,17 @@ export function createWebSocket(onMessageCallback) {
             }
         };
 
-        // 连接关闭时的回调函数
         // when the connection is closed
         socket.onclose = function(event) {
             console.log('Client WebSocket connection closed:', event);
             socket = null;
-            // 设置一个重试机制
+
             // set a retry mechanism
             setTimeout(() => {
                 createWebSocket(onMessageCallback);
-            }, 3000); // 尝试每3秒重新连接一次
+            }, 3000); // try to reconnect every 3 seconds
         };
 
-        // 处理 WebSocket 错误
         // handle WebSocket errors
         socket.onerror = function(error) {
             console.error("Client WebSocket error:", error);
