@@ -48,10 +48,10 @@ function router() {
     const userId = sessionStorage.getItem('auth_token');
     const hash = window.location.hash;
 
-    // if (!userId && hash !== '#login') {
-    //     window.location.hash = '#login';
-    //     return;
-    // }
+    if (!userId && hash !== '#login') {
+        window.location.hash = '#login';
+        return;
+    }
 
     const routes = {
         '#home': { url: 'home.html', render: renderHome },
