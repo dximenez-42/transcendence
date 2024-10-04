@@ -1,6 +1,6 @@
 import { keyMovePad, setGameType, getGameType, meshPadEnamy, setPlayerId, meshBall, uploadPositionBall, setDomPlayerScore, setDomEnamyScore, setDomCanvas} from './pong.js';
 import { FPS, GAME_TIME } from './constants.js';
-import { createWebSocket } from './socket.js';
+import { closeWebSocket, createWebSocket } from './socket.js';
 import { setPositionPad, setPositionBall } from './infoHandler.js';
 import { hideNav, showNav } from '../components/home.js';
 import { getGames, leaveGame } from '../api/game.js';
@@ -185,26 +185,53 @@ export function renderGame(){
 }
 
 function infoHandler(newInfo, HTMLplayerNameID, HTMLenamyNameID) {
-
-	if (newInfo.action === 'initInfo' && HTMLenamyNameID && HTMLplayerNameID) {
-
-		const elementPlayerName = document.getElementById(HTMLplayerNameID);
-		const elementEnamyName = document.getElementById(HTMLenamyNameID);
-		elementEnamyName.innerHTML = newInfo.enamyName;
-		elementPlayerName.innerHTML = newInfo.playerName;
-		setPlayerId(newInfo.userId);
-
-	} else if (newInfo.action === 'updatePad'){
-
-		setPositionPad(newInfo.newPosition, meshPadEnamy);
-	} else if (newInfo.action === 'updateBall'){
-
-		setPositionBall(newInfo.newPosition, meshBall);
-	} else {
-
-		console.error('Invalid info type from server.');
-	}
+    switch (newInfo.action) {
+        case 'initInfo':
+            if (HTMLenamyNameID && HTMLplayerNameID) {
+                const elementPlayerName = document.getElementById(HTMLplayerNameID);
+                const elementEnamyName = document.getElementById(HTMLenamyNameID);
+                elementEnamyName.innerHTML = newInfo.enamyName;
+                elementPlayerName.innerHTML = newInfo.playerName;
+                setPlayerId(newInfo.userId);
+            }
+            break;
+        case 'updatePad':
+            setPositionPad(newInfo.newPosition, meshPadEnamy);
+            break;
+        case 'updateBall':
+            setPositionBall(newInfo.newPosition, meshBall);
+            break;
+        case 'gameOver':
+            alert('Game Over');
+            closeWebSocket();
+            break;
+        default:
+            console.error('Invalid info type from server.');
+    }
 }
+
+
+// function infoHandler(newInfo, HTMLplayerNameID, HTMLenamyNameID) {
+
+// 	if (newInfo.action === 'initInfo' && HTMLenamyNameID && HTMLplayerNameID) {
+
+// 		const elementPlayerName = document.getElementById(HTMLplayerNameID);
+// 		const elementEnamyName = document.getElementById(HTMLenamyNameID);
+// 		elementEnamyName.innerHTML = newInfo.enamyName;
+// 		elementPlayerName.innerHTML = newInfo.playerName;
+// 		setPlayerId(newInfo.userId);
+
+// 	} else if (newInfo.action === 'updatePad'){
+
+// 		setPositionPad(newInfo.newPosition, meshPadEnamy);
+// 	} else if (newInfo.action === 'updateBall'){
+
+// 		setPositionBall(newInfo.newPosition, meshBall);
+// 	} else {
+
+// 		console.error('Invalid info type from server.');
+// 	}
+// }
 
 export function setGame(HTMLcanvasID, HTMLplayerNameID, HTMLenamyNameID, HTMLplayerScoreID, HTMLenamyScoreID) {
 

@@ -4,7 +4,7 @@ import { keyStates, setupKeyControls} from './controls.js';
 import { padMoveStepLength, tableHeight, tableLength, padLength, FPS, RGB_BALL, RGB_PAD_ENAMY, RGB_PAD_PLAYER, RGB_TABLE, padWidth, BALL_RADIUS, getBallSpeed, setBallSpeed} from './constants.js';
 import { padEdgeCorrect} from './edgeJudge.js';
 import { getPositionPadJSON, getPositionBallJSON } from './infoHandler.js';
-import { sendInfoWS, closeWebSocket } from './socket.js';
+import { sendInfoWS, sendData, closeWebSocket } from './socket.js';
 import { OrbitControls } from './node_modules/three/build/OrbitControls.js';
 
 
@@ -131,7 +131,10 @@ export function keyMovePad() {
         }
     }
 
-    if (ifGameOver(playerScore, enamyScore)) {
+    if (ifGameOver(playerScore, enamyScore, sendData ("gameOver", {
+
+        'userId': Id
+    }))) {
 
         setTimeout(() => window.location.reload(), 0);
         return;
