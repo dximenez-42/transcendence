@@ -1,8 +1,8 @@
 
-const URL_API='http://localhost:8080/api';
+const URL_API='/api';
 
 export async function getGames() {
-    const url = `${URL_API}/games/list`;
+    const url = `/games/list`;
     const token = sessionStorage.getItem('auth_token');
     try {
         const response = await fetch(url, {
@@ -54,7 +54,7 @@ export async function createGame() {
 
 export async function leaveGame(gameId) {
     try {
-        const response = await fetch(`${URL_API}/games/leave/${gameId}`, {
+        const response = await fetch(`/games/leave/${gameId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': sessionStorage.getItem('auth_token'),

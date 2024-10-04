@@ -1,6 +1,6 @@
 import { createGame, getGames } from '../api/game.js'
 import { loadLanguage } from '../api/languages.js';
-const URL_API='http://localhost:8080/api'
+const URL_API='/api'
 
 
 function gameSettings() {

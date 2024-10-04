@@ -13,7 +13,7 @@ export function getUsers() {
 
 
 export async function getUser() {
-    const url = `${URL_API}/users/me`;
+    const url = `api/users/me`;
     const token = sessionStorage.getItem('auth_token');
     try {
         const response = await fetch(url, {
