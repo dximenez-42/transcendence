@@ -1,18 +1,18 @@
-function initScripts() {
+import { loadLanguage } from "../api/languages.js";
+
+
+async function initScripts() {
     const leftBar = document.getElementById('leftBar');
     const rightBar = document.getElementById('rightBar');
     const playButton = document.getElementById('playButton');
+    const greeting_username = document.getElementById('greeting_username');
 
-    console.log(playButton);
-    console.log("playButton");
 
-    // Agregar la clase de animación al hacer hover en playButton
     playButton.addEventListener('mouseover', () => {
         leftBar.classList.add('animate-left-bar');
         rightBar.classList.add('animate-right-bar');
     });
 
-    // Eliminar la clase de animación cuando el hover termina
     playButton.addEventListener('mouseout', () => {
         leftBar.classList.remove('animate-left-bar');
         rightBar.classList.remove('animate-right-bar');
@@ -21,6 +21,10 @@ function initScripts() {
     playButton.addEventListener('click', () => {
         window.location.hash = '#game_settings'
     });
+    
+    const username = sessionStorage.getItem('username');;
+
+    greeting_username.innerHTML = `Welcome ${username}`;
 }
 
 function setMatchPoints() {
@@ -41,8 +45,22 @@ function setMatchPoints() {
     });
 };
 
+export function hideNav()
+{
+    const nav = document.getElementById("navigator");
+
+    nav.classList.add("d-none");
+}
+
+export function showNav()
+{
+    const nav = document.getElementById("navigator");
+
+    nav.classList.remove("d-none");
+}
 
 export function renderHome() {
+    loadLanguage();
     initScripts();
 }
 

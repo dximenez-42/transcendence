@@ -1,4 +1,5 @@
 import { getChatMessages, getUsersChat } from "../api/chat.js";
+import { loadLanguage } from "../api/languages.js";
 
 
 
@@ -6,7 +7,7 @@ const users = getUsersChat();
 function chatUserList() {
     const userListElement = document.getElementById('chatUserList');
     console.log("Rendering chat");
-    userListElement.innerHTML = '<h2>Usuarios</h2>';
+    userListElement.innerHTML = '<h2 data-translate-key="users">Usuarios</h2>';
     const ul = document.createElement('ul');
     users.forEach(user => {
         const li = document.createElement('li');
@@ -51,6 +52,7 @@ function sendMessage() {
 //Hacer funcion en que base al id del usuario pille el chat
 
 export function renderChat(userId) {
+    loadLanguage();
     if (!userId)
         userId = 1;
     chatUserList();
@@ -70,5 +72,44 @@ export function renderChat(userId) {
         });
     }
 
-    sendButton.addEventListener("click", sendMessage);
+    //sendButton.addEventListener("click", sendMessage);
+
+
+    
+    /*parte conexion web sockets chat Pablo*/
+
+    let url = `ws://${window.location.host}/ws/socket-server/`
+    
+    const chatSocket = new WebSocket(url)
+    
+    console.log(chatSocket);
+
+    chatSocket.onmessage = function(e) {
+        let data = JSON.parse(e.data)
+        console.log('Data:', data)
+    
+        if (data.type === 'chat'){
+            let messages = document.getElementById('messages')
+    
+            messages.insertAdjacentHTML('beforeend', `<div>
+                <strong>${data.username}:</strong> <p>${data.message}</p>
+            </div>`)
+    
+        }
+    }
+    
+    let messageInput = document.getElementById('messageInput');
+    
+    sendButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        let message = messageInput.value;
+    
+        if (message.trim() !== '') {
+            chatSocket.send(JSON.stringify({
+                'message': message
+            }));
+    
+            messageInput.value = '';
+        }
+    });
 }

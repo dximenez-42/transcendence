@@ -1,0 +1,18 @@
+{
+    "greeting": "Bonjour",
+    "play": "jouer",
+    "chat": "messages",
+    "profile": "profil",
+    "login_message": "Connecte-toi avec 42",
+    "1vs1": "1 contre 1",
+    "tournament": "tournoi",
+    "points": "points",
+    "leave_game": "quitter la partie",
+    "new_game": "créer une partie",
+    "create": "créer",
+    "logout": "se déconnecter",
+    "users": "utilisateurs",
+    "online": "en ligne",
+    "send": "envoyer",
+    "write_message": "écrire un message"
+}

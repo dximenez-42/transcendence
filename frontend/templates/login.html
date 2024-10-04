@@ -2,7 +2,7 @@
     <div class="container-pala">
         <div id="leftBar" class="pala"></div>
     </div>
-    <div>
+    <div class="d-flex flex-column align-items-center">
         <h1 class="tc-text-primary tc-title text-light">P<span>O</span>NG</h1>
         <div onclick="" id="login-button" class="tc-btn mt-4"><h1 class="tc-text-primary">LOGIN WITH 42</h1></div>
         <p id="status"></p>
@@ -10,41 +10,4 @@
     <div class="container-pala">
         <div id="rightBar" class="pala"></div>
     </div>
-    <!-- <script>
-        //OAuth
-        // Configuración del flujo de autorización
-        const clientId = 'YourClientID';
-        const redirectUri = 'http://localhost:8000'; // Cambia esto a tu URI de redirección
-        const authEndpoint = 'https://api.intra.42.fr/oauth/authorize';
-        const responseType = 'token'; // El flujo implícito usa 'token'
-
-        // Maneja el botón de login
-        document.getElementById('login-button').addEventListener('click', () => {
-            // Redirige al usuario al endpoint de autorización
-            console.log("ERRRNRRRENTREAAAAAA");
-            window.location.href = `${authEndpoint}?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=${responseType}`;
-        });
-
-        // Lee el token de acceso del hash de la URL después del redireccionamiento
-        function getAccessTokenFromUrl() {
-            const hash = window.location.hash.substring(1); // Elimina el '#'
-            const params = new URLSearchParams(hash);
-            return params.get('access_token');
-        }
-
-        // Muestra el token de acceso en el estado
-        function displayAccessToken() {
-            const token = getAccessTokenFromUrl();
-            if (token) {
-                document.getElementById('status').textContent = `Access Token: ${token}`;
-            } else {
-                document.getElementById('status').textContent = 'No access token found.';
-            }
-        }
-
-        // Llama a la función para mostrar el token de acceso
-
-
-        displayAccessToken();
-    </script> -->
 </div>

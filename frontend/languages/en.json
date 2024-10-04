@@ -1,0 +1,18 @@
+{
+    "greeting": "Hello",
+    "play": "Play",
+    "chat": "Chat",
+    "profile": "Profile",
+    "login_message": "Log in with 42",
+    "1vs1": "1 vs 1",
+    "tournament": "Tournament",
+    "points": "Points",
+    "leave_game": "Leave Game",
+    "new_game": "Create Game",
+    "create": "Create",
+    "logout": "Log out",
+    "users": "Users",
+    "online": "Online",
+    "send": "Send",
+    "write_message": "Write a message"
+}

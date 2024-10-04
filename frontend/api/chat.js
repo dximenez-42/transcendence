@@ -18,5 +18,8 @@ export function getChatMessages(chat_id) {
         { id: 3, name: 'Fede', status: 'online', messages: [{user_id: 2, content: 'Hola a todos!'}, {user_id: 3, content: '¿Alguien ha visto la última película?'}] },
     ];
     const chat = chats.find(c => c.id === chat_id)
+    
+    
     return chat.messages;
 }
+

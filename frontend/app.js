@@ -1,8 +1,9 @@
 import { renderChat } from './components/chat.js';
-import { renderGame } from './components/game.js';
+import { gameList, renderGame, selectMode } from './game/main.js';
 import { renderHome } from './components/home.js';
-import { renderUsers } from './components/users.js'
-import { renderLogin } from './components/login.js';
+import { renderLogin, renderLogout } from './components/login.js';
+import { renderGameSettings, setMatchPoints } from './components/gameSettings.js';
+import { renderProfile } from './components/profile.js';
 
 // Load and render content based on URL
 function loadContent(url, callback) {
@@ -44,24 +45,25 @@ function executeInlineScripts(container) {
 
 
 function router() {
-    // Check if the user is logged in
-    const userId = sessionStorage.getItem('auth_code');
+    const userId = sessionStorage.getItem('auth_token');
     const hash = window.location.hash;
 
     if (!userId && hash !== '#login') {
-        // Redirect to login if user is not authenticated and not already on the login page
         window.location.hash = '#login';
-        return; // Exit the router function early
+        return;
     }
 
     const routes = {
         '#home': { url: 'home.html', render: renderHome },
         '#chat': { url: 'chat.html', render: renderChat },
         '#login': { url: 'login.html', render: renderLogin },
-        '#users': { url: 'users.html', render: renderUsers },
         '#game': { url: 'game.html', render: renderGame },
-        '#game_settings': { url: 'game_settings.html', render: ()  => {console.log('game settings')}},
-        '#tournament': { url: 'tournament.html', render: () => console.log('Tournament page loaded') }
+        '#profile': { url: 'profile.html', render: renderProfile },
+        '#online': { url: 'online_settings.html', render: gameList },
+        '#vs_settings': { url: '1vs1_settings.html', render:selectMode },
+        '#game_settings': { url: 'game_settings.html', render: renderGameSettings},
+        '#create_game': { url: 'create_game.html', render: setMatchPoints},
+        '#tournament_settings': { url: 'tournament_settings.html', render: () => console.log('Tournament page loaded') }
     };
 
     const route = routes[hash];
@@ -74,7 +76,6 @@ function router() {
 }
 
 
-// Initialize router on page load and hash change
 window.addEventListener('hashchange', router);
 window.addEventListener('load', router);
 

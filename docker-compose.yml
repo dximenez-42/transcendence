@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   nginx:
@@ -136,8 +135,10 @@ services:
 
 networks:
   backend:
+    name: backend
     driver: bridge
   database:
+    name: db
     driver: bridge
   redis:
     name: redis
