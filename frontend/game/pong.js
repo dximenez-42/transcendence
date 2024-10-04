@@ -45,6 +45,21 @@ let aspect;
 let camera;
 let renderer;
 let controls;
+let gameOver = false;
+let axesOn = false;
+
+export function openAxes() {
+
+    if (axesOn) {
+
+        scene.remove(axesHelper);
+        axesOn = false;
+    } else {
+
+        scene.add(axesHelper);
+        axesOn = true;
+    }
+}
 
 
 
@@ -95,15 +110,6 @@ export function keyMovePad() {
 
             resetBall(meshBall);
             domEnamyScore.innerHTML = ++enamyScore;
-            if (enamyScore === 5) {
-
-                if (gameType === 'online') {
-
-                    closeWebSocket();
-                }
-                alert('Game Over! Enamy wins!');
-            }
-            return;
         }
     }
 
@@ -122,16 +128,13 @@ export function keyMovePad() {
 
             resetBall(meshBall);
             domPlayerScore.innerHTML = ++playerScore;
-            if (playerScore === 5) {
-
-                if (gameType === 'online') {
-                        
-                        closeWebSocket();
-                }
-                alert('Game Over! Player wins!');
-            }
-            return;
         }
+    }
+
+    if (ifGameOver(playerScore, enamyScore)) {
+
+        setTimeout(() => window.location.reload(), 0);
+        return;
     }
 
     // 检测球是否碰到桌子的上或下边界
@@ -280,7 +283,7 @@ export function setDomCanvas(id) {
     // 创建一个坐标轴
     // create an axes helper
     axesHelper = new THREE.AxesHelper(300);
-    scene.add(axesHelper);
+    //scene.add(axesHelper);
 
     // 创建一个光源
     // create a light
@@ -348,4 +351,35 @@ export function setDomCanvas(id) {
     //window.onload = setupKeyControls;
 
     //setInterval(keyMovePad, 1000 / FPS);
+}
+
+function ifGameOver(scorePlayer, scoreEnamy, callback) {
+
+        if (gameOver) {
+            return false;
+        }
+    
+        if (scorePlayer === 5) {
+    
+            gameOver = true;
+            window.location.hash = '#vs_settings';
+            alert('Game Over! Player wins!');
+            if (typeof callback === 'function' && callback()) {
+                callback();
+            }
+            return true;
+        } else if (scoreEnamy === 5) {
+    
+            gameOver = true;
+            window.location.hash = '#vs_settings';
+            alert('Game Over! Enamy wins!');
+            if (typeof callback === 'function' && callback()) {
+                callback();
+            }
+            return true;
+        } else
+            return false;
+
+        
+        
 }

@@ -1,12 +1,12 @@
 import { keyMovePad, setGameType, getGameType, meshPadEnamy, setPlayerId, meshBall, uploadPositionBall, setDomPlayerScore, setDomEnamyScore, setDomCanvas} from './pong.js';
-import { FPS } from './constants.js';
+import { FPS, GAME_TIME } from './constants.js';
 import { createWebSocket } from './socket.js';
 import { setPositionPad, setPositionBall } from './infoHandler.js';
 import { hideNav, showNav } from '../components/home.js';
 import { getGames, leaveGame } from '../api/game.js';
 import { loadLanguage } from '../api/languages.js';
 
-
+let timer = GAME_TIME;
 // ------------- GAME SETTINGS ----------------
 
 
@@ -110,23 +110,55 @@ export function selectMode() {
 export let startGame = createGameController();
 
 
-function startTimer(duration) {
-	let display = document.getElementById("timer-display");
-    let timer = duration, minutes, seconds;
-    const intervalId = setInterval(function () {
+// function startTimer(duration) {
+// 	let display = document.getElementById("timer-display");
+//     let timer = duration, minutes, seconds;
+//     const intervalId = setInterval(function () {
+//         minutes = Math.floor(timer / 60);
+//         seconds = timer % 60;
+
+//         minutes = minutes < 10 ? '0' + minutes : minutes;
+//         seconds = seconds < 10 ? '0' + seconds : seconds;
+
+//         display.textContent = minutes + ":" + seconds;
+
+//         if (--timer < 0) {
+//             clearInterval(intervalId); // Stop the timer when it reaches 0
+//         }
+//     }, 1000);
+// }
+
+function startTimer(intervalIdTimerRef) {
+    let display = document.getElementById("timer-display");
+    let minutes, seconds;
+
+    if (intervalIdTimerRef.current) {
+        clearInterval(intervalIdTimerRef.current); // 清除之前的计时器
+    }
+
+    intervalIdTimerRef.current = setInterval(function () {
+        if (--timer <= 0) {
+            timer = GAME_TIME;
+            clearInterval(intervalIdTimerRef.current); // 当计时器到0时停止
+            return;
+        }
+
         minutes = Math.floor(timer / 60);
         seconds = timer % 60;
-
         minutes = minutes < 10 ? '0' + minutes : minutes;
         seconds = seconds < 10 ? '0' + seconds : seconds;
-
         display.textContent = minutes + ":" + seconds;
-
-        if (--timer < 0) {
-            clearInterval(intervalId); // Stop the timer when it reaches 0
-        }
     }, 1000);
 }
+
+function pauseTimer(intervalIdTimerRef) {
+    if (intervalIdTimerRef.current) {
+        clearInterval(intervalIdTimerRef.current); // 停止计时器
+    }
+}
+
+
+
 
 export function renderGame(){
 	const buttonStart = document.getElementById('pause');
@@ -143,7 +175,7 @@ export function renderGame(){
 			} else {
 				console.log('gameType:', getGameType());
 				startGame();
-				startTimer(150);
+				//startTimer(150);
 			}
 		});
 	}else {
@@ -205,6 +237,7 @@ function createGameController() {
     let intervalId = null;
     let intervalIdBall = null;
     let ballState = false;
+    let intervalIdTimerRef = { current: null };
 
     return function startGame() {
 
@@ -222,10 +255,12 @@ function createGameController() {
                 clearInterval(intervalIdBall);
             gameState = false;
             ballState = false;
+            pauseTimer(intervalIdTimerRef);
             console.log('Game paused');
         } else {
 
             intervalId = setInterval(keyMovePad, 1000 / FPS);
+            startTimer(intervalIdTimerRef);
             if (getGameType() === 'online')
                 intervalIdBall = setInterval(uploadPositionBall, 1000 / 20);
             gameState = true;
