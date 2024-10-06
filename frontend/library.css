@@ -85,3 +85,17 @@
 .tc-capi  {
     text-transform: capitalize;
 }
+
+.tc-input{
+    background-color: transparent;
+    color: #fff
+}
+
+.tc-input:focus{
+    background-color: transparent;
+    color: #fff
+}
+
+.tc-input::placeholder{
+    color:#fff
+}

@@ -1,9 +1,12 @@
 <div id="chat">
-
-    <!-- Lista de Usuarios -->
-    <div class="user-list" id="chatUserList">
-            <input class="tc-input" id="messageInput" type="text" value="" data-translate-key="write_message" placeholder="Escribe un mensaje...">
+    <div class="d-flex flex-column user-container">
         <h2 data-translate-key="users"></h2>
+        <div class="tab-container">
+            <button class="tab-button" id="showUsersTab">Usuarios</button>
+            <button class="tab-button" id="showBlockedTab">Bloqueados</button>
+        </div>
+        <div class="user-list" id="chatUserList">
+        </div>
     </div>
 
     <div class="chat-area">
@@ -15,9 +18,10 @@
             <div class="message my-message">¡Estoy bien, gracias! ¿Y tú?</div>
         </div>
         <div class="chat-input">
-            <input class="tc-input" id="messageInput" type="text" value="" data-translate-key="write_message" placeholder="Escribe un mensaje...">
+            <input class="tc-input" id="messageInput" type="text" value
+                data-translate-key="write_message"
+                placeholder="Escribe un mensaje...">
             <button id="sendButton" data-translate-key="send">Enviar</button>
         </div>
     </div>
-
 </div>

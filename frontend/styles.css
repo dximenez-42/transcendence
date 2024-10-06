@@ -226,10 +226,14 @@ justify-content: end;
 }
 
 /* Estilos para la lista de usuarios */
+#chat .user-container {
+    border: 4px solid var(--white);
+    padding: 1.5rem 0rem;
+}
+    
 #chat .user-list {
     flex: 1;
     padding: 10px;
-    border: 4px solid var(--white);
 }
 
 #chat .user-list h2 {
@@ -462,6 +466,14 @@ justify-content: end;
 
 .greeting p {
     font-size: 2rem
+}
+
+
+.tab-button {
+    outline: none;
+    border: none;
+    padding: 1rem;
+    font-family: "Pixelify Sans", sans-serif;
 }
 
 /* Fuente pixelada (asegúrate de incluir la fuente en tu proyecto o usa una similar) */
