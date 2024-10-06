@@ -26,7 +26,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG')
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'nginx']
+ALLOWED_HOSTS = ['chat-backend', 'localhost', '127.0.0.1', '[::1]', 'nginx']
 
 CSRF_TRUSTED_ORIGINS = ['http://localhost:8080', 'http://127.0.0.1:8080']
 
