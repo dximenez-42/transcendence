@@ -14,9 +14,7 @@ export function createWebSocket(onMessageCallback) {
             console.log("Client WebSocket connection established.");
 
             // send the initialization message
-            socket.send(JSON.stringify({
-                action: 'requestBattleInfo',
-            }));
+            onMessageCallback.sendInitConectionInfo();
         };
 
         // when the client receives a message from the server
@@ -25,9 +23,7 @@ export function createWebSocket(onMessageCallback) {
                 const data = JSON.parse(event.data);
                 console.log("Message from server:", data);
                 
-                if (onMessageCallback && typeof onMessageCallback === 'function') {
-                    onMessageCallback(data);
-                }
+                onMessageCallback.infoHandler (data);
             } catch (error) {
                 console.error("Failed to parse WebSocket message:", error);
             }

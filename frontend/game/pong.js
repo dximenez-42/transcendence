@@ -1,10 +1,11 @@
 
 import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
 import { keyStates, setupKeyControls} from './controls.js';
-import { padMoveStepLength, tableHeight, tableLength, padLength, FPS, RGB_BALL, RGB_PAD_ENAMY, RGB_PAD_PLAYER, RGB_TABLE, padWidth, BALL_RADIUS, getBallSpeed, setBallSpeed} from './constants.js';
+import { PAD_MOVE_STEP_LENGTH, TABLE_HEIGHT, TABLE_LENGTH, PAD_LENGTH, FPS, RGB_BALL, RGB_PAD_ENAMY, RGB_PAD_PLAYER, RGB_TABLE, PAD_WIDTH, BALL_RADIUS, getBallSpeed, setBallSpeed} from './constants.js';
 import { padEdgeCorrect} from './edgeJudge.js';
 import { getPositionPadJSON, getPositionBallJSON } from './infoHandler.js';
 import { sendInfoWS, closeWebSocket, sendData } from './socket.js';
+import { GameInfoHandler } from './infoHandler.js';
 //import { OrbitControls } from './OrbitControls.js';
 
 
@@ -67,21 +68,21 @@ export function keyMovePad() {
     if (gameType === 'online') {
 
         if (keyStates['w'])
-            resetPositionPadPlayer (padEdgeCorrect(padYPositionPlayer -= padMoveStepLength, padLength, tableHeight));
+            resetPositionPadPlayer (padEdgeCorrect(padYPositionPlayer -= PAD_MOVE_STEP_LENGTH, PAD_LENGTH, TABLE_HEIGHT));
         if (keyStates['s'])
-            resetPositionPadPlayer (padEdgeCorrect(padYPositionPlayer += padMoveStepLength, padLength, tableHeight));
-        sendInfoWS(getPositionPadJSON(meshPadPlayer, Id));
+            resetPositionPadPlayer (padEdgeCorrect(padYPositionPlayer += PAD_MOVE_STEP_LENGTH, PAD_LENGTH, TABLE_HEIGHT));
+        GameInfoHandler.sendPlayerPadPosition();
 
     } else if (gameType === 'local') {
 
         if (keyStates['w'])
-            resetPositionPadPlayer (padEdgeCorrect(padYPositionPlayer -= padMoveStepLength, padLength, tableHeight));
+            resetPositionPadPlayer (padEdgeCorrect(padYPositionPlayer -= PAD_MOVE_STEP_LENGTH, PAD_LENGTH, TABLE_HEIGHT));
         if (keyStates['s'])
-            resetPositionPadPlayer(padEdgeCorrect(padYPositionPlayer += padMoveStepLength, padLength, tableHeight));
+            resetPositionPadPlayer(padEdgeCorrect(padYPositionPlayer += PAD_MOVE_STEP_LENGTH, PAD_LENGTH, TABLE_HEIGHT));
         if (keyStates['p'] && gameType === 'local')
-            resetPositionPadEnamy (padEdgeCorrect(padYPositionEnamy -= padMoveStepLength, padLength, tableHeight));
+            resetPositionPadEnamy (padEdgeCorrect(padYPositionEnamy -= PAD_MOVE_STEP_LENGTH, PAD_LENGTH, TABLE_HEIGHT));
         if (keyStates['l'] && gameType === 'local')
-            resetPositionPadEnamy (padEdgeCorrect(padYPositionEnamy += padMoveStepLength, padLength, tableHeight));
+            resetPositionPadEnamy (padEdgeCorrect(padYPositionEnamy += PAD_MOVE_STEP_LENGTH, PAD_LENGTH, TABLE_HEIGHT));
     }
     
     let newPositionX = ballDirectionX + ballSpeedX;
@@ -92,11 +93,11 @@ export function keyMovePad() {
     const radiusBuffer = BALL_RADIUS ; // for y-axis
 
     // check if the ball hits the player's pad
-    if (newPositionX < -tableLength / 2 + padWidth + collisionBuffer) {
-        if (newPositionY < padYPositionPlayer + padLength / 2 + radiusBuffer && newPositionY > padYPositionPlayer - padLength / 2 - radiusBuffer) {
+    if (newPositionX < -TABLE_LENGTH / 2 + PAD_WIDTH + collisionBuffer) {
+        if (newPositionY < padYPositionPlayer + PAD_LENGTH / 2 + radiusBuffer && newPositionY > padYPositionPlayer - PAD_LENGTH / 2 - radiusBuffer) {
 
             let collidePoint = newPositionY - (padYPositionPlayer);
-            let normalizedCollidePoint = collidePoint / (padLength / 2);
+            let normalizedCollidePoint = collidePoint / (PAD_LENGTH / 2);
             let angle = normalizedCollidePoint * Math.PI / 4;
             adjustBallSpeed();
             ballSpeedX = getBallSpeed() * Math.cos(angle);
@@ -109,11 +110,11 @@ export function keyMovePad() {
     }
 
     // check if the ball hits the enamy's pad
-    if (newPositionX > tableLength / 2 - padWidth - collisionBuffer) {
-        if (newPositionY < padYPositionEnamy + padLength / 2 + radiusBuffer && newPositionY > padYPositionEnamy - padLength / 2 - radiusBuffer) {
+    if (newPositionX > TABLE_LENGTH / 2 - PAD_WIDTH - collisionBuffer) {
+        if (newPositionY < padYPositionEnamy + PAD_LENGTH / 2 + radiusBuffer && newPositionY > padYPositionEnamy - PAD_LENGTH / 2 - radiusBuffer) {
 
             let collidePoint = newPositionY - (padYPositionEnamy); 
-            let normalizedCollidePoint = collidePoint / (padLength / 2); 
+            let normalizedCollidePoint = collidePoint / (PAD_LENGTH / 2); 
             let angle = normalizedCollidePoint * Math.PI / 4;
             adjustBallSpeed();
             ballSpeedX = -getBallSpeed() * Math.cos(angle);
@@ -125,17 +126,14 @@ export function keyMovePad() {
         }
     }
 
-    if (ifGameOver(playerScore, enamyScore, sendData ("gameOver", {
-
-        'userId': Id
-    }))) {
+    if (ifGameOver(playerScore, enamyScore, GameInfoHandler.sendGameOver)) {
 
         setTimeout(() => window.location.reload(), 0);
         return;
     }
 
     // check if the ball hits the top or bottom edge of the table
-    if (newPositionY > tableHeight / 2 - collisionBuffer || newPositionY < -tableHeight / 2 + collisionBuffer) {
+    if (newPositionY > TABLE_HEIGHT / 2 - collisionBuffer || newPositionY < -TABLE_HEIGHT / 2 + collisionBuffer) {
         ballSpeedY = -ballSpeedY;
     }
 
@@ -156,12 +154,12 @@ export function resetPositionBall(newPositionX, newPositionY) {
 
 export function resetPositionPadPlayer(newPositionY) {
     
-    meshPadPlayer.position.set(-tableLength / 2 + padWidth / 2, 10, newPositionY);
+    meshPadPlayer.position.set(-TABLE_LENGTH / 2 + PAD_WIDTH / 2, 10, newPositionY);
 }
 
 export function resetPositionPadEnamy(newPositionY) {
     
-    meshPadEnamy.position.set(tableLength / 2 - padWidth / 2, 10, newPositionY);
+    meshPadEnamy.position.set(TABLE_LENGTH / 2 - PAD_WIDTH / 2, 10, newPositionY);
 }
 
 export function resetBall() {
@@ -200,9 +198,9 @@ export function setPlayerId(id) {
     Id = id;
 }
 
-export function uploadPositionBall() {
-    
-        sendInfoWS(getPositionBallJSON(meshBall, Id));
+export function getPlayerId() {
+
+    return Id;
 }
 
 export function setDomPlayerScore(id) {
@@ -226,9 +224,9 @@ export function setDomCanvas(id) {
     scene = new THREE.Scene();
 
     // create a box geometry
-    geometry = new THREE.BoxGeometry(tableLength, 10, tableHeight);
-    padPlayer = new THREE.BoxGeometry(padWidth, 10, padLength);
-    padEnamy = new THREE.BoxGeometry(padWidth, 10, padLength);
+    geometry = new THREE.BoxGeometry(TABLE_LENGTH, 10, TABLE_HEIGHT);
+    padPlayer = new THREE.BoxGeometry(PAD_WIDTH, 10, PAD_LENGTH);
+    padEnamy = new THREE.BoxGeometry(PAD_WIDTH, 10, PAD_LENGTH);
     ball = new THREE.SphereGeometry(BALL_RADIUS, 32, 32);
 
     // create a material
@@ -267,11 +265,11 @@ export function setDomCanvas(id) {
     scene.add(mesh);
 
     meshPadPlayer = new THREE.Mesh(padPlayer, materialPadPlayer);
-    meshPadPlayer.position.set(-tableLength / 2 + padWidth / 2, 10, padYPositionPlayer);
+    meshPadPlayer.position.set(-TABLE_LENGTH / 2 + PAD_WIDTH / 2, 10, padYPositionPlayer);
     scene.add(meshPadPlayer);
 
     meshPadEnamy = new THREE.Mesh(padEnamy, materialPadEnamy);
-    meshPadEnamy.position.set(tableLength / 2 - padWidth / 2, 10, padYPositionEnamy);
+    meshPadEnamy.position.set(TABLE_LENGTH / 2 - PAD_WIDTH / 2, 10, padYPositionEnamy);
     scene.add(meshPadEnamy);
 
     meshBall = new THREE.Mesh(ball, materialBall);
