@@ -10,3 +10,7 @@ from .models import User
 @api_view(['GET'])
 def list(request):
     return JsonResponse({'error': 'Not implemented'}, status=501)
+
+@api_view(['GET'])
+def chat(request, user_id):
+    return JsonResponse({'error': 'Not implemented'}, status=501)
