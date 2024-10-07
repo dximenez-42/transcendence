@@ -7,8 +7,6 @@ def IsAuthenticatedMiddleware(get_response):
     def middleware(request):
         # Code to be executed for each request before
         # the view (and later middleware) are called.
-        if request.path.startswith("/ws/"):
-            return get_response(request)
 
         headers = request.headers
 
