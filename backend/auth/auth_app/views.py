@@ -52,7 +52,7 @@ def auth(request):
                 if not all([name, username, email]):
                     return JsonResponse({'error': 'Missing required fields.'}, status=400)
 
-                user = User.objects.filter(username=username, email=email).first()
+                user = User.objects.filter(email=email).first()
                 if user:
                     return redirect(f'/#login?token={user.token}')
 

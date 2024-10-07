@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'chat_app',
-    # 'rest_framework',
+    'rest_framework',
 ]
 
 REST_FRAMEWORK = {
@@ -61,7 +61,7 @@ MIDDLEWARE = [
     # 'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'chat_app.middleware.IsAuthenticatedMiddleware',
+    'chat_app.middleware.IsAuthenticatedMiddleware',
 ]
 
 ROOT_URLCONF = 'chat.urls'

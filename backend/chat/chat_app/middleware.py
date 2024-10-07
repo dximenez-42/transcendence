@@ -7,6 +7,7 @@ def IsAuthenticatedMiddleware(get_response):
     def middleware(request):
         # Code to be executed for each request before
         # the view (and later middleware) are called.
+
         headers = request.headers
 
         if 'Authorization' not in headers:
