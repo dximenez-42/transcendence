@@ -21,6 +21,41 @@ def me(request):
     }
     return JsonResponse({'user': user}, status=200)
 
+@api_view(['PUT'])
+def edit(request):
+    data = json.loads(request.body)
+
+    if not data:
+        return JsonResponse({'error': 'Missing data'}, status=400)
+
+    if 'name' in data:
+        if data['name'] == '':
+            return JsonResponse({'error': 'Name cannot be empty'}, status=400)
+        
+        if len(data['name']) > 40:
+            return JsonResponse({'error': 'Name too long'}, status=400)
+
+        request.user.name = data['name']
+
+    if 'username' in data:
+        if data['username'] == '':
+            return JsonResponse({'error': 'Username cannot be empty'}, status=400)
+        
+        for char in data['username']:
+            if char.isalnum() == False and char != '-':
+                return JsonResponse({'error': 'Username must be alphanumeric and can only include -'}, status=400)
+        
+        if User.objects.filter(username=data['username']).exclude(id=request.user.id).exists():
+            return JsonResponse({'error': 'Username already taken'}, status=400)
+        
+        request.user.username = data['username']
+
+    request.user.save()
+
+    return JsonResponse({
+        'message': 'User updated'
+    }, status=200)
+
 @api_view(['GET'])
 def list(request):
     users = User.objects.all().exclude(id=request.user.id)
