@@ -28,13 +28,3 @@ window.onload = async function() {
     }
 };
 
-
-export function renderLogout() {
-    const logoutButton = document.getElementById('logout-button');
-
-    logoutButton.addEventListener('click', () => {
-        sessionStorage.clear();
-        window.location.hash = 'home';
-
-    })
-}

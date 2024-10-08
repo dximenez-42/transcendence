@@ -94,3 +94,29 @@ export async function unblockUser(userId) {
         console.error("There was a problem blocking user:", error.message);
     }
 }
+
+
+export async function updateUsername(newName) {
+    const url = "api/users/edit";
+    const token = sessionStorage.getItem('auth_token');
+    try {
+        const response = await fetch(url, {
+            method: 'PUT',
+            headers: { 
+                "Authorization": token
+            },
+            body: JSON.stringify({ 
+                username: sessionStorage.getItem('username'), 
+                name: newName,
+            }),
+
+        })
+        if (response.ok) {
+            sessionStorage.setItem('name', newName);
+            console.log("Username updated successfully");
+            return true;
+        }    
+    } catch (error) {
+        console.error("There was a problem updating username:", error.message);
+    }
+}

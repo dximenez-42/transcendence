@@ -1,7 +1,7 @@
 import { renderChat } from './components/chat.js';
 import { gameList, renderGame, selectMode } from './game/main.js';
 import { renderHome } from './components/home.js';
-import { renderLogin, renderLogout } from './components/login.js';
+import { renderLogin } from './components/login.js';
 import { renderGameSettings, setMatchPoints } from './components/gameSettings.js';
 import { renderProfile } from './components/profile.js';
 

@@ -22,7 +22,7 @@ async function initScripts() {
         window.location.hash = '#game_settings'
     });
     
-    const username = sessionStorage.getItem('username');;
+    const username = sessionStorage.getItem('name');;
 
     greeting_username.innerHTML = `Welcome ${username}`;
 }
