@@ -58,6 +58,7 @@ function router() {
         '#chat': { url: 'chat.html', render: renderChat },
         '#login': { url: 'login.html', render: renderLogin },
         '#game': { url: 'game.html', render: renderGame },
+        '#tournament': { url: 'tournament.html' },
         '#profile': { url: 'profile.html', render: renderProfile },
         '#online': { url: 'online_settings.html', render: gameList },
         '#vs_settings': { url: '1vs1_settings.html', render:selectMode },

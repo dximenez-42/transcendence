@@ -470,6 +470,33 @@ justify-content: end;
 }
 
 
+.tournament-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 300px;
+    margin: 10px;
+    border: 2px solid #fff;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tournament-card .name {
+    font-size: 18px;
+    font-weight: bold;
+    padding: 15px;
+
+}
+
+.tournament-card .vs {
+    font-size: 60px;
+    font-family: "Pixelify Sans", sans-serif;
+    font-weight: bold;
+    color: #2c2c2c;
+    background-color: #f1f1f1;
+    margin: 0 10px;
+    text-align: center;
+}
+
 .tab-button {
     outline: none;
     border: none;

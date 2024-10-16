@@ -9,6 +9,7 @@ async function chatUserList() {
     const showUsersTab = document.getElementById('showUsersTab');
     const showBlockedTab = document.getElementById('showBlockedTab');
     let users = [];
+    let currentView = 'users'; // Almacenar cuál pestaña está activa
 
     // Función para renderizar la lista de usuarios
     const renderUsers = async (filterBlocked = false) => {
@@ -109,7 +110,7 @@ async function sendMessage() {
         if (activeUserId) {
             const user = users.find(u => u.id === parseInt(activeUserId));
             if (user) {
-                user.messages.push({user_id: activeUserId, content: message});
+                user.messages.push({ user_id: activeUserId, content: message });
                 console.log(user.messages);
                 console.log("User", user);
                 renderChat(user.id);
@@ -134,46 +135,67 @@ export async function renderChat(userId) {
         chat.forEach(message => {
             const div = document.createElement('div');
             div.className = 'message';
-            message.user_id == userId ? div.classList.add("my-message") : '';
-            div.textContent = message.content;
+
+            if (message.user_id == userId) {
+                div.classList.add("my-message");
+            }
+
+            if (message.type === 'invitation') {
+                const invitationText = document.createElement('p');
+                invitationText.textContent = "You have been invited to join a game!";
+
+                const joinButton = document.createElement('button');
+                joinButton.textContent = 'Join the game';
+                joinButton.onclick = () => {
+                    // Aquí puedes poner la lógica para unirte a la partida
+                    console.log("Joining game...");
+                };
+
+                div.appendChild(invitationText);
+                div.appendChild(joinButton);
+            } else {
+                div.textContent = message.content;
+            }
+
             chatMessagesElement.appendChild(div);
         });
     }
+
     sendButton.addEventListener("click", sendMessage);
 }
 
 function startSocket() {
     let url = `ws://${window.location.host}/ws/chat/1/`
-    
+
     const chatSocket = new WebSocket(url)
-    
+
     console.log(chatSocket);
 
-    chatSocket.onmessage = function(e) {
+    chatSocket.onmessage = function (e) {
         let data = JSON.parse(e.data)
         console.log('Data:', data)
-    
-        if (data.type === 'chat'){
+
+        if (data.type === 'chat') {
             let messages = document.getElementById('messages')
-    
+
             messages.insertAdjacentHTML('beforeend', `<div>
                 <strong>${data.username}:</strong> <p>${data.message}</p>
             </div>`)
-    
+
         }
     }
-    
+
     let messageInput = document.getElementById('messageInput');
-    
+
     sendButton.addEventListener('click', (e) => {
         e.preventDefault();
         let message = messageInput.value;
-    
+
         if (message.trim() !== '') {
             chatSocket.send(JSON.stringify({
                 'message': message
             }));
-    
+
             messageInput.value = '';
         }
     });

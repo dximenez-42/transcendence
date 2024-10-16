@@ -34,6 +34,7 @@ function getChat(user_id) {
 export function getChatMessages(chat_id) {
     const chats = [
         { id: 1, name: 'Pedro', status: 'online', messages: [{user_id: 1, content: 'Hola, ¿cómo estás?'}, {user_id: 2, content: 'Bien!, gracias'}] },
+        { id: 1, type: 'invitation', name: 'Pedro', status: 'online', messages: [{user_id: 1, content: 'Hola, ¿cómo estás?'}, {user_id: 2, content: 'Bien!, gracias'}] },
         { id: 2, name: 'Elena', status: 'online', messages: [{user_id: 2, content: '¿Qué tal tu día?'}, {user_id: 2, content: '¿Qué tal tu día? jajajaja'}] },
         { id: 3, name: 'Fede', status: 'online', messages: [{user_id: 2, content: 'Hola a todos!'}, {user_id: 3, content: '¿Alguien ha visto la última película?'}] },
     ];
