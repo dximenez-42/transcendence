@@ -1,3 +1,6 @@
+import { closeWebSocket, sendInfoWS } from './socket.js';
+import { meshPadEnamy, setPlayerId, meshBall, getPlayerId } from './pong.js';
+
 
 export function getPositionPadJSON(pad, userId) {
 
@@ -47,4 +50,67 @@ export function setPositionBall(newPositionInfo, ball) {
 	} else {
 		console.error("Invalid position data.");
 	}
+}
+
+
+export class GameInfoHandler {
+
+    constructor(HTMLplayerNameID, HTMLenamyNameID) {
+
+        this.HTMLplayerNameID = HTMLplayerNameID;
+        this.HTMLenamyNameID = HTMLenamyNameID;
+    }
+
+	static sendInitConectionInfo() {
+
+		sendInfoWS(JSON.stringify({
+			action: 'requestBattleInfo',
+			userId: getPlayerId()
+		}));
+	}
+
+	static sendGameOver () {
+
+		sendInfoWS (JSON.stringify({
+			action: 'gameOver',
+			userId: getPlayerId()
+		}));
+	}
+
+	static sendPlayerPadPosition () {
+
+		sendInfoWS (getPositionPadJSON(meshPadPlayer, getPlayerId()));
+	}
+
+	static sendPositionBall() {
+    
+        sendInfoWS(getPositionBallJSON(meshBall, getPlayerId()));
+}
+
+    infoHandler = (newInfo) => {
+        switch (newInfo.action) {
+            case 'initInfo':
+                if (this.HTMLenamyNameID && this.HTMLplayerNameID) {
+                    const elementPlayerName = document.getElementById(this.HTMLplayerNameID);
+                    const elementEnamyName = document.getElementById(this.HTMLenamyNameID);
+                    elementEnamyName.innerHTML = newInfo.enamyName;
+                    elementPlayerName.innerHTML = newInfo.playerName;
+                    setPlayerId(newInfo.userId);
+                }
+                break;
+            case 'UpdatePad':
+                setPositionPad(newInfo, meshPadEnamy);
+                break;
+            case 'UpdateBall':
+                setPositionBall(newInfo, meshBall);
+                break;
+            case 'gameOver':
+                alert('Game Over');
+                closeWebSocket();
+                break;
+            default:
+                console.error('Invalid info type from server.');
+        }
+    }
+
 }
