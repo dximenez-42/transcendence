@@ -26,13 +26,15 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG')
 
-ALLOWED_HOSTS = ['games-backend']
+ALLOWED_HOSTS = ['games-backend', 'localhost', '127.0.0.1', '[::1]', 'nginx']
+
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8080', 'http://127.0.0.1:8080']
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    'daphne',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -80,8 +82,18 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'games.wsgi.application'
+# WSGI_APPLICATION = 'games.wsgi.application'
 
+ASGI_APPLICATION = 'games.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('redis', 6379)],  # Adjust as necessary
+        },
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
