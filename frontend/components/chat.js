@@ -9,7 +9,6 @@ async function chatUserList() {
     const showUsersTab = document.getElementById('showUsersTab');
     const showBlockedTab = document.getElementById('showBlockedTab');
     let users = [];
-    let currentView = 'users'; // Almacenar cuál pestaña está activa
 
     // Función para renderizar la lista de usuarios
     const renderUsers = async (filterBlocked = false) => {
@@ -140,15 +139,7 @@ export async function renderChat(userId) {
             chatMessagesElement.appendChild(div);
         });
     }
-
-
     sendButton.addEventListener("click", sendMessage);
-
-
-    
-    /*parte conexion web sockets chat Pablo*/
-
-
 }
 
 function startSocket() {
