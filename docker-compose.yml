@@ -37,14 +37,16 @@ services:
     container_name: games-backend
     build:
       context: ./backend/games
-    command: gunicorn games.wsgi:application --bind 0.0.0.0:8000
+      dockerfile: Dockerfile
     volumes:
       - ./backend/games:/app
     networks:
       - backend
       - database
+      - redis
     depends_on:
       - db
+      - redis
     env_file:
       - .env
 
