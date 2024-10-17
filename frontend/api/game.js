@@ -69,3 +69,23 @@ export async function leaveGame(gameId) {
         console.error('Error leaving game:', error.message);
     }
 }
+
+export async function joinGame(gameId) {
+
+    console.log('joinGame');
+    try {
+        const response = await fetch(`/games/join/${gameId}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': sessionStorage.getItem('auth_token'),
+                'Content-Type': 'application/json',
+            },
+        });
+        if (!response.ok) {
+            throw new Error('Failed to join game');
+        }
+        console.log('Game joined successfully');
+    } catch (error) {
+        console.error('Error joining game:', error.message);
+    }
+}   

@@ -1,27 +1,39 @@
 import { keyMovePad, setGameType, getGameType, setDomPlayerScore, setDomEnamyScore, setDomCanvas} from './pong.js';
-import { FPS, FPS_BALL, GAME_TIME} from './constants.js';
+import { FPS, FPS_INFO, GAME_TIME, gameInfo} from './constants.js';
 import { createWebSocket } from './socket.js';
 import { GameInfoHandler } from './infoHandler.js';
 import { hideNav, showNav } from '../components/home.js';
-import { getGames, leaveGame } from '../api/game.js';
+import { getGames, joinGame, leaveGame} from '../api/game.js';
 import { loadLanguage } from '../api/languages.js';
 
 let timer = GAME_TIME;
 // ------------- GAME SETTINGS ----------------
 
+
+
+
+
+
 export async function gameList() {
+
+    //console.log('gameList');
+    //const games = [{'host_username':'yugao'}, {'host_username':'carlosga'}, {'host_username':'jjuarez'}];
     const games = await getGames();
     const container = document.getElementById('gameList');
     container.innerHTML = '';
 
     const storedUsername = sessionStorage.getItem('username');
+    //console.log('storedUsername:', storedUsername);
 
     let userGame = null;
 
     games.forEach(game => {
         if (game.host_username === storedUsername) {
             userGame = game;
+            //console.log('userGame:', userGame);
         } else {
+
+            //console.log('game:', game);
             const gameDiv = document.createElement('div');
             gameDiv.className = 'game-card';
 
@@ -37,11 +49,20 @@ export async function gameList() {
             gameDiv.innerHTML += `
                 <div class="col-4">
                     <div>
-                        <button class="tc-btn my-2 py-2"><h4><b>JOIN</b></h4></button>
+                        <button class="tc-btn my-2 py-2" id="${game.host_username}'s_game"><h4><b>JOIN</b></h4></button>
                     </div>
                 </div>`;
 
             container.appendChild(gameDiv);
+
+            document.getElementById(`${game.host_username}'s_game`).addEventListener('click', async () => {
+                console.log("JOIN button pressed", game.host_username);
+                await joinGame(userGame.game_id);
+                gameInfo.playerName = storedUsername;
+                gameInfo.enamyName = game.host_username;
+                window.location.hash = "game_online";
+                //window.location.reload();
+            });
         }
     });
 
@@ -134,6 +155,19 @@ function pauseTimer(intervalIdTimerRef) {
 }
 
 
+export function renderGameOnline() {
+
+	hideNav();
+	
+	setGame('gameWindow', 'playerName', 'enamyName', 'playerScore', 'enamyScore')
+    setGameType('online');
+    console.log('gameType:', getGameType());
+    if (gameInfo.socketConnection === true) // if the connection is already established then we can control the game
+        startGame();
+
+}
+    
+
 
 
 export function renderGame(){
@@ -192,17 +226,23 @@ export function setGame(HTMLcanvasID, HTMLplayerNameID, HTMLenamyNameID, HTMLpla
 	setDomPlayerScore(HTMLplayerScoreID);
 	setDomCanvas(HTMLcanvasID);
     let cur_gameInfoHandler = new GameInfoHandler (HTMLplayerNameID, HTMLenamyNameID);
-	console.log(getGameType);
-	if (getGameType() === 'local') {
+	//console.log(getGameType);
 
-		const elementPlayerName = document.getElementById(HTMLplayerNameID);
-		const elementEnamyName = document.getElementById(HTMLenamyNameID);
-		elementEnamyName.innerHTML = 'Player 2';
-		elementPlayerName.innerHTML = 'Player 1';
+    const elementPlayerName = document.getElementById(HTMLplayerNameID);
+    const elementEnamyName = document.getElementById(HTMLenamyNameID);
+    if (gameInfo.playerName === '' || gameInfo.enamyName === '') {
+        elementEnamyName.innerHTML = 'Player 2';
+        elementPlayerName.innerHTML = 'Player 1';
+    }else {
+
+        elementEnamyName.innerHTML = gameInfo.enamyName;
+        elementPlayerName.innerHTML = gameInfo.playerName;
+    }
+
+	if (getGameType() === 'local') {
 		// setGameType(gameType);
 		console.log('Game type set to local');
 	} else if (getGameType() === 'online') {
-
 		// setGameType(gameType);
 		console.log('Game type set to online');
 		createWebSocket(cur_gameInfoHandler);
@@ -243,7 +283,7 @@ function createGameController() {
             intervalId = setInterval(keyMovePad, 1000 / FPS);
             startTimer(intervalIdTimerRef);
             if (getGameType() === 'online')
-                intervalIdBall = setInterval(GameInfoHandler.sendPositionBall, 1000 / FPS_BALL);
+                intervalIdBall = setInterval(GameInfoHandler.sendPositionSyn, 1000 / FPS_INFO);
             gameState = true;
             ballState = true;
             console.log('Game started');

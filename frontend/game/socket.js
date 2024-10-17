@@ -1,4 +1,4 @@
-import { getGameOver } from "./constants.js";
+import { gameInfo } from "./constants.js";
 import { GameInfoHandler } from './infoHandler.js';
 
 
@@ -7,6 +7,7 @@ let socket = null;
 //ping pong mecanism
 let pingInterval = null;
 let pongTimeout = null;
+let reconnectTimes = 0;
 // let missedPings = 0;
 const MAX_MISSED_PONGS = 3;
 // ----------------------------
@@ -15,13 +16,13 @@ export function createWebSocket(onMessageCallback) {
 
     if (!socket || socket.readyState === WebSocket.CLOSED) {
 
-        socket = new WebSocket('ws://' + window.location.host + './ws/games/');
+        socket = new WebSocket('ws://' + window.location.host + '/ws/games/');
 
         // when the connection is established
         socket.onopen = function(event) {
 
             console.log("Client WebSocket connection established.");
-
+            gameInfo.socketConnection = true;
             // send the initialization message
             onMessageCallback.sendInitConectionInfo();
             startHeartbeat();
@@ -61,8 +62,9 @@ export function createWebSocket(onMessageCallback) {
         socket.onclose = function(event) {
 
             console.log('Client WebSocket connection closed:', event);
+            gameInfo.socketConnection = false;
             // add ping pong mecanism
-            if (getGameOver () == false) {
+            if (gameInfo.gameOver == false) {
 
                 GameInfoHandler.notifyPauseGame();
                 stopHeartbeat();
@@ -127,8 +129,17 @@ function stopHeartbeat() {
 
 function attemptReconnection(onMessageCallback) {
 
+    if (reconnectTimes >= 3) {
+
+        console.log("Failed to reconnect after 3 attempts.");
+        alert("Failed to reconnect to the server. Please try again later.");
+        window.location.href = "#vs_settings";
+        window.location.reload();
+    }
+
     setTimeout(() => {
 
+        reconnectTimes++;
         console.log("Attempting to reconnect WebSocket...");
         createWebSocket(onMessageCallback);
     }, 3000);

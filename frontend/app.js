@@ -1,5 +1,5 @@
 import { renderChat } from './components/chat.js';
-import { gameList, renderGame, selectMode } from './game/main.js';
+import { gameList, renderGame, renderGameOnline, selectMode } from './game/main.js';
 import { renderHome } from './components/home.js';
 import { renderLogin, renderLogout } from './components/login.js';
 import { renderGameSettings, setMatchPoints } from './components/gameSettings.js';
@@ -58,6 +58,7 @@ function router() {
         '#chat': { url: 'chat.html', render: renderChat },
         '#login': { url: 'login.html', render: renderLogin },
         '#game': { url: 'game.html', render: renderGame },
+        '#game_online': { url: 'game_online.html', render: renderGameOnline},
         '#profile': { url: 'profile.html', render: renderProfile },
         '#online': { url: 'online_settings.html', render: gameList },
         '#vs_settings': { url: '1vs1_settings.html', render:selectMode },

@@ -1,6 +1,6 @@
 import { closeWebSocket, sendInfoWS, sendData } from './socket.js';
 import { meshPadEnamy, setPlayerId, meshBall, getPlayerId } from './pong.js';
-import { setGameOver } from './constants.js';
+import { gameInfo } from './constants.js';
 import { startGame } from './main.js';
 
 
@@ -73,20 +73,18 @@ export class GameInfoHandler {
 
 	static sendGameOver () {
 
-		setGameOver(true);
+		gameInfo.gameOver = true;
 		sendInfoWS (JSON.stringify({
 			action: 'gameOver',
-			userId: getPlayerId()
+			userId: getPlayerId(),
+			winner: gameInfo,
 		}));
 	}
 
-	static sendPlayerPadPosition () {
-
-		sendInfoWS (getPositionPadJSON(meshPadPlayer, getPlayerId()));
-	}
-
-	static sendPositionBall() {
+	static sendPositionSyn() {
     
+		console.log('send	position ball');
+		sendInfoWS (getPositionPadJSON(meshPadPlayer, getPlayerId()));
         sendInfoWS(getPositionBallJSON(meshBall, getPlayerId()));
 	}
 
@@ -119,7 +117,7 @@ export class GameInfoHandler {
                 break;
             case 'gameOver':
                 alert('Game Over');
-				setGameOver(true);
+				gameInfo.gameOver = true;
                 closeWebSocket();
                 break;
 			case 'pause':
