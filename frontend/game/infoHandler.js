@@ -1,5 +1,6 @@
-import { closeWebSocket, sendInfoWS } from './socket.js';
+import { closeWebSocket, sendInfoWS, sendData } from './socket.js';
 import { meshPadEnamy, setPlayerId, meshBall, getPlayerId } from './pong.js';
+import { setGameOver } from './constants.js';
 
 
 export function getPositionPadJSON(pad, userId) {
@@ -71,6 +72,7 @@ export class GameInfoHandler {
 
 	static sendGameOver () {
 
+		setGameOver(true);
 		sendInfoWS (JSON.stringify({
 			action: 'gameOver',
 			userId: getPlayerId()
@@ -85,7 +87,17 @@ export class GameInfoHandler {
 	static sendPositionBall() {
     
         sendInfoWS(getPositionBallJSON(meshBall, getPlayerId()));
-}
+	}
+
+	static sendPing() {
+
+		sendData('ping', { userId: getPlayerId()});
+	}
+	
+	static notifyPauseGame() {
+	
+		sendData('pause', { userId: getPlayerId() });
+	}
 
     infoHandler = (newInfo) => {
         switch (newInfo.action) {
@@ -106,8 +118,17 @@ export class GameInfoHandler {
                 break;
             case 'gameOver':
                 alert('Game Over');
+				setGameOver(true);
                 closeWebSocket();
                 break;
+			case 'pause':
+				console.log("Game paused by server.");
+				//pauseGame();  // 调用客户端暂停逻辑
+				break;
+			case 'resume':
+				console.log("Game resumed by server.");
+				//resumeGame(); // 调用客户端恢复逻辑
+				break;
             default:
                 console.error('Invalid info type from server.');
         }

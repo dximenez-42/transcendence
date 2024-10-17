@@ -9,11 +9,6 @@ import { loadLanguage } from '../api/languages.js';
 let timer = GAME_TIME;
 // ------------- GAME SETTINGS ----------------
 
-
-
-
-
-
 export async function gameList() {
     const games = await getGames();
     const container = document.getElementById('gameList');

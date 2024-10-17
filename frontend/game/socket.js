@@ -1,6 +1,15 @@
+import { getGameOver } from "./constants.js";
+import { GameInfoHandler } from './infoHandler.js';
 
 
 let socket = null;
+
+//ping pong mecanism
+let pingInterval = null;
+let pongTimeout = null;
+let missedPings = 0;
+const MAX_MISSED_PONGS = 3;
+// ----------------------------
 
 export function createWebSocket(onMessageCallback) {
 
@@ -15,6 +24,7 @@ export function createWebSocket(onMessageCallback) {
 
             // send the initialization message
             onMessageCallback.sendInitConectionInfo();
+            startHeartbeat();
         };
 
         // when the client receives a message from the server
@@ -23,7 +33,18 @@ export function createWebSocket(onMessageCallback) {
                 const data = JSON.parse(event.data);
                 console.log("Message from server:", data);
                 
-                onMessageCallback.infoHandler (data);
+                //add ping pong mecanism
+                if (data.action === 'pong') {
+
+                    missedPings = 0;
+                    if (pongTimeout) {
+                        clearTimeout(pongTimeout);
+                    }
+                } else {
+
+                    onMessageCallback.infoHandler (data);
+                }
+                // ----------------
             } catch (error) {
                 console.error("Failed to parse WebSocket message:", error);
             }
@@ -31,13 +52,26 @@ export function createWebSocket(onMessageCallback) {
 
         // when the connection is closed
         socket.onclose = function(event) {
+
             console.log('Client WebSocket connection closed:', event);
-            socket = null;
+            // add ping pong mecanism
+            if (getGameOver () == false) {
+
+                GameInfoHandler.notifyPauseGame();
+                stopHeartbeat();
+                attemptReconnection(onMessageCallback);
+            } else {
+                
+                console.log("Game is over, not attempting reconnection.");
+            }
+            //----------------
+
+            //socket = null;
 
             // set a retry mechanism
-            setTimeout(() => {
-                createWebSocket(onMessageCallback);
-            }, 3000); // try to reconnect every 3 seconds
+            //setTimeout(() => {
+            //    createWebSocket(onMessageCallback);
+            //}, 3000); // try to reconnect every 3 seconds
         };
 
         // handle WebSocket errors
@@ -50,7 +84,50 @@ export function createWebSocket(onMessageCallback) {
     }
 }
 
+function startHeartbeat() {
+
+    missedPings = 0;
+    pingInterval = setInterval(() => {
+
+        if (missedPings >= MAX_MISSED_PONGS) {
+
+            console.log("Closing WebSocket due to missed pongs.");
+            GameInfoHandler.sendGameOver();
+            socket.close();
+        } else {
+
+            GameInfoHandler.sendPing();
+            if (pongTimeout) clearTimeout(pongTimeout);
+                pongTimeout = setTimeout(() => {
+
+                    GameInfoHandler.sendGameOver();
+                    socket.close();
+                }, 4000);
+            missedPings++;
+        }
+    }, 5000); // send a ping every 5 seconds
+}
+
+function stopHeartbeat() {
+    
+    if (pingInterval) {
+
+        clearInterval(pingInterval);
+        pingInterval = null;
+    }
+}
+
+function attemptReconnection(onMessageCallback) {
+
+    setTimeout(() => {
+
+        console.log("Attempting to reconnect WebSocket...");
+        createWebSocket(onMessageCallback);
+    }, 3000);
+}
+
 export function sendInfoWS(wsInfo) {
+
     if (socket && socket.readyState === WebSocket.OPEN) {
         socket.send(wsInfo);
     } else {
@@ -59,12 +136,15 @@ export function sendInfoWS(wsInfo) {
 }
 
 export function closeWebSocket() {
+
     if (socket) {
+
         socket.close();
     }
 }
 
 export function sendData(action, data) {
+    
     const message = { action, ...data };
     if (socket && socket.readyState === WebSocket.OPEN) {
         socket.send(JSON.stringify(message));
