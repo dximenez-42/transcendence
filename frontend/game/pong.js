@@ -1,17 +1,15 @@
 
 import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
 import { keyStates, setupKeyControls} from './controls.js';
-import { PAD_MOVE_STEP_LENGTH, TABLE_HEIGHT, TABLE_LENGTH, PAD_LENGTH, FPS, RGB_BALL, RGB_PAD_ENAMY, RGB_PAD_PLAYER, RGB_TABLE, PAD_WIDTH, BALL_RADIUS, getBallSpeed, setBallSpeed} from './constants.js';
+import { getGameOver, setGameOver, PAD_MOVE_STEP_LENGTH, TABLE_HEIGHT, TABLE_LENGTH, PAD_LENGTH, BK_COLOR, RGB_BALL, RGB_PAD_ENAMY, RGB_PAD_PLAYER, RGB_TABLE, PAD_WIDTH, BALL_RADIUS, getBallSpeed, setBallSpeed} from './constants.js';
 import { padEdgeCorrect} from './edgeJudge.js';
-import { getPositionPadJSON, getPositionBallJSON } from './infoHandler.js';
-import { sendInfoWS, closeWebSocket, sendData } from './socket.js';
 import { GameInfoHandler } from './infoHandler.js';
 //import { OrbitControls } from './OrbitControls.js';
 
 
 
-var padYPositionPlayer = 0;
-var padYPositionEnamy = 0;
+let padYPositionPlayer = 0;
+let padYPositionEnamy = 0;
 let ballDirectionX = 0;
 let ballDirectionY = 0;
 let domPlayerScore;
@@ -45,8 +43,11 @@ let fov;
 let aspect;
 let camera;
 let renderer;
+let table2;
+let materialTable2;
+let meshTable2;
 //let controls; // OrbitControls no funciona en este caso, por lo tanto lo emimino
-let gameOver = false;
+// let gameOver = false;
 let axesOn = false;
 
 export function openAxes() {
@@ -89,8 +90,8 @@ export function keyMovePad() {
     let newPositionY = ballDirectionY + ballSpeedY;
 
     // improved collision detection logic, add buffer
-    const collisionBuffer = BALL_RADIUS ; // for x-axis
-    const radiusBuffer = BALL_RADIUS ; // for y-axis
+    const collisionBuffer = BALL_RADIUS * 1.2 ; // for x-axis
+    const radiusBuffer = BALL_RADIUS * 1.1 ; // for y-axis
 
     // check if the ball hits the player's pad
     if (newPositionX < -TABLE_LENGTH / 2 + PAD_WIDTH + collisionBuffer) {
@@ -98,7 +99,7 @@ export function keyMovePad() {
 
             let collidePoint = newPositionY - (padYPositionPlayer);
             let normalizedCollidePoint = collidePoint / (PAD_LENGTH / 2);
-            let angle = normalizedCollidePoint * Math.PI / 4;
+            let angle = normalizedCollidePoint * Math.PI / 4; //set the angle maximum to 60 degrees
             adjustBallSpeed();
             ballSpeedX = getBallSpeed() * Math.cos(angle);
             ballSpeedY = getBallSpeed() * Math.sin(angle);
@@ -149,17 +150,17 @@ export function keyMovePad() {
 
 export function resetPositionBall(newPositionX, newPositionY) {
 
-    meshBall.position.set(newPositionX, 10, newPositionY);
+    meshBall.position.set(newPositionX, 3 + BALL_RADIUS, newPositionY);
 }
 
 export function resetPositionPadPlayer(newPositionY) {
     
-    meshPadPlayer.position.set(-TABLE_LENGTH / 2 + PAD_WIDTH / 2, 10, newPositionY);
+    meshPadPlayer.position.set(-TABLE_LENGTH / 2 + PAD_WIDTH / 2, 3, newPositionY);
 }
 
 export function resetPositionPadEnamy(newPositionY) {
     
-    meshPadEnamy.position.set(TABLE_LENGTH / 2 - PAD_WIDTH / 2, 10, newPositionY);
+    meshPadEnamy.position.set(TABLE_LENGTH / 2 - PAD_WIDTH / 2, 3, newPositionY);
 }
 
 export function resetBall() {
@@ -222,12 +223,15 @@ export function setDomCanvas(id) {
 
     // create a scene
     scene = new THREE.Scene();
+    scene.background = new THREE.Color(BK_COLOR);
 
     // create a box geometry
-    geometry = new THREE.BoxGeometry(TABLE_LENGTH, 10, TABLE_HEIGHT);
+    geometry = new THREE.BoxGeometry(TABLE_LENGTH, 3, TABLE_HEIGHT);
+    table2 = new THREE.BoxGeometry(TABLE_LENGTH + 10, 2, TABLE_HEIGHT + 10);
     padPlayer = new THREE.BoxGeometry(PAD_WIDTH, 10, PAD_LENGTH);
     padEnamy = new THREE.BoxGeometry(PAD_WIDTH, 10, PAD_LENGTH);
-    ball = new THREE.SphereGeometry(BALL_RADIUS, 32, 32);
+    //ball = new THREE.SphereGeometry(BALL_RADIUS, 32, 32);
+    ball = new THREE.BoxGeometry (BALL_RADIUS * 2, BALL_RADIUS * 2, BALL_RADIUS * 2);
 
     // create a material
     // const material = new THREE.MeshBasicMaterial({ 
@@ -236,6 +240,11 @@ export function setDomCanvas(id) {
     // 	transparent: true,
     // 	opacity: 0.5
     // });
+
+    materialTable2 = new THREE.MeshLambertMaterial({
+            
+        color: 0xffffff,
+    })
 
     materialTable = new THREE.MeshLambertMaterial({
 
@@ -254,9 +263,11 @@ export function setDomCanvas(id) {
     materialBall = new THREE.MeshLambertMaterial({
 
         color: RGB_BALL,
-        wireframe: true
     })
 
+    meshTable2 = new THREE.Mesh(table2, materialTable2);
+    meshTable2.position.set(0, 0, 0);
+    scene.add(meshTable2);
 
     // create a mesh
     mesh = new THREE.Mesh(geometry, materialTable);
@@ -265,15 +276,15 @@ export function setDomCanvas(id) {
     scene.add(mesh);
 
     meshPadPlayer = new THREE.Mesh(padPlayer, materialPadPlayer);
-    meshPadPlayer.position.set(-TABLE_LENGTH / 2 + PAD_WIDTH / 2, 10, padYPositionPlayer);
+    meshPadPlayer.position.set(-TABLE_LENGTH / 2 + PAD_WIDTH / 2, 3, padYPositionPlayer);
     scene.add(meshPadPlayer);
 
     meshPadEnamy = new THREE.Mesh(padEnamy, materialPadEnamy);
-    meshPadEnamy.position.set(TABLE_LENGTH / 2 - PAD_WIDTH / 2, 10, padYPositionEnamy);
+    meshPadEnamy.position.set(TABLE_LENGTH / 2 - PAD_WIDTH / 2, 3, padYPositionEnamy);
     scene.add(meshPadEnamy);
 
     meshBall = new THREE.Mesh(ball, materialBall);
-    meshBall.position.set(ballDirectionX, 10, ballDirectionY);
+    meshBall.position.set(ballDirectionX, 3 + BALL_RADIUS, ballDirectionY);
     scene.add(meshBall);
 
     // create an axes helper
@@ -281,13 +292,24 @@ export function setDomCanvas(id) {
     //scene.add(axesHelper);
 
     // create a light
-    //const light = new THREE.DirectionalLight(0xffffff, 1.0);
-    light = new THREE.PointLight(0xffffff, 1.0);
+    light = new THREE.DirectionalLight(0xffffff, 1.5);
+    // light = new THREE.PointLight(0xffffff, 1.0);
     // set the light decay with distance
-    light.decay = 0.0;
-    light.intensity = 2.0;
-    light.position.set(0, 300, 800);
+    // light.decay = 0.0;
+    // light.intensity = 2.0;
+    // light.position.set(0, 300, 800);
+    light.position.set(500, 300, 500);
     scene.add(light);
+    /////////////////////////////////////
+    // Set the target for the light
+    light.target.position.set(0, 0, 0);
+    scene.add(light.target);
+
+
+    // Add some ambient light to soften the shadow and brighten the scene
+    const ambientLight = new THREE.AmbientLight(0x404040, 1.0);
+    scene.add(ambientLight);
+    /////////////////////////////////////
 
 
 
@@ -300,8 +322,8 @@ export function setDomCanvas(id) {
     // create a camera
     camera = new THREE.PerspectiveCamera(fov, aspect, 0.1, 3000);
     // set the camera position
-    camera.position.set(0, 80, 140);
-    //camera.position.set(-210, 90, 0); // player view
+    camera.position.set(0, 120, 120);
+    // camera.position.set(-210, 90, 0); // player view
     // set the camera look at
     camera.lookAt(0, 0, 0);
 
@@ -337,13 +359,13 @@ export function setDomCanvas(id) {
 
 function ifGameOver(scorePlayer, scoreEnamy, callback) {
 
-    if (gameOver) {
+    if (getGameOver() === true) {
         return false;
     }
 
     if (scorePlayer === 5) {
 
-        gameOver = true;
+        setGameOver(true);
         window.location.hash = '#vs_settings';
         alert('Game Over! Player wins!');
         if (typeof callback === 'function' && callback()) {
@@ -352,7 +374,7 @@ function ifGameOver(scorePlayer, scoreEnamy, callback) {
         return true;
     } else if (scoreEnamy === 5) {
 
-        gameOver = true;
+        setGameOver(true);
         window.location.hash = '#vs_settings';
         alert('Game Over! Enamy wins!');
         if (typeof callback === 'function' && callback()) {
@@ -361,7 +383,4 @@ function ifGameOver(scorePlayer, scoreEnamy, callback) {
         return true;
     } else
         return false;
-
-    
-    
 }

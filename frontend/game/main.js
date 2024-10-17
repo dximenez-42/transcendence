@@ -9,11 +9,6 @@ import { loadLanguage } from '../api/languages.js';
 let timer = GAME_TIME;
 // ------------- GAME SETTINGS ----------------
 
-
-
-
-
-
 export async function gameList() {
     const games = await getGames();
     const container = document.getElementById('gameList');
@@ -234,11 +229,11 @@ function createGameController() {
 
         console.log('gameType:', getGameType());
 
-        if (gameState && getGameType() !== 'online') {
+        if (gameState) {
 
             clearInterval(intervalId);
-            // if (getGameType() === 'online')
-            //     clearInterval(intervalIdBall);
+            if (getGameType() === 'online')
+                clearInterval(intervalIdBall);
             gameState = false;
             ballState = false;
             pauseTimer(intervalIdTimerRef);
