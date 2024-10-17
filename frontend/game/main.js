@@ -229,11 +229,11 @@ function createGameController() {
 
         console.log('gameType:', getGameType());
 
-        if (gameState && getGameType() !== 'online') {
+        if (gameState) {
 
             clearInterval(intervalId);
-            // if (getGameType() === 'online')
-            //     clearInterval(intervalIdBall);
+            if (getGameType() === 'online')
+                clearInterval(intervalIdBall);
             gameState = false;
             ballState = false;
             pauseTimer(intervalIdTimerRef);

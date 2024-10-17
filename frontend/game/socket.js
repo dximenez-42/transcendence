@@ -7,7 +7,7 @@ let socket = null;
 //ping pong mecanism
 let pingInterval = null;
 let pongTimeout = null;
-let missedPings = 0;
+// let missedPings = 0;
 const MAX_MISSED_PONGS = 3;
 // ----------------------------
 
@@ -33,19 +33,26 @@ export function createWebSocket(onMessageCallback) {
                 const data = JSON.parse(event.data);
                 console.log("Message from server:", data);
                 
-                //add ping pong mecanism
-                if (data.action === 'pong') {
 
-                    missedPings = 0;
-                    if (pongTimeout) {
-                        clearTimeout(pongTimeout);
-                    }
-                } else {
+                if (pongTimeout) clearTimeout(pongTimeout);
+
+                pongTimeout = setTimeout(() => {
+
+                    console.log("No message received in 4 seconds, closing WebSocket.");
+                    GameInfoHandler.sendGameOver();
+                    socket.close();
+                }, 4000);
+                //add ping pong mecanism
+                // if (data.action === 'pong') {
+
+                //     missedPings = 0;
+                // } else {
 
                     onMessageCallback.infoHandler (data);
-                }
+                //}
                 // ----------------
             } catch (error) {
+
                 console.error("Failed to parse WebSocket message:", error);
             }
         };
@@ -86,26 +93,27 @@ export function createWebSocket(onMessageCallback) {
 
 function startHeartbeat() {
 
-    missedPings = 0;
+    //missedPings = 0;
     pingInterval = setInterval(() => {
 
-        if (missedPings >= MAX_MISSED_PONGS) {
+        // if (missedPings >= MAX_MISSED_PONGS) {
 
-            console.log("Closing WebSocket due to missed pongs.");
-            GameInfoHandler.sendGameOver();
-            socket.close();
-        } else {
+        //     console.log("Closing WebSocket due to missed pongs.");
+        //     GameInfoHandler.sendGameOver();
+        //     socket.close();
+        // } else {
 
-            GameInfoHandler.sendPing();
+            //GameInfoHandler.sendPing();
             if (pongTimeout) clearTimeout(pongTimeout);
-                pongTimeout = setTimeout(() => {
+            pongTimeout = setTimeout(() => {
 
-                    GameInfoHandler.sendGameOver();
-                    socket.close();
-                }, 4000);
-            missedPings++;
-        }
-    }, 5000); // send a ping every 5 seconds
+                GameInfoHandler.sendGameOver();
+                socket.close();
+            }, 4000);
+
+            //missedPings++;
+        //}
+   }, 5000); // send a ping every 5 seconds
 }
 
 function stopHeartbeat() {
@@ -144,7 +152,7 @@ export function closeWebSocket() {
 }
 
 export function sendData(action, data) {
-    
+
     const message = { action, ...data };
     if (socket && socket.readyState === WebSocket.OPEN) {
         socket.send(JSON.stringify(message));
