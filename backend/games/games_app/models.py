@@ -69,6 +69,8 @@ class Game(models.Model):
     host = models.ForeignKey(User, on_delete=models.CASCADE)
     status = models.CharField(max_length=20, choices=GAME_STATUS_CHOICES, default='open')
     room_id = models.CharField(max_length=255)
+    # room_type = models.CharField(max_length=50, default='1v1')  # 新增字段 new field
+    # max_points = models.IntegerField(default=10)                # 新增字段 new field
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)

@@ -32,6 +32,8 @@ CREATE table IF NOT EXISTS games (
     room_id VARCHAR(255) NOT NULL,
     tournament_id INT,
     FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
+    -- room_type VARCHAR(50) DEFAULT '1v1', /*new*/
+    -- max_points INT DEFAULT 10, /*new*/
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
