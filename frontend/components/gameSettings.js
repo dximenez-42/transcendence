@@ -12,7 +12,7 @@ function gameSettings() {
     })
 
     tournament_button.addEventListener('click', (e) => {
-        window.location.hash = "tournament_settings"
+        window.location.hash = "online"
     })
 }
 
@@ -40,7 +40,7 @@ export function setMatchPoints() {
 
     const submit = document.getElementById('create_game_submit');
     submit.addEventListener('click', async () => {
-        const response = await createGame()
+        const response = await createGame(matchPointsInput.value);
         if (response)
             window.location.hash = "online";
     })

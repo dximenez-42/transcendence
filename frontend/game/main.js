@@ -9,7 +9,32 @@ import { loadLanguage } from '../api/languages.js';
 let timer = GAME_TIME;
 // ------------- GAME SETTINGS ----------------
 
+// export async function quickGame() {
 
+//     const games = await getGames();
+//     if (games.length === 0) {
+//         await createGame(5);
+//         window.location.hash = "game";
+//     }
+//     games.forEach (
+//         async game => {
+//             if (game.host_username === sessionStorage.getItem('username')) {
+//                 await leaveGame(game.game_id);
+//             }
+//         }
+//     )
+// }
+
+
+
+export function showOverlay() {
+    document.getElementById('overlay').style.display = 'flex';
+}
+
+
+export function hideOverlay() {
+    document.getElementById('overlay').style.display = 'none';
+}
 
 
 
@@ -17,13 +42,14 @@ let timer = GAME_TIME;
 export async function gameList() {
 
     //console.log('gameList');
-    //const games = [{'host_username':'yugao'}, {'host_username':'carlosga'}, {'host_username':'jjuarez'}];
+    // const games = [{'host_username':'yugao'}, {'host_username':'carlosga'}, {'host_username':'jjuarez'}];
     const games = await getGames();
+    console.log('games:', games);
     const container = document.getElementById('gameList');
     container.innerHTML = '';
 
     const storedUsername = sessionStorage.getItem('username');
-    //console.log('storedUsername:', storedUsername);
+    console.log('storedUsername:', storedUsername);
 
     let userGame = null;
 
@@ -39,7 +65,7 @@ export async function gameList() {
 
             gameDiv.innerHTML = `
                 <div class="col-4">
-                    <h2>${game.host_username}</h2>
+                    <h2>${game.host_username.toUpperCase()}</h2>
                 </div>
                 <div class="col-4">
                     <p data-translate-key="points">6 points</p>
@@ -72,9 +98,20 @@ export async function gameList() {
         const userGameDiv = document.createElement('div');
         userGameDiv.className = 'my-game-card';
 
+        // userGameDiv.innerHTML = `
+        //     <div class="col-4">
+        //         6<h2 data-translate-key="points">points</h2>
+        //     </div>
+        //     <div class="col-4">
+        //         <p id="waiting-text">Waiting<span id="dots"></span></p> 
+        //     </div>
+        //     <div class="col-4">
+        //         <button id="leave_game_button" class="tc-btn my-2 py-2"><h4><b data-translate-key="leave_game" class="tc-upper">LEAVE GAME</b></h4></button>
+        //     </div>`;
+
         userGameDiv.innerHTML = `
             <div class="col-4">
-                6<h2 data-translate-key="points">points</h2>
+                <h2>${storedUsername.toUpperCase()}</h2>
             </div>
             <div class="col-4">
                 <p id="waiting-text">Waiting<span id="dots"></span></p> 
@@ -87,6 +124,7 @@ export async function gameList() {
 
         document.getElementById('leave_game_button').addEventListener('click', async () => {
             console.log("button pressed");
+            console.log('userGameId:', userGame.game_id);
             await leaveGame(userGame.game_id);
             window.location.reload();
         });
@@ -116,7 +154,7 @@ export function selectMode() {
 	if (buttonOnlineGame) {
 		buttonOnlineGame.addEventListener('click', () => {
 			setGameType('online');
-			window.location.hash = "online";
+			window.location.hash = "game_online";
 		});	
     }
 }
@@ -159,11 +197,15 @@ export function renderGameOnline() {
 
 	hideNav();
 	
+    showOverlay();
 	setGame('gameWindow', 'playerName', 'enamyName', 'playerScore', 'enamyScore')
-    setGameType('online');
-    console.log('gameType:', getGameType());
-    if (gameInfo.socketConnection === true) // if the connection is already established then we can control the game
-        startGame();
+    setTimeout(() => {
+        hideOverlay(); 
+    }, 3000);
+    //setGameType('online');
+    //console.log('gameType:', getGameType());
+    // if (gameInfo.socketConnection === true) // if the connection is already established then we can control the game
+    //     startGame();
 
 }
     

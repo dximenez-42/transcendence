@@ -2,7 +2,7 @@
 const URL_API='/api';
 
 export async function getGames() {
-    const url = `/games/list`;
+    const url = `${URL_API}/games/list`;
     const token = sessionStorage.getItem('auth_token');
     try {
         const response = await fetch(url, {
@@ -27,7 +27,7 @@ export async function getGames() {
 }
 
 
-export async function createGame() {
+export async function createGame(max_points) {
     const url = `${URL_API}/games/create`;
     const token = sessionStorage.getItem('auth_token');
     try {
@@ -35,7 +35,9 @@ export async function createGame() {
             method: 'POST',
             headers: {
                 'Authorization': token,
+                'Content-Type': 'application/json', 
             },
+            body: JSON.stringify({ max_points })
         });
 
         if (response.ok) {
@@ -54,7 +56,7 @@ export async function createGame() {
 
 export async function leaveGame(gameId) {
     try {
-        const response = await fetch(`/games/leave/${gameId}`, {
+        const response = await fetch(`${URL_API}/games/leave/${gameId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': sessionStorage.getItem('auth_token'),
