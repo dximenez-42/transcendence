@@ -18,7 +18,7 @@ async function chatUserList() {
         if (!filterBlocked) {
             users = await getChats();
         } else {
-            users = await getBlockedUsers(); 
+            users = await getBlockedUsers();
         }
 
         users.forEach(user => {
@@ -48,19 +48,19 @@ async function chatUserList() {
                 if (lockIcon.textContent === '🔓') {
                     const blocked = await blockUser(user.id);
                     if (blocked) {
-                        lockIcon.textContent = '🔒'; 
+                        lockIcon.textContent = '🔒';
                     }
                 } else {
                     const unblocked = await unblockUser(user.id);
                     if (unblocked) {
-                        lockIcon.textContent = '🔓'; 
+                        lockIcon.textContent = '🔓';
                     }
                 }
                 window.location.reload();
             });
 
             li.dataset.userId = user.id;
-            li.addEventListener('click', () => renderChat(user.room_id));
+            li.addEventListener('click', () => renderChat(user));
             ul.appendChild(li);
         });
 
@@ -78,7 +78,7 @@ async function chatUserList() {
 
     showBlockedTab.addEventListener('click', () => {
         currentView = 'blocked';
-        renderUsers(true); 
+        renderUsers(true);
         showUsersTab.classList.remove('active');
         showBlockedTab.classList.add('active');
     });
@@ -100,7 +100,7 @@ async function sendMessage() {
                 user.messages.push({ user_id: activeUserId, content: message });
                 console.log(user.messages);
                 console.log("User", user);
-                renderChat(user.room_id);
+                renderChat(user);
             }
         }
         messageInput.value = '';
@@ -108,69 +108,73 @@ async function sendMessage() {
 };
 //Hacer funcion en que base al id del usuario pille el chat
 
-export async function renderChat(room_id) {
+export async function renderChat(user) {
     loadLanguage();
-    startSocket(room_id);
     chatUserList();
+    if (!user) return;
+    const userId = sessionStorage.getItem('id');
+
+    const { room_id, id } = user;
+    await startSocket(room_id);
     const chatMessagesElement = document.getElementById('chatMessages');
-    const sendButton = document.getElementById('sendButton');
-    const chat = await getChatMessages(3);
-    return;
+    const chat = await getChatMessages(id);
     if (chat) {
         chatMessagesElement.innerHTML = '';
         chat.forEach(message => {
             const div = document.createElement('div');
             div.className = 'message';
-
-            if (message.user_id == userId) {
+            if (message.sender.id == userId) {
                 div.classList.add("my-message");
             }
-
-            if (message.type === 'invitation') {
+            if (message.content_type === 'invitation') {
                 const invitationText = document.createElement('p');
+                invitationText.classList.add("invitation-message");
                 invitationText.textContent = "You have been invited to join a game!";
 
                 const joinButton = document.createElement('button');
                 joinButton.textContent = 'Join the game';
                 joinButton.onclick = () => {
-                    // Aquí puedes poner la lógica para unirte a la partida
                     console.log("Joining game...");
                 };
-
                 div.appendChild(invitationText);
                 div.appendChild(joinButton);
             } else {
                 div.textContent = message.content;
             }
-
             chatMessagesElement.appendChild(div);
         });
     }
-
-    sendButton.addEventListener("click", sendMessage);
+    // sendButton.addEventListener("click", sendMessage);
 }
 
-function startSocket(room_id) {
-    sessionStorage.getItem()
-    let url = `ws://${window.location.host}/ws/chat/${room_id}/1/`
-    console.log(url);
+async function startSocket(room_id) {
+    const userId = sessionStorage.getItem('id');
+    let url = `ws://${window.location.host}/ws/chat/${room_id}/${userId}`
 
     const chatSocket = new WebSocket(url)
+    chatSocket.onopen = () => {
+        console.log('WebSocket connection established');
+    };
+    chatSocket.onerror = (error) => {
+        console.error('WebSocket Error: ', error);
+    };
 
-    chatSocket.onmessage = function (e) {
+    chatSocket.onmessage = (e) => {
+        console.log('Data')
         let data = JSON.parse(e.data)
-        console.log('Data:', data)
 
         if (data.type === 'chat') {
             let messages = document.getElementById('messages')
 
             messages.insertAdjacentHTML('beforeend', `<div>
                 <strong>${data.username}:</strong> <p>${data.message}</p>
-            </div>`)
+                </div>`)
         }
     }
 
+    console.log(chatSocket);
     let messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
 
     sendButton.addEventListener('click', (e) => {
         e.preventDefault();
@@ -178,10 +182,12 @@ function startSocket(room_id) {
 
         if (message.trim() !== '') {
             chatSocket.send(JSON.stringify({
-                'message': message
+                "content": message,
+                "content_type": "message"
             }));
 
             messageInput.value = '';
         }
+        renderChat();
     });
 }

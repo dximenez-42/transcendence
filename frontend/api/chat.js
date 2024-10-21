@@ -29,16 +29,21 @@ function getChat(user_id) {
 }
 
 export async function getChatMessages(chat_id) {
-    const url = `/chat/messages/${chat_id}`;
+    const url = `api/chat/messages/${chat_id}`;
     const token = sessionStorage.getItem('auth_token');
-
-    const messages = await fetch(url, {
+    console.log(url);
+    const response = await fetch(url, {
         method: 'GET',
         headers: {
             'Authorization': token,
         },
     })
-    console.log(await messages.json());
-    return messages;
+    if (response.ok) {
+        const {messages} = await response.json();
+        console.log(messages)
+        return messages;
+    } else {
+        console.error("Fetch failed with status:", response.status);
+        return [];
+    }
 }
-

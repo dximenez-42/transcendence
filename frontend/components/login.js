@@ -20,6 +20,7 @@ window.onload = async function() {
         sessionStorage.setItem('auth_token', code);
 
         const user = await getUser();
+        sessionStorage.setItem('id', user.id);
         sessionStorage.setItem('username', user.username);
         sessionStorage.setItem('email', user.email);
         sessionStorage.setItem('name', user.name);
