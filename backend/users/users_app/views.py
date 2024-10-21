@@ -15,6 +15,7 @@ def info(request, id):
 @api_view(['GET'])
 def me(request):
     user = {
+        'id': request.user.id,
         'username': request.user.username,
         'email': request.user.email,
         'name': request.user.name,
