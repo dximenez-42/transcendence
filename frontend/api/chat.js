@@ -31,7 +31,14 @@ function getChat(user_id) {
     return null;
 }
 
-export function getChatMessages(chat_id) {
+export async function getChatMessages(chat_id) {
+    const url = '/chat/messages/';
+    const messages = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Authorization': token,
+        },
+    })
     const chats = [
         { id: 1, name: 'Pedro', status: 'online', messages: [{user_id: 1, content: 'Hola, ¿cómo estás?'}, {user_id: 2, content: 'Bien!, gracias'}] },
         { id: 1, type: 'invitation', name: 'Pedro', status: 'online', messages: [{user_id: 1, content: 'Hola, ¿cómo estás?'}, {user_id: 2, content: 'Bien!, gracias'}] },

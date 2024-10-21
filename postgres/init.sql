@@ -101,3 +101,9 @@ CREATE TABLE IF NOT EXISTS messages (
 INSERT INTO users (name, username, email, token) VALUES ('Admin', 'admin', 'admin@example.com', 'admin');
 INSERT INTO users (name, username, email, token) VALUES ('dani', 'dximenez', 'dximenez@student.42madrid.com', 'dximenez');
 INSERT INTO users (name, username, email, token) VALUES ('carlos', 'carlosga', 'carlosga@student.42madrid.com', 'carlosga');
+INSERT INTO users (name, username, email, token) VALUES
+('John Doe', 'johndoe', 'johndoe@example.com', 'token123'),
+('Jane Smith', 'janesmith', 'janesmith@example.com', 'token456'),
+('Alice Johnson', 'alicej', 'alice@example.com', 'token789'),
+('Bob Brown', 'bobb', 'bob@example.com', 'token321'),
+('Charlie Davis', 'charlied', 'charlie@example.com', 'token654');

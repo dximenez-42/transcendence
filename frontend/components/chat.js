@@ -9,18 +9,16 @@ async function chatUserList() {
     const showUsersTab = document.getElementById('showUsersTab');
     const showBlockedTab = document.getElementById('showBlockedTab');
     let users = [];
-    let currentView = 'users'; // Almacenar cuál pestaña está activa
+    let currentView = 'users';
 
-    // Función para renderizar la lista de usuarios
     const renderUsers = async (filterBlocked = false) => {
-        userListElement.innerHTML = ''; // Limpiar la lista
+        userListElement.innerHTML = '';
         const ul = document.createElement('ul');
 
-        // Obtener usuarios según la pestaña activa
         if (!filterBlocked) {
-            users = await getUsersChat();  // Obtener usuarios normales
+            users = await getUsersChat();
         } else {
-            users = await getBlockedUsers();  // Obtener usuarios bloqueados
+            users = await getBlockedUsers(); 
         }
 
         users.forEach(user => {
@@ -30,7 +28,7 @@ async function chatUserList() {
 
             const userInfo = document.createElement('div');
             const userName = document.createElement('h5');
-            userName.textContent = user.name;
+            userName.textContent = user.username;
             userInfo.appendChild(userName);
 
             const userStatus = document.createElement('p');
@@ -39,7 +37,6 @@ async function chatUserList() {
 
             li.appendChild(userInfo);
 
-            // Candado para indicar estado bloqueado o no
             const lockIcon = document.createElement('span');
             lockIcon.style.fontSize = '1.5em';
             lockIcon.style.marginLeft = '10px';
@@ -47,22 +44,18 @@ async function chatUserList() {
 
             li.appendChild(lockIcon);
 
-            // Listener para bloquear/desbloquear
             lockIcon.addEventListener('click', async () => {
                 if (lockIcon.textContent === '🔓') {
-                    // El usuario está desbloqueado, así que lo bloqueamos
                     const blocked = await blockUser(user.id);
                     if (blocked) {
-                        lockIcon.textContent = '🔒';  // Actualiza el candado a bloqueado
+                        lockIcon.textContent = '🔒'; 
                     }
                 } else {
-                    // El usuario está bloqueado, así que lo desbloqueamos
                     const unblocked = await unblockUser(user.id);
                     if (unblocked) {
-                        lockIcon.textContent = '🔓';  // Actualiza el candado a desbloqueado
+                        lockIcon.textContent = '🔓'; 
                     }
                 }
-                // Volver a renderizar la lista completa tras bloquear/desbloquear
                 window.location.reload();
             });
 
@@ -75,27 +68,22 @@ async function chatUserList() {
         userListElement.appendChild(ul);
     };
 
-    // Inicializar mostrando los usuarios normales
     renderUsers(false);
 
-    // Eventos para cambiar entre las pestañas
     showUsersTab.addEventListener('click', () => {
         currentView = 'users';
-        renderUsers(false); // Mostrar usuarios normales
+        renderUsers(false);
         showUsersTab.classList.add('active');
         showBlockedTab.classList.remove('active');
     });
 
     showBlockedTab.addEventListener('click', () => {
         currentView = 'blocked';
-        renderUsers(true); // Mostrar usuarios bloqueados
+        renderUsers(true); 
         showUsersTab.classList.remove('active');
         showBlockedTab.classList.add('active');
     });
 }
-
-
-
 
 
 async function sendMessage() {

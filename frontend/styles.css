@@ -233,6 +233,8 @@ justify-content: end;
 }
     
 #chat .user-list {
+    overflow-y: scroll;
+    max-height: 25rem;
     flex: 1;
     padding: 10px;
 }

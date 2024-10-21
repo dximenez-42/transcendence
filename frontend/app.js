@@ -4,6 +4,7 @@ import { renderHome } from './components/home.js';
 import { renderLogin } from './components/login.js';
 import { renderGameSettings, setMatchPoints } from './components/gameSettings.js';
 import { renderProfile } from './components/profile.js';
+import { renderTournaments } from './api/tournament.js';
 
 // Load and render content based on URL
 function loadContent(url, callback) {
@@ -58,7 +59,7 @@ function router() {
         '#chat': { url: 'chat.html', render: renderChat },
         '#login': { url: 'login.html', render: renderLogin },
         '#game': { url: 'game.html', render: renderGame },
-        '#tournament': { url: 'tournament.html' },
+        '#tournament': { url: 'tournament.html', render: renderTournaments },
         '#profile': { url: 'profile.html', render: renderProfile },
         '#online': { url: 'online_settings.html', render: gameList },
         '#vs_settings': { url: '1vs1_settings.html', render:selectMode },

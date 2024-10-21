@@ -1,0 +1,18 @@
+[
+    {
+        "user" : {
+            "id": 1,
+            "username": "admin",
+            "email": "admin@example.com",
+            "name": "Admin",
+            "isBlocked": true
+        },
+        "chat": {
+            "id": 2,
+            "room_id": "XKMUKIHR",
+            "name": null
+        },
+        "messages": []
+    },
+    ...
+]
