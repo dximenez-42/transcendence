@@ -12,13 +12,32 @@ import string
 # Create your views here.
 @api_view(['GET'])
 def list(request):
-    chats = Chat.objects.filter(userschat__user=request.user).order_by('updated_at').reverse().all()
     response = []
+
+    chats = Chat.objects.filter(userschat__user=request.user).order_by('updated_at').reverse().all()
     for chat in chats:
+        user = UsersChat.objects.filter(chat=chat).exclude(user=request.user).first().user
         response.append({
-            'id': chat.id,
+            'id': user.id,
+            'name': user.name,
+            'username': user.username,
             'room_id': chat.room_id,
-            'name': chat.name,
+            'chat_name': chat.name,
+            'is_blocked': UserBlocked.objects.filter(user=request.user, blocked=user).exists()
+        })
+
+    users = User.objects.exclude(id=request.user.id).order_by('created_at').reverse().all()
+    for user in users:
+        # Check if user is already in response (check response.id)
+        if user.id in [r['id'] for r in response]:
+            continue
+        response.append({
+            'id': user.id,
+            'name': user.name,
+            'username': user.username,
+            'room_id': None,
+            'chat_name': None,
+            'is_blocked': UserBlocked.objects.filter(user=request.user, blocked=user).exists()
         })
 
     return JsonResponse({
@@ -66,6 +85,12 @@ def messages(request, user_id):
         'chat': {
             'id': chat.id,
             'room_id': chat.room_id,
+            'user': {
+                'id': user.id,
+                'name': user.name,
+                'username': user.username,
+                'is_blocked': UserBlocked.objects.filter(user=request.user, blocked=user).exists()
+            },
             'name': chat.name,
         },
         'messages': response
