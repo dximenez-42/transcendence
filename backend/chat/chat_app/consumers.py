@@ -3,6 +3,8 @@ from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
 from django.utils import timezone
 
+from .models import Message, Chat, User  # Import the necessary models
+
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
         try:
@@ -72,6 +74,23 @@ class ChatConsumer(WebsocketConsumer):
                     'datetime': timezone.now().timestamp(),
                 }
             )
+
+            # Save the message to the database
+            try:
+                chat = Chat.objects.get(room_id=self.id)  # Fetch the chat by room_id
+                user = User.objects.get(id=self.user_id)  # Fetch the user by user_id
+
+                Message.objects.create(
+                    sender=user,
+                    chat=chat,
+                    content=text_data_json['content'],
+                    content_type=text_data_json['content_type']
+                )
+                chat.updated_at = timezone.now()
+                chat.save()
+            except Exception as e:
+                print(e)
+
         except Exception as e:
             print(e)
 
