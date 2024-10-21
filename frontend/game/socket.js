@@ -2,55 +2,52 @@ import { gameInfo } from "./constants.js";
 import { GameInfoHandler } from './infoHandler.js';
 
 
-let socket = null;
-
-//ping pong mecanism
+//ping pong mecanism-----------
 let pingInterval = null;
 let pongTimeout = null;
-let reconnectTimes = 0;
-// let missedPings = 0;
+//let reconnectTimes = 0;
+let missedPings = 0;
 const MAX_MISSED_PONGS = 3;
 // ----------------------------
 
-export function createWebSocket(onMessageCallback) {
+export function createWebSocket() {
 
-    if (!socket || socket.readyState === WebSocket.CLOSED) {
+    if (!gameInfo.game_socket || gameInfo.game_socket.readyState === WebSocket.CLOSED) {
 
-        socket = new WebSocket('ws://' + window.location.host + '/ws/games/');
+        gameInfo.game_socket = new WebSocket('ws://' + window.location.host + '/ws/games/' + gameInfo.user_name + '/' + gameInfo.user_id);
 
+        // console.log ('user_name:', gameInfo.user_name);
+        // console.log ('user_id:', gameInfo.user_id);
         // when the connection is established
-        socket.onopen = function(event) {
+        gameInfo.game_socket.onopen = function(event) {
 
             console.log("Client WebSocket connection established.");
             gameInfo.socketConnection = true;
-            // send the initialization message
-            onMessageCallback.sendInitConectionInfo();
+            //reconnectTimes = 0;
             startHeartbeat();
         };
 
         // when the client receives a message from the server
-        socket.onmessage = function(event) {
+        gameInfo.game_socket.onmessage = function(event) {
             try {
                 const data = JSON.parse(event.data);
-                console.log("Message from server:", data);
+                // console.log("Message from server:", data);
                 
-
-                if (pongTimeout) clearTimeout(pongTimeout);
-
-                pongTimeout = setTimeout(() => {
-
-                    console.log("No message received in 4 seconds, closing WebSocket.");
-                    GameInfoHandler.sendGameOver();
-                    socket.close();
-                }, 4000);
-                //add ping pong mecanism
-                // if (data.action === 'pong') {
-
-                //     missedPings = 0;
-                // } else {
-
-                    onMessageCallback.infoHandler (data);
-                //}
+                ///////////////////////////////////////////
+                // add ping pong mecanism
+                if (data['action'] === 'pong') {
+                    // console.log("Pong received from server.");
+                    missedPings = 0;
+                    if (pongTimeout) clearTimeout(pongTimeout);
+                    pongTimeout = setTimeout(() => {
+                        console.log("No 'pong' message received in 4 seconds, closing WebSocket.");
+                        GameInfoHandler.sendGameOver();
+                        gameInfo.game_socket.close();
+                    }, 6000);
+                } else {
+                ///////////////////////////////////////////
+                    GameInfoHandler.infoHandler (data);
+                }
                 // ----------------
             } catch (error) {
 
@@ -59,21 +56,29 @@ export function createWebSocket(onMessageCallback) {
         };
 
         // when the connection is closed
-        socket.onclose = function(event) {
+        gameInfo.game_socket.onclose = function(event) {
+
+            //////////////////////////////////////////////////////////////////////
+            // 判断游戏状态, 当游戏正在进行的情况下, 应该暂停游戏, 并且将游戏状态变更为暂停 //
+            //////////////////////////////////////////////////////////////////////
 
             console.log('Client WebSocket connection closed:', event);
             gameInfo.socketConnection = false;
             // add ping pong mecanism
-            if (gameInfo.gameOver == false) {
+            // if (gameInfo.gameOver == false) {
 
-                GameInfoHandler.notifyPauseGame();
-                stopHeartbeat();
-                attemptReconnection(onMessageCallback);
-            } else {
+            //     GameInfoHandler.notifyPauseGame();
+            //     stopHeartbeat();
+            //     attemptReconnection();
+            // } else {
                 
-                console.log("Game is over, not attempting reconnection.");
-            }
+            //     console.log("Game is over, not attempting reconnection.");
+            // }
             //----------------
+            if (gameInfo.status === 'on')
+                GameInfoHandler.notifyPauseGame();
+            stopHeartbeat();
+            attemptReconnection();
 
             //socket = null;
 
@@ -84,7 +89,7 @@ export function createWebSocket(onMessageCallback) {
         };
 
         // handle WebSocket errors
-        socket.onerror = function(error) {
+        gameInfo.game_socket.onerror = function(error) {
             console.error("Client WebSocket error:", error);
         };
     } else {
@@ -95,26 +100,27 @@ export function createWebSocket(onMessageCallback) {
 
 function startHeartbeat() {
 
-    //missedPings = 0;
+    missedPings = 0;
     pingInterval = setInterval(() => {
 
-        // if (missedPings >= MAX_MISSED_PONGS) {
+        if (missedPings >= MAX_MISSED_PONGS) {
 
-        //     console.log("Closing WebSocket due to missed pongs.");
-        //     GameInfoHandler.sendGameOver();
-        //     socket.close();
-        // } else {
+            console.log("Closing WebSocket due to missed pongs.");
+            GameInfoHandler.sendGameOver();
+            gameInfo.game_socket.close();
+        } else {
 
-            //GameInfoHandler.sendPing();
+            GameInfoHandler.sendPing();
+            //console.log("Ping sent to server.");
             if (pongTimeout) clearTimeout(pongTimeout);
             pongTimeout = setTimeout(() => {
 
                 GameInfoHandler.sendGameOver();
-                socket.close();
+                gameInfo.game_socket.close();
             }, 4000);
 
-            //missedPings++;
-        //}
+            missedPings++;
+        }
    }, 5000); // send a ping every 5 seconds
 }
 
@@ -127,28 +133,28 @@ function stopHeartbeat() {
     }
 }
 
-function attemptReconnection(onMessageCallback) {
+function attemptReconnection() {
 
-    if (reconnectTimes >= 3) {
+    // if (reconnectTimes >= 3) {
 
-        console.log("Failed to reconnect after 3 attempts.");
-        alert("Failed to reconnect to the server. Please try again later.");
-        window.location.href = "#vs_settings";
-        window.location.reload();
-    }
+    //     console.log("Failed to reconnect after 3 attempts.");
+    //     alert("Failed to reconnect to the server. Please try again later.");
+    //     window.location.href = "#vs_settings";
+    //     window.location.reload();
+    // }
 
     setTimeout(() => {
 
-        reconnectTimes++;
+        //reconnectTimes ++;
         console.log("Attempting to reconnect WebSocket...");
-        createWebSocket(onMessageCallback);
+        createWebSocket();
     }, 3000);
 }
 
 export function sendInfoWS(wsInfo) {
 
-    if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(wsInfo);
+    if (gameInfo.game_socket && gameInfo.game_socket.readyState === WebSocket.OPEN) {
+        gameInfo.game_socket.send(wsInfo);
     } else {
         console.error("Client WebSocket is not open.");
     }
@@ -156,19 +162,24 @@ export function sendInfoWS(wsInfo) {
 
 export function closeWebSocket() {
 
-    if (socket) {
+    if (gameInfo.game_socket) {
 
-        socket.close();
+        gameInfo.game_socket.close();
     }
 }
 
 export function sendData(action, data) {
 
     const message = { action, ...data };
-    if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify(message));
+    if (gameInfo.game_socket && gameInfo.game_socket.readyState === WebSocket.OPEN) {
+        gameInfo.game_socket.send(JSON.stringify(message));
     } else {
         console.error("WebSocket is not open.");
+        console.log('gameInfo:', gameInfo);
+        
+        // alert("Connection to the server is lost. Please try again later.");
+        // window.location.reload(); // refresh the page wen the connection is lost
+        // 这里的情况要处理 当无法发送信息的时候 游戏应该暂停.
     }
 }
 

@@ -326,6 +326,8 @@ function ifGameOver(scorePlayer, scoreEnamy, callback) {
         gameInfo.winner = gameInfo.playerName;
         gameInfo.gameOver = true;
         window.location.hash = '#vs_settings';
+        gameInfo.status = 'off';
+        gameInfo.winner = gameInfo.playerName;
         alert('Game Over! Player wins!');
         if (typeof callback === 'function' && callback()) {
             callback();
@@ -336,6 +338,8 @@ function ifGameOver(scorePlayer, scoreEnamy, callback) {
         gameInfo.winner = gameInfo.enamyName;
         gameInfo.gameOver = true;
         window.location.hash = '#vs_settings';
+        gameInfo.status = 'off';
+        gameInfo.winner = gameInfo.enamyName;
         alert('Game Over! Enamy wins!');
         if (typeof callback === 'function' && callback()) {
             callback();

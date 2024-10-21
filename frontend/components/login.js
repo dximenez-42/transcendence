@@ -1,5 +1,7 @@
 import { setUserSession } from "../api/session.js";
 import { getUser } from "../api/users.js";
+import { createWebSocket } from "../game/socket.js";
+import { gameInfo } from "../game/constants.js";
 
 export function renderLogin() {
     
@@ -24,6 +26,9 @@ window.onload = async function() {
         sessionStorage.setItem('email', user.email);
         sessionStorage.setItem('name', user.name);
 
+        gameInfo.user_name = user.username;
+        gameInfo.user_id = code;
+        createWebSocket();
         window.location.hash = 'home';
     }
 };

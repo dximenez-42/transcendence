@@ -4,6 +4,8 @@ import { renderHome } from './components/home.js';
 import { renderLogin, renderLogout } from './components/login.js';
 import { renderGameSettings, setMatchPoints } from './components/gameSettings.js';
 import { renderProfile } from './components/profile.js';
+import { gameInfo } from './game/constants.js';
+import { createWebSocket } from './game/socket.js';
 
 // Load and render content based on URL
 function loadContent(url, callback) {
@@ -69,6 +71,11 @@ function router() {
     };
 
     const route = routes[hash];
+
+    // if (gameInfo.user_id != '' && gameInfo.socketConnection == false) {
+
+    //     createWebSocket();
+    // }
 
     if (route) {
         loadContent(route.url, route.render);

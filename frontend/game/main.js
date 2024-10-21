@@ -1,7 +1,7 @@
 import { keyMovePad, setGameType, getGameType, setDomPlayerScore, setDomEnamyScore, setDomCanvas} from './pong.js';
 import { FPS, FPS_INFO, GAME_TIME, gameInfo} from './constants.js';
 import { createWebSocket } from './socket.js';
-import { GameInfoHandler } from './infoHandler.js';
+import { GameInfoHandler } from './infoHandler.js'; 
 import { hideNav, showNav } from '../components/home.js';
 import { getGames, joinGame, leaveGame} from '../api/game.js';
 import { loadLanguage } from '../api/languages.js';
@@ -199,10 +199,8 @@ export function renderGameOnline() {
 	
     showOverlay();
 	setGame('gameWindow', 'playerName', 'enamyName', 'playerScore', 'enamyScore')
-    setTimeout(() => {
-        hideOverlay(); 
-    }, 3000);
-    //setGameType('online');
+    setGameType('online');
+    GameInfoHandler.sendMatchRequest(false);
     //console.log('gameType:', getGameType());
     // if (gameInfo.socketConnection === true) // if the connection is already established then we can control the game
     //     startGame();
@@ -267,6 +265,8 @@ export function setGame(HTMLcanvasID, HTMLplayerNameID, HTMLenamyNameID, HTMLpla
 	setDomEnamyScore(HTMLenamyScoreID);
 	setDomPlayerScore(HTMLplayerScoreID);
 	setDomCanvas(HTMLcanvasID);
+    gameInfo.DOMPlayerNameID = HTMLplayerNameID;
+    gameInfo.DOMEnamyNameID = HTMLenamyNameID;
     let cur_gameInfoHandler = new GameInfoHandler (HTMLplayerNameID, HTMLenamyNameID);
 	//console.log(getGameType);
 
@@ -287,7 +287,7 @@ export function setGame(HTMLcanvasID, HTMLplayerNameID, HTMLenamyNameID, HTMLpla
 	} else if (getGameType() === 'online') {
 		// setGameType(gameType);
 		console.log('Game type set to online');
-		createWebSocket(cur_gameInfoHandler);
+		// createWebSocket(cur_gameInfoHandler);
 	} else {
 		console.error('Invalid game type.');
 		window.location.href = "#vs_settings";
