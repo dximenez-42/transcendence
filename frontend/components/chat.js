@@ -1,4 +1,4 @@
-import { getChatMessages, getUsersChat } from "../api/chat.js";
+import { getChatMessages, getChats } from "../api/chat.js";
 import { loadLanguage } from "../api/languages.js";
 import { blockUser, getBlockedUsers, unblockUser } from "../api/users.js";
 
@@ -16,7 +16,7 @@ async function chatUserList() {
         const ul = document.createElement('ul');
 
         if (!filterBlocked) {
-            users = await getUsersChat();
+            users = await getChats();
         } else {
             users = await getBlockedUsers(); 
         }
@@ -60,8 +60,7 @@ async function chatUserList() {
             });
 
             li.dataset.userId = user.id;
-            li.addEventListener('click', () => renderChat(user.id));
-
+            li.addEventListener('click', () => renderChat(user.room_id));
             ul.appendChild(li);
         });
 
@@ -90,7 +89,7 @@ async function sendMessage() {
     console.log("Sending...")
     const messageInput = document.getElementById('messageInput');
     const message = messageInput.value;
-    const users = await getUsersChat();
+    const users = await getChats();
     if (message) {
         const activeUserId = document.querySelector('.user-list li')?.dataset.userId;
         console.log(activeUserId);
@@ -101,7 +100,7 @@ async function sendMessage() {
                 user.messages.push({ user_id: activeUserId, content: message });
                 console.log(user.messages);
                 console.log("User", user);
-                renderChat(user.id);
+                renderChat(user.room_id);
             }
         }
         messageInput.value = '';
@@ -109,15 +108,14 @@ async function sendMessage() {
 };
 //Hacer funcion en que base al id del usuario pille el chat
 
-export async function renderChat(userId) {
+export async function renderChat(room_id) {
     loadLanguage();
-    startSocket();
-    if (!userId)
-        userId = 1;
+    startSocket(room_id);
     chatUserList();
     const chatMessagesElement = document.getElementById('chatMessages');
     const sendButton = document.getElementById('sendButton');
-    const chat = getChatMessages(userId);
+    const chat = await getChatMessages(3);
+    return;
     if (chat) {
         chatMessagesElement.innerHTML = '';
         chat.forEach(message => {
@@ -152,12 +150,12 @@ export async function renderChat(userId) {
     sendButton.addEventListener("click", sendMessage);
 }
 
-function startSocket() {
-    let url = `ws://${window.location.host}/ws/chat/1/`
+function startSocket(room_id) {
+    sessionStorage.getItem()
+    let url = `ws://${window.location.host}/ws/chat/${room_id}/1/`
+    console.log(url);
 
     const chatSocket = new WebSocket(url)
-
-    console.log(chatSocket);
 
     chatSocket.onmessage = function (e) {
         let data = JSON.parse(e.data)
@@ -169,7 +167,6 @@ function startSocket() {
             messages.insertAdjacentHTML('beforeend', `<div>
                 <strong>${data.username}:</strong> <p>${data.message}</p>
             </div>`)
-
         }
     }
 

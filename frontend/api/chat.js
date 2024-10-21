@@ -1,8 +1,6 @@
-export async function getUsersChat() {
-    const url = 'api/users/list';
-    console.log(url);
+export async function getChats() {
+    const url = 'api/chat/list';
     const token = sessionStorage.getItem('auth_token');
-    console.log(token);
 
     try {
         const response = await fetch(url, {
@@ -13,9 +11,8 @@ export async function getUsersChat() {
         });
 
         if (response.ok) {
-            const users = await response.json();
-            console.log(users.users);
-            return users.users;
+            const {chats} = await response.json();
+            return chats;
         } else {
             console.error("Fetch failed with status:", response.status);
             console.log("Response",response);
@@ -32,22 +29,16 @@ function getChat(user_id) {
 }
 
 export async function getChatMessages(chat_id) {
-    const url = '/chat/messages/';
+    const url = `/chat/messages/${chat_id}`;
+    const token = sessionStorage.getItem('auth_token');
+
     const messages = await fetch(url, {
         method: 'GET',
         headers: {
             'Authorization': token,
         },
     })
-    const chats = [
-        { id: 1, name: 'Pedro', status: 'online', messages: [{user_id: 1, content: 'Hola, ¿cómo estás?'}, {user_id: 2, content: 'Bien!, gracias'}] },
-        { id: 1, type: 'invitation', name: 'Pedro', status: 'online', messages: [{user_id: 1, content: 'Hola, ¿cómo estás?'}, {user_id: 2, content: 'Bien!, gracias'}] },
-        { id: 2, name: 'Elena', status: 'online', messages: [{user_id: 2, content: '¿Qué tal tu día?'}, {user_id: 2, content: '¿Qué tal tu día? jajajaja'}] },
-        { id: 3, name: 'Fede', status: 'online', messages: [{user_id: 2, content: 'Hola a todos!'}, {user_id: 3, content: '¿Alguien ha visto la última película?'}] },
-    ];
-    const chat = chats.find(c => c.id === chat_id)
-    
-    
-    return chat.messages;
+    console.log(await messages.json());
+    return messages;
 }
 
