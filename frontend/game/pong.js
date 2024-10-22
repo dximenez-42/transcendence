@@ -1,4 +1,3 @@
-
 import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
 import { keyStates, setupKeyControls} from './controls.js';
 import { gameInfo, PAD_MOVE_STEP_LENGTH, TABLE_HEIGHT, TABLE_LENGTH, PAD_LENGTH, BK_COLOR, RGB_BALL, RGB_PAD_ENAMY, RGB_PAD_PLAYER, RGB_TABLE, PAD_WIDTH, BALL_RADIUS, getBallSpeed, setBallSpeed} from './constants.js';
@@ -49,13 +48,18 @@ export function keyMovePad() {
     if (gameType === 'online') {
 
         if (keyStates['w']) {
-            resetPositionPadPlayer (padEdgeCorrect(padYPositionPlayer -= PAD_MOVE_STEP_LENGTH, PAD_LENGTH, TABLE_HEIGHT));
-            //GameInfoHandler.sendPlayerPadPosition();
+            // resetPositionPadPlayer (padEdgeCorrect(padYPositionPlayer -= PAD_MOVE_STEP_LENGTH, PAD_LENGTH, TABLE_HEIGHT));
+            // GameInfoHandler.sendPositionSyn();
+            GameInfoHandler.sendMovePad(padEdgeCorrect(padYPositionPlayer -= PAD_MOVE_STEP_LENGTH, PAD_LENGTH, TABLE_HEIGHT));
+            console.log('send move pad w', padYPositionPlayer);
         }
         if (keyStates['s']) {
-            resetPositionPadPlayer (padEdgeCorrect(padYPositionPlayer += PAD_MOVE_STEP_LENGTH, PAD_LENGTH, TABLE_HEIGHT));
-            //GameInfoHandler.sendPlayerPadPosition();
+            // resetPositionPadPlayer (padEdgeCorrect(padYPositionPlayer += PAD_MOVE_STEP_LENGTH, PAD_LENGTH, TABLE_HEIGHT));
+            // GameInfoHandler.sendPositionSyn();
+            GameInfoHandler.sendMovePad(padEdgeCorrect(padYPositionPlayer += PAD_MOVE_STEP_LENGTH, PAD_LENGTH, TABLE_HEIGHT));
+            console.log('send move pad s', padYPositionPlayer);
         }
+        //resetPositionPadEnamy (padEdgeCorrect(padYPositionEnamy, PAD_LENGTH, TABLE_HEIGHT));
         
 
     } else if (gameType === 'local') {
@@ -68,69 +72,84 @@ export function keyMovePad() {
             resetPositionPadEnamy (padEdgeCorrect(padYPositionEnamy -= PAD_MOVE_STEP_LENGTH, PAD_LENGTH, TABLE_HEIGHT));
         if (keyStates['l'] && gameType === 'local')
             resetPositionPadEnamy (padEdgeCorrect(padYPositionEnamy += PAD_MOVE_STEP_LENGTH, PAD_LENGTH, TABLE_HEIGHT));
+
+
+        let newPositionX = ballDirectionX + ballSpeedX;
+        let newPositionY = ballDirectionY + ballSpeedY;
+
+        // improved collision detection logic, add buffer
+        const collisionBuffer = BALL_RADIUS + ballSpeedX * 0.1 ; // for x-axis
+        const radiusBuffer = BALL_RADIUS + ballSpeedY * 0.1 ; // for y-axis
+
+        // check if the ball hits the player's pad
+        if (newPositionX < -TABLE_LENGTH / 2 + PAD_WIDTH + collisionBuffer) {
+            if (newPositionY < padYPositionPlayer + PAD_LENGTH / 2 + radiusBuffer && newPositionY > padYPositionPlayer - PAD_LENGTH / 2 - radiusBuffer) {
+
+                let collidePoint = newPositionY - (padYPositionPlayer);
+                let normalizedCollidePoint = collidePoint / (PAD_LENGTH / 2);
+                let angle = normalizedCollidePoint * Math.PI / 4;
+                adjustBallSpeed();
+                ballSpeedX = getBallSpeed() * Math.cos(angle);
+                ballSpeedY = getBallSpeed() * Math.sin(angle);
+            } else {
+
+                resetBall();
+                domEnamyScore.innerHTML = ++enamyScore;
+            }
+        }
+
+        // check if the ball hits the enamy's pad
+        if (newPositionX > TABLE_LENGTH / 2 - PAD_WIDTH - collisionBuffer) {
+            if (newPositionY < padYPositionEnamy + PAD_LENGTH / 2 + radiusBuffer && newPositionY > padYPositionEnamy - PAD_LENGTH / 2 - radiusBuffer) {
+
+                let collidePoint = newPositionY - (padYPositionEnamy); 
+                let normalizedCollidePoint = collidePoint / (PAD_LENGTH / 2); 
+                let angle = normalizedCollidePoint * Math.PI / 4;
+                adjustBallSpeed();
+                ballSpeedX = -getBallSpeed() * Math.cos(angle);
+                ballSpeedY = getBallSpeed() * Math.sin(angle);
+            } else {
+
+                resetBall();
+                domPlayerScore.innerHTML = ++playerScore;
+            }
+        }
+
+        if (ifGameOver(playerScore, enamyScore, GameInfoHandler.sendGameOver)) {
+
+            setTimeout(() => window.location.reload(), 0);
+            return;
+        }
+
+        // check if the ball hits the top or bottom edge of the table
+        if (newPositionY > TABLE_HEIGHT / 2 - collisionBuffer || newPositionY < -TABLE_HEIGHT / 2 + collisionBuffer) {
+            ballSpeedY = -ballSpeedY;
+        }
+
+        // update the position of the ball
+        ballDirectionX += ballSpeedX;
+        ballDirectionY += ballSpeedY;
+
+        resetPositionBall(ballDirectionX, ballDirectionY);
     }
     
-    let newPositionX = ballDirectionX + ballSpeedX;
-    let newPositionY = ballDirectionY + ballSpeedY;
-
-    // improved collision detection logic, add buffer
-    const collisionBuffer = BALL_RADIUS + ballSpeedX * 0.1 ; // for x-axis
-    const radiusBuffer = BALL_RADIUS + ballSpeedY * 0.1 ; // for y-axis
-
-    // check if the ball hits the player's pad
-    if (newPositionX < -TABLE_LENGTH / 2 + PAD_WIDTH + collisionBuffer) {
-        if (newPositionY < padYPositionPlayer + PAD_LENGTH / 2 + radiusBuffer && newPositionY > padYPositionPlayer - PAD_LENGTH / 2 - radiusBuffer) {
-
-            let collidePoint = newPositionY - (padYPositionPlayer);
-            let normalizedCollidePoint = collidePoint / (PAD_LENGTH / 2);
-            let angle = normalizedCollidePoint * Math.PI / 4;
-            adjustBallSpeed();
-            ballSpeedX = getBallSpeed() * Math.cos(angle);
-            ballSpeedY = getBallSpeed() * Math.sin(angle);
-        } else {
-
-            resetBall();
-            domEnamyScore.innerHTML = ++enamyScore;
-        }
-    }
-
-    // check if the ball hits the enamy's pad
-    if (newPositionX > TABLE_LENGTH / 2 - PAD_WIDTH - collisionBuffer) {
-        if (newPositionY < padYPositionEnamy + PAD_LENGTH / 2 + radiusBuffer && newPositionY > padYPositionEnamy - PAD_LENGTH / 2 - radiusBuffer) {
-
-            let collidePoint = newPositionY - (padYPositionEnamy); 
-            let normalizedCollidePoint = collidePoint / (PAD_LENGTH / 2); 
-            let angle = normalizedCollidePoint * Math.PI / 4;
-            adjustBallSpeed();
-            ballSpeedX = -getBallSpeed() * Math.cos(angle);
-            ballSpeedY = getBallSpeed() * Math.sin(angle);
-        } else {
-
-            resetBall();
-            domPlayerScore.innerHTML = ++playerScore;
-        }
-    }
-
-    if (ifGameOver(playerScore, enamyScore, GameInfoHandler.sendGameOver)) {
-
-        setTimeout(() => window.location.reload(), 0);
-        return;
-    }
-
-    // check if the ball hits the top or bottom edge of the table
-    if (newPositionY > TABLE_HEIGHT / 2 - collisionBuffer || newPositionY < -TABLE_HEIGHT / 2 + collisionBuffer) {
-        ballSpeedY = -ballSpeedY;
-    }
-
-    // update the position of the ball
-    ballDirectionX += ballSpeedX;
-    ballDirectionY += ballSpeedY;
-
-    resetPositionBall(ballDirectionX, ballDirectionY);
-    //controls.update();
     renderer.render(scene, camera);
 }
 
+export function getBallDirectionX() {
+    
+    return ballDirectionX;
+}
+
+export function getBallDirectionY() {
+        
+    return ballDirectionY;
+}
+
+export function getPadPlayerPositionY() {
+
+    return padYPositionPlayer;
+}
 
 export function resetPositionBall(newPositionX, newPositionY) {
 

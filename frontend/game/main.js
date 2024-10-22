@@ -267,6 +267,9 @@ export function setGame(HTMLcanvasID, HTMLplayerNameID, HTMLenamyNameID, HTMLpla
 	setDomCanvas(HTMLcanvasID);
     gameInfo.DOMPlayerNameID = HTMLplayerNameID;
     gameInfo.DOMEnamyNameID = HTMLenamyNameID;
+    gameInfo.DOMEnamyScoreID = HTMLenamyScoreID;
+    gameInfo.DOMPlayerScoreID = HTMLplayerScoreID;
+    
     let cur_gameInfoHandler = new GameInfoHandler (HTMLplayerNameID, HTMLenamyNameID);
 	//console.log(getGameType);
 
@@ -324,8 +327,8 @@ function createGameController() {
 
             intervalId = setInterval(keyMovePad, 1000 / FPS);
             startTimer(intervalIdTimerRef);
-            if (getGameType() === 'online')
-                intervalIdBall = setInterval(GameInfoHandler.sendPositionSyn, 1000 / FPS_INFO);
+            // if (getGameType() === 'online')
+            //     intervalIdBall = setInterval(GameInfoHandler.sendPositionSyn, 1000 / FPS_INFO);
             gameState = true;
             ballState = true;
             console.log('Game started');

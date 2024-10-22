@@ -26,6 +26,7 @@ export const   gameInfo = {
 	status: 'off',
 	opp_name: '',
 	opp_id: '',
+	game_id: '',
 	isAnotherGame: false,
 	result: {
 
@@ -35,6 +36,8 @@ export const   gameInfo = {
 	},
 	DOMPlayerNameID: '',
 	DOMEnamyNameID: '',
+	DOMPlayerScoreID: '',
+	DOMEnamyScoreID: '',
 	// playerScore: 0,
 	// enamyScore: 0,
 	// gameType: '',

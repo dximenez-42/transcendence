@@ -1,7 +1,8 @@
 import { closeWebSocket, sendInfoWS, sendData } from './socket.js';
-import { meshPadEnamy, setPlayerId, meshBall, getPlayerId } from './pong.js';
-import { gameInfo } from './constants.js';
+import { meshPadEnamy, setPlayerId, getPlayerId, getBallDirectionX, getBallDirectionY, getPadPlayerPositionY, resetPositionPadEnamy, resetPositionBall, resetPositionPadPlayer } from './pong.js';
+import { gameInfo, PAD_LENGTH, TABLE_HEIGHT } from './constants.js';
 import { startGame, showOverlay, hideOverlay } from './main.js';
+import { padEdgeCorrect } from './edgeJudge.js';
 
 export class GameInfoHandler {
 
@@ -16,6 +17,17 @@ export class GameInfoHandler {
 		sendData('client_match_request', { 
 			
 			is_tournament: isTournament,
+		 });
+	}
+
+	static sendMovePad(newPosition) {
+
+		console.log ('sendPosition Y:', newPosition);
+		sendData('client_move_pad', { 
+			
+			game_id: gameInfo.game_id,
+			user_name: gameInfo.user_name,
+			pad_y: newPosition,
 		 });
 	}
 
@@ -38,10 +50,9 @@ export class GameInfoHandler {
 		sendData ('client_update_position', { 
 			
 			to_user_id: gameInfo.opp_id,
-			ball_x: meshBall.position.x,
-			ball_y: meshBall.position.y,
-			pad_x: meshPadPlayer.position.x,
-			pad_y: meshPadPlayer.position.y,
+			ball_x: getBallDirectionX(),
+			ball_y: getBallDirectionY(),
+			pad_y: getPadPlayerPositionY(),
 		});
 		// sendInfoWS (getPositionPadJSON(meshPadPlayer, getPlayerId()));
         // sendInfoWS(getPositionBallJSON(meshBall, getPlayerId()));
@@ -59,6 +70,7 @@ export class GameInfoHandler {
 	}
 
     static infoHandler(newInfo) {
+		//console.log('Unknown info:', newInfo);
         switch (newInfo.action) {
 
 			case 'server_confirm_connection':
@@ -80,6 +92,7 @@ export class GameInfoHandler {
 			case 'server_game_matched':
 				gameInfo.opp_name = newInfo.opp_name;
 				gameInfo.opp_id = newInfo.opp_id;
+				gameInfo.game_id = newInfo.game_id;
 				document.getElementById('enamyName').innerHTML = newInfo.opp_name;
 				document.getElementById('playerName').innerHTML = gameInfo.user_name;
 				gameInfo.playerName = gameInfo.user_name;
@@ -104,8 +117,22 @@ export class GameInfoHandler {
             //     }
             //     break;
 			case 'server_update_position':
-				meshBall.position.set(newInfo.ball_x, 10, newInfo.ball_y);
-				meshPadEnamy.position.set(newInfo.pad_x, 10, newInfo.pad_y);
+				console.log('server update position');
+				console.log(newInfo);
+				// resetPositionBall(newInfo.ball_x, newInfo.ball_y);
+				// resetPositionPadEnamy(padEdgeCorrect(newInfo.pad_y, PAD_LENGTH, TABLE_HEIGHT));
+
+				resetPositionBall(newInfo.ball_x, newInfo.ball_y);
+				resetPositionPadEnamy(padEdgeCorrect(newInfo['pad_' + gameInfo.opp_name], PAD_LENGTH, TABLE_HEIGHT));
+				resetPositionPadPlayer(padEdgeCorrect(newInfo['pad_' + gameInfo.playerName], PAD_LENGTH, TABLE_HEIGHT));
+
+
+				console.log('pad_y:', newInfo['pad_' + gameInfo.opp_name]);
+				document.getElementById(gameInfo.DOMPlayerScoreID).innerHTML = newInfo['score_' + gameInfo.opp_name];
+				document.getElementById(gameInfo.DOMEnamyScoreID).innerHTML = newInfo['score_' + gameInfo.playerName];
+				
+
+				console.log('reset position');
 				break;
 			case 'server_game_over':
 				if (newInfo.is_tournament === false) {
@@ -127,7 +154,8 @@ export class GameInfoHandler {
 				startGame();
 				break;
             default:
-                console.error('Invalid info type from server.');
+				
+                console.log('Unknown info:', newInfo);
 				break;
         }
     }
