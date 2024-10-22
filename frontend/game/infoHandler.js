@@ -20,14 +20,14 @@ export class GameInfoHandler {
 		 });
 	}
 
-	static sendMovePad(newPosition) {
+	static sendMovePad(stepChanged) {
 
 		//console.log ('sendPosition Y:', newPosition);
 		sendData('client_move_pad', { 
 			
 			game_id: gameInfo.game_id,
 			user_name: gameInfo.user_name,
-			pad_y: newPosition,
+			pad_y: stepChanged,
 		 });
 	}
 
@@ -123,13 +123,14 @@ export class GameInfoHandler {
 				// resetPositionPadEnamy(padEdgeCorrect(newInfo.pad_y, PAD_LENGTH, TABLE_HEIGHT));
 
 				resetPositionBall(newInfo.ball_x, newInfo.ball_y);
-				resetPositionPadEnamy(padEdgeCorrect(newInfo['pad_' + gameInfo.opp_name], PAD_LENGTH, TABLE_HEIGHT));
+				resetPositionPadEnamy(padEdgeCorrect(-newInfo['pad_' + gameInfo.opp_name], PAD_LENGTH, TABLE_HEIGHT));
 				resetPositionPadPlayer(padEdgeCorrect(newInfo['pad_' + gameInfo.playerName], PAD_LENGTH, TABLE_HEIGHT));
 
 
-				console.log('pad_y:', newInfo['pad_' + gameInfo.opp_name]);
-				document.getElementById(gameInfo.DOMPlayerScoreID).innerHTML = newInfo['score_' + gameInfo.opp_name];
-				document.getElementById(gameInfo.DOMEnamyScoreID).innerHTML = newInfo['score_' + gameInfo.playerName];
+				console.log('pad_play:', newInfo['pad_' + gameInfo.playerName]);
+				console.log('pad_oppo:', -newInfo['pad_' + gameInfo.opp_name]);
+				document.getElementById(gameInfo.DOMPlayerScoreID).innerHTML = newInfo['score_' + gameInfo.playerName];
+				document.getElementById(gameInfo.DOMEnamyScoreID).innerHTML = newInfo['score_' + gameInfo.opp_name];
 				
 
 				console.log('reset position');
@@ -144,6 +145,7 @@ export class GameInfoHandler {
 					gameInfo.opp_name = '';
 					gameInfo.winner = '';
 					gameInfo.status = 'off';
+					window.location.hash = 'home';
 				}
 				break;
 
