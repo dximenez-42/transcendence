@@ -22,7 +22,7 @@ export class GameInfoHandler {
 
 	static sendMovePad(newPosition) {
 
-		console.log ('sendPosition Y:', newPosition);
+		//console.log ('sendPosition Y:', newPosition);
 		sendData('client_move_pad', { 
 			
 			game_id: gameInfo.game_id,
@@ -135,6 +135,8 @@ export class GameInfoHandler {
 				console.log('reset position');
 				break;
 			case 'server_game_over':
+
+				alert('Game Over');
 				if (newInfo.is_tournament === false) {
 
 					gameInfo.gameOver = true;

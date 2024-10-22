@@ -216,27 +216,16 @@ class GamesConsumer(WebsocketConsumer):
                             game_state['ball_speed_x'] *= -1
                         else:
                             game_state['score_' + self.opp_name] += 1
-                            ball_x = 0
-                            ball_y = 0
-                            ball_speed_x += 0.3
-                            ball_speed_y += 0.3
-                            new_ball_x = 0
-                            new_ball_y = 0
+                            self.reset_ball(game_state)
 
                     if new_ball_x > TABLE_LENGTH / 2 - PAD_WIDTH - BALL_RADIUS:  # 玩家2的边界
                         if abs(game_state['pad_' + self.opp_name] - new_ball_y) < PAD_LENGTH / 2 - BALL_RADIUS:
                             game_state['ball_speed_x'] *= -1
-                            new_ball_x = -TABLE_LENGTH / 2 + PAD_WIDTH + BALL_RADIUS
                         else:
                             game_state['score_' + self.user_name] += 1
-                            ball_x = 0
-                            ball_y = 0
-                            ball_speed_x += 0.3
-                            ball_speed_y += 0.3
-                            new_ball_x = 0
-                            new_ball_y = 0
+                            self.reset_ball(game_state)
                     
-                    if game_state['score_' + self.user_name] >= 5 or game_state['score_' + self.opp_name] >= 5:
+                    if game_state['score_' + self.user_name] > 5 or game_state['score_' + self.opp_name] > 5:
                         # self.send(json.dumps({
                         
                         #     'score_' + self.user_name: game_state['score_' + self.user_name],
@@ -251,13 +240,20 @@ class GamesConsumer(WebsocketConsumer):
                     
                     self.broadcast_position(game_id)
 
-                    time.sleep(1 / 30)  # 每秒60次更新
+                    time.sleep(1 / 60)  # 每秒60次更新
                 except Exception as e:
                     self.send(json.dumps({
                         'error': str(e)
                     }))
         # 启动球的移动线程
         threading.Thread(target=move_ball, daemon=True).start()
+        
+    def reset_ball(self, game_state):
+        game_state['ball_x'] = 0
+        game_state['ball_y'] = 0
+        game_state['ball_speed_x'] = random.choice([1, -1]) * (1 + random.random() * 0.5)  # 随机初始速度
+        game_state['ball_speed_y'] = random.choice([1, -1]) * (1 + random.random() * 0.5)
+        time.sleep(1)
         
     def broadcast_position(self, game_id):
         game_state = game_states[game_id]
@@ -299,3 +295,12 @@ class GamesConsumer(WebsocketConsumer):
         if game_id in game_states:
             game_states[game_id]["running"] = False
             del game_states[game_id]
+            self.send(json.dumps({
+                'action': 'server_game_over',
+                'is_tournament': False
+            }))
+            connected_users[self.opp_id].send(json.dumps({
+                'action': 'server_game_over',
+                'is_tournament': False
+            }))
+            

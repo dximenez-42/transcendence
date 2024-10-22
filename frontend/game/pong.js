@@ -51,13 +51,13 @@ export function keyMovePad() {
             // resetPositionPadPlayer (padEdgeCorrect(padYPositionPlayer -= PAD_MOVE_STEP_LENGTH, PAD_LENGTH, TABLE_HEIGHT));
             // GameInfoHandler.sendPositionSyn();
             GameInfoHandler.sendMovePad(padEdgeCorrect(padYPositionPlayer -= PAD_MOVE_STEP_LENGTH, PAD_LENGTH, TABLE_HEIGHT));
-            console.log('send move pad w', padYPositionPlayer);
+            //console.log('send move pad w', padYPositionPlayer);
         }
         if (keyStates['s']) {
             // resetPositionPadPlayer (padEdgeCorrect(padYPositionPlayer += PAD_MOVE_STEP_LENGTH, PAD_LENGTH, TABLE_HEIGHT));
             // GameInfoHandler.sendPositionSyn();
             GameInfoHandler.sendMovePad(padEdgeCorrect(padYPositionPlayer += PAD_MOVE_STEP_LENGTH, PAD_LENGTH, TABLE_HEIGHT));
-            console.log('send move pad s', padYPositionPlayer);
+            //console.log('send move pad s', padYPositionPlayer);
         }
         //resetPositionPadEnamy (padEdgeCorrect(padYPositionEnamy, PAD_LENGTH, TABLE_HEIGHT));
         
