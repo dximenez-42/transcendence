@@ -183,7 +183,8 @@ class GamesConsumer(WebsocketConsumer):
             'pad_' + opp.user_name: 0,
             'score_' + self.user_name: 0,
             'score_' + self.opp_name: 0,
-            'running': True
+            'running': True,
+            'is_tournament': False
         }
         
         games[self.user_id] = self.game_id
