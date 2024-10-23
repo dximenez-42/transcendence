@@ -144,6 +144,7 @@ export class GameInfoHandler {
 					gameInfo.opp_id = '';
 					gameInfo.opp_name = '';
 					gameInfo.winner = '';
+					gameInfo.game_id = '';
 					gameInfo.status = 'off';
 					window.location.hash = 'home';
 				}
