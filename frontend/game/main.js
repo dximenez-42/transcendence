@@ -161,7 +161,11 @@ export function selectMode() {
 
 // ----------------------------------------
 
-export let startGame = createGameController();
+export let startGame = createGameController();  // this function will be called to start or pause the game, for online mode, it will start render or stop render the game
+                                                // only local game it will caculate the game logic and render the game, for online mode, it will only render the game
+                                                // when this function is called secend time, it will pause the game
+                                                // for local mode, it will pause the game and stop the game logic
+                                                // for online mode, it will only stop the game render
 
 function startTimer(intervalIdTimerRef) {
     let display = document.getElementById("timer-display");
