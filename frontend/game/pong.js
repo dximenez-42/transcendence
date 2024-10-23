@@ -366,7 +366,7 @@ function ifGameOver(scorePlayer, scoreEnamy, callback) {
     if (scorePlayer === 5) {
 
         setGameOver(true);
-        window.location.hash = '#vs_settings';
+        window.location.hash = '#home';
         alert('Game Over! Player wins!');
         if (typeof callback === 'function' && callback()) {
             callback();
@@ -375,7 +375,7 @@ function ifGameOver(scorePlayer, scoreEnamy, callback) {
     } else if (scoreEnamy === 5) {
 
         setGameOver(true);
-        window.location.hash = '#vs_settings';
+        window.location.hash = '#home';
         alert('Game Over! Enamy wins!');
         if (typeof callback === 'function' && callback()) {
             callback();

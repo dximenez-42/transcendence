@@ -1,4 +1,5 @@
 import { loadLanguage } from "../api/languages.js";
+import { selectMode } from "../game/main.js";
 
 
 async function initScripts() {
@@ -62,6 +63,7 @@ export function showNav()
 export function renderHome() {
     loadLanguage();
     initScripts();
+    selectMode();
 }
 
 

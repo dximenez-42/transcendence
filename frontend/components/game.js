@@ -1,7 +1,0 @@
-import 
-
-
-
-export function renderGame() {
-    
-};

@@ -1,8 +1,8 @@
 import { renderChat } from './components/chat.js';
-import { gameList, renderGame, selectMode } from './game/main.js';
+import { renderGame, selectMode } from './game/main.js';
 import { renderHome } from './components/home.js';
 import { renderLogin } from './components/login.js';
-import { renderGameSettings, setMatchPoints } from './components/gameSettings.js';
+import { gameList, renderGameSettings, setMatchPoints } from './components/gameSettings.js';
 import { renderProfile } from './components/profile.js';
 import { renderTournaments } from './api/tournament.js';
 
@@ -59,9 +59,7 @@ function router() {
         '#chat': { url: 'chat.html', render: renderChat },
         '#login': { url: 'login.html', render: renderLogin },
         '#game': { url: 'game.html', render: renderGame },
-        '#tournament': { url: 'tournament.html', render: renderTournaments },
         '#profile': { url: 'profile.html', render: renderProfile },
-        '#online': { url: 'online_settings.html', render: gameList },
         '#vs_settings': { url: '1vs1_settings.html', render:selectMode },
         '#game_settings': { url: 'game_settings.html', render: renderGameSettings},
         '#create_game': { url: 'create_game.html', render: setMatchPoints},

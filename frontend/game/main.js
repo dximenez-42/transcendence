@@ -3,87 +3,18 @@ import { FPS, FPS_BALL, GAME_TIME} from './constants.js';
 import { createWebSocket } from './socket.js';
 import { GameInfoHandler } from './infoHandler.js';
 import { hideNav, showNav } from '../components/home.js';
-import { getGames, leaveGame } from '../api/game.js';
+import { createGame, getGames } from '../api/game.js';
 import { loadLanguage } from '../api/languages.js';
 
 let timer = GAME_TIME;
 // ------------- GAME SETTINGS ----------------
-
-export async function gameList() {
-    const games = await getGames();
-    const container = document.getElementById('gameList');
-    container.innerHTML = '';
-
-    const storedUsername = sessionStorage.getItem('username');
-
-    let userGame = null;
-
-    games.forEach(game => {
-        if (game.host_username === storedUsername) {
-            userGame = game;
-        } else {
-            const gameDiv = document.createElement('div');
-            gameDiv.className = 'game-card';
-
-            gameDiv.innerHTML = `
-                <div class="col-4">
-                    <h2>${game.host_username}</h2>
-                </div>
-                <div class="col-4">
-                    <p data-translate-key="points">6 points</p>
-                </div>
-            `;
-
-            gameDiv.innerHTML += `
-                <div class="col-4">
-                    <div>
-                        <button class="tc-btn my-2 py-2"><h4><b>JOIN</b></h4></button>
-                    </div>
-                </div>`;
-
-            container.appendChild(gameDiv);
-        }
-    });
-
-    const buttonContainer = document.getElementById('create_game_button').parentNode;
-    
-    if (userGame) {
-        const userGameDiv = document.createElement('div');
-        userGameDiv.className = 'my-game-card';
-
-        userGameDiv.innerHTML = `
-            <div class="col-4">
-                6<h2 data-translate-key="points">points</h2>
-            </div>
-            <div class="col-4">
-                <p id="waiting-text">Waiting<span id="dots"></span></p> 
-            </div>
-            <div class="col-4">
-                <button id="leave_game_button" class="tc-btn my-2 py-2"><h4><b data-translate-key="leave_game" class="tc-upper">LEAVE GAME</b></h4></button>
-            </div>`;
-
-        buttonContainer.replaceChild(userGameDiv, document.getElementById('create_game_button'));
-
-        document.getElementById('leave_game_button').addEventListener('click', async () => {
-            console.log("button pressed");
-            await leaveGame(userGame.game_id);
-            window.location.reload();
-        });
-    } else {
-        const button = document.getElementById('create_game_button');
-        button.addEventListener('click', () => {
-            window.location.hash = "create_game";
-        });
-    }
-    loadLanguage();
-}
 
 
 export function selectMode() {
 	const buttonLocalGame = document.getElementById('localGameButton');
 	const buttonOnlineGame = document.getElementById('onlineGameButton');
 	showNav();
-	
+
     console.log(buttonLocalGame);
     console.log(buttonOnlineGame);
 	if (buttonLocalGame) {
@@ -96,7 +27,7 @@ export function selectMode() {
 		buttonOnlineGame.addEventListener('click', () => {
 			setGameType('online');
 			window.location.hash = "online";
-		});	
+		});
     }
 }
 
@@ -139,7 +70,7 @@ function pauseTimer(intervalIdTimerRef) {
 export function renderGame(){
 	const buttonStart = document.getElementById('pause');
 	hideNav();
-	
+
 	setGame('gameWindow', 'playerName', 'enamyName', 'playerScore', 'enamyScore')
 	if (buttonStart) {
 		buttonStart.addEventListener('click', function () {
@@ -208,7 +139,7 @@ export function setGame(HTMLcanvasID, HTMLplayerNameID, HTMLenamyNameID, HTMLpla
 		createWebSocket(cur_gameInfoHandler);
 	} else {
 		console.error('Invalid game type.');
-		window.location.href = "#vs_settings";
+		window.location.href = "#home";
 	}
 }
 

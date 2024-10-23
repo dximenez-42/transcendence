@@ -99,3 +99,25 @@
 .tc-input::placeholder{
     color:#fff
 }
+
+
+.tc-nav-item{
+    width: 50%;
+}
+
+.tc-nav-link {
+    padding: 1rem;
+    font-size: 1.2rem;
+    font-family: "Pixelify Sans", sans-serif;
+    background-color: transparent;
+    color: #fff;
+    outline: none;
+    border: none;
+}
+
+.tc-nav-link.active {
+    padding: 1rem;
+    font-family: "Pixelify Sans", sans-serif;
+    background-color: #fff;
+    color: #0b1215;
+}
