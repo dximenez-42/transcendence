@@ -301,7 +301,7 @@ function createGameController() {
 
 	let gameState = false;
     let intervalId = null;
-    let intervalIdBall = null;
+    //let intervalIdBall = null;
     let ballState = false;
     let intervalIdTimerRef = { current: null };
 
@@ -317,8 +317,8 @@ function createGameController() {
         if (gameState) {
 
             clearInterval(intervalId);
-            if (getGameType() === 'online')
-                clearInterval(intervalIdBall);
+            // if (getGameType() === 'online')
+            //     clearInterval(intervalIdBall);
             gameState = false;
             ballState = false;
             pauseTimer(intervalIdTimerRef);
