@@ -1,4 +1,4 @@
-import { renderChat } from './components/chat.js';
+import { loadSelectedChatOnPageLoad, renderChat } from './components/chat.js';
 import { renderGame, selectMode } from './game/main.js';
 import { renderHome } from './components/home.js';
 import { renderLogin } from './components/login.js';
@@ -56,7 +56,7 @@ function router() {
 
     const routes = {
         '#home': { url: 'home.html', render: renderHome },
-        '#chat': { url: 'chat.html', render: renderChat },
+        '#chat': { url: 'chat.html', render: loadSelectedChatOnPageLoad },
         '#login': { url: 'login.html', render: renderLogin },
         '#game': { url: 'game.html', render: renderGame },
         '#profile': { url: 'profile.html', render: renderProfile },

@@ -53,7 +53,7 @@ export async function gameList() {
 
             const joinGameButton = document.getElementById("join_game_button");
             joinGameButton.addEventListener('click', async () => {
-                if(await joinGame(game.game_id))
+                if (await joinGame(game.game_id))
                     console.log("joined succesfully");
             });
         }
@@ -104,35 +104,39 @@ export async function tournamentList() {
     const storedUsername = sessionStorage.getItem('username');
 
     let userTournament = null;
-    tournaments.forEach(game => {
-        if (game.host_username === storedUsername) {
-            userTournament = game;
-        } else {
-            const gameDiv = document.createElement('div');
-            gameDiv.className = 'game-card';
+    if (tournaments.length > 0)
+    {
 
-            gameDiv.innerHTML = `
+    }
+    tournaments.forEach(tournament => {
+        if (tournament.host_username === storedUsername) {
+            userTournament = tournament;
+        } else {
+            const tournamentDiv = document.createElement('div');
+            tournamentDiv.className = 'tournament-card';
+
+            tournamentDiv.innerHTML = `
                 <div class="col-4">
-                    <h2>${game.host_username}</h2>
+                    <h2>${tournament.host_username}</h2>
                 </div>
                 <div class="col-4">
                     <p data-translate-key="points">6 points</p>
                 </div>
             `;
 
-            gameDiv.innerHTML += `
+            tournamentDiv.innerHTML += `
                 <div class="col-4">
                     <div>
                         <button class="tc-btn my-2 py-2"><h4><b>JOIN</b></h4></button>
                     </div>
                 </div>`;
 
-            container.appendChild(gameDiv);
+            container.appendChild(tournamentDiv);
         }
     });
 
     const buttonContainer = document.getElementById('create_tournament_button').parentNode;
-    
+
     if (userTournament) {
         console.log(userTournament)
         const userTournamentDiv = document.createElement('div');
@@ -146,13 +150,13 @@ export async function tournamentList() {
                 <p>${userTournament.players}/${userTournament.max_players}</p> 
             </div>
             <div class="col-4">
-                <button id="leave_game_button" class="tc-btn my-2 py-2"><h4><b data-translate-key="leave_game" class="tc-upper">LEAVE GAME</b></h4></button>
+                <button id="leave_game_button" class="tc-btn my-2 py-2"><h4><b data-translate-key="leave_tournament" class="tc-upper">LEAVE GAME</b></h4></button>
             </div>`;
 
-        buttonContainer.replaceChild(userTournamentDiv, document.getElementById('create_tournament_button'));
+        buttonContainer.replaceChild(userTournamentDiv, document.getElementById('create_game_button'));
 
         document.getElementById('leave_game_button').addEventListener('click', async () => {
-            if(await leaveTournament(userTournament.tournament_id))
+            if (await leaveTournament(userTournament.tournament_id))
                 window.location.reload();
         });
     } else {
@@ -160,7 +164,7 @@ export async function tournamentList() {
         const button = document.getElementById('create_tournament_button');
         button.addEventListener('click', async () => {
             const response = await createTournament()
-            if (response){
+            if (response) {
                 window.location.reload();
             }
         });
@@ -168,6 +172,25 @@ export async function tournamentList() {
     loadLanguage();
 }
 
+export function tabController() {
+    // Almacenar la pestaña seleccionada en sessionStorage
+    document.querySelectorAll('.tc-nav-link').forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function (event) {
+            sessionStorage.setItem('activeTab', event.target.id);
+        });
+    });
+
+    // Restaurar la pestaña seleccionada al cargar la página
+    const activeTab = sessionStorage.getItem('activeTab');
+    if (activeTab) {
+        const tab = new bootstrap.Tab(document.getElementById(activeTab));
+        tab.show();
+    } else {
+        // Si no hay pestaña guardada, seleccionar la primera pestaña por defecto
+        const defaultTab = new bootstrap.Tab(document.getElementById('tab1-tab'));
+        defaultTab.show();
+    }
+}
 
 export function setMatchPoints() {
     loadLanguage();
@@ -175,12 +198,12 @@ export function setMatchPoints() {
     const incrementBtn = document.getElementById('increment');
     const decrementBtn = document.getElementById('decrement');
 
-    incrementBtn.addEventListener('click', function() {
+    incrementBtn.addEventListener('click', function () {
         let currentValue = parseInt(matchPointsInput.value, 10);
         matchPointsInput.value = currentValue + 1;
     });
 
-    decrementBtn.addEventListener('click', function() {
+    decrementBtn.addEventListener('click', function () {
         let currentValue = parseInt(matchPointsInput.value, 10);
         if (currentValue > 0) {
             matchPointsInput.value = currentValue - 1;
@@ -199,9 +222,10 @@ export function renderGameSettings() {
     loadLanguage();
     // gameSettings();
     tournamentList();
-    gameList()
+    gameList();
+    tabController();
 }
 
 export function renderLocal() {
-    
+
 }

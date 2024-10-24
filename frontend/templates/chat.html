@@ -1,10 +1,7 @@
 <div id="chat">
     <div class="d-flex flex-column user-container">
         <h2 data-translate-key="users"></h2>
-        <div class="tab-container">
-            <button class="tab-button" id="showUsersTab">Usuarios</button>
-            <button class="tab-button" id="showBlockedTab">Bloqueados</button>
-        </div>
+
         <div class="user-list" id="chatUserList">
         </div>
     </div>
@@ -17,11 +14,11 @@
             <div class="message">Hola, ¿cómo estás?</div>
             <div class="message my-message">¡Estoy bien, gracias! ¿Y tú?</div>
         </div>
-        <div class="chat-input">
+        <form id="chatForm" class="chat-form">
             <input class="tc-input" id="messageInput" type="text" value
-                data-translate-key="write_message"
-                placeholder="Escribe un mensaje...">
-            <button id="sendButton" data-translate-key="send">Enviar</button>
-        </div>
+            data-translate-key="write_message"
+            placeholder="Escribe un mensaje...">
+            <input id="sendButton" type="submit" value="Enviar" data-translate-key="send"></input>
+        </form>
     </div>
 </div>

@@ -205,22 +205,22 @@ input[type=number] { -moz-appearance:textfield; }
 justify-content: end;
 }
 
-.chat-input {
+.chat-form {
     display: flex;
     border-top: 1px solid var(--white);
     background-color: transparent;
 }
 
-.chat-input input{
+.chat-form input{
     width: 100%;
 }
 
-.chat-input button {
+.chat-form button {
     background-color: var(--white);
     padding: 1rem 2rem;
     border: none;
 }
-.chat-input button:hover {
+.chat-form button:hover {
     background-color: #dddddd;
     padding: 1rem 2rem;
     border: none;
