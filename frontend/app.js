@@ -1,10 +1,9 @@
-import { loadSelectedChatOnPageLoad, renderChat } from './components/chat.js';
+import { loadSelectedChatOnPageLoad } from './components/chat.js';
 import { renderGame, selectMode } from './game/main.js';
 import { renderHome } from './components/home.js';
 import { renderLogin } from './components/login.js';
-import { gameList, renderGameSettings, setMatchPoints } from './components/gameSettings.js';
+import { renderGameSettings, setMatchPoints } from './components/gameSettings.js';
 import { renderProfile } from './components/profile.js';
-import { renderTournaments } from './api/tournament.js';
 
 // Load and render content based on URL
 function loadContent(url, callback) {
@@ -21,7 +20,7 @@ function loadContent(url, callback) {
         .then(html => {
             appDiv.innerHTML = html;
             executeInlineScripts(appDiv);
-            if (callback) callback(); // Execute the callback function after loading HTML
+            if (callback) callback();
         })
         .catch(error => {
             appDiv.innerHTML = '<h1>404</h1><p>Page not found</p>';
@@ -29,7 +28,6 @@ function loadContent(url, callback) {
         });
 }
 
-// Execute inline scripts after inserting HTML into the DOM
 function executeInlineScripts(container) {
     const scripts = container.querySelectorAll('script');
     scripts.forEach(script => {
@@ -75,9 +73,5 @@ function router() {
     }
 }
 
-
 window.addEventListener('hashchange', router);
 window.addEventListener('load', router);
-
-
-
