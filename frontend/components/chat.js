@@ -7,15 +7,12 @@ import { blockUser, getBlockedUsers, unblockUser } from "../api/users.js";
 async function chatUserList() {
     const userListElement = document.getElementById('chatUserList');
     let users = [];
-    let blockedUsers = [];
 
     // Obtener usuarios normales y bloqueados
     const normalUsers = await getChats(); // Usuarios normales
-    const blocked = await getBlockedUsers(); // Usuarios bloqueados
 
     // Combinar ambos arrays, con los usuarios bloqueados al final
     users = [...normalUsers];
-    blockedUsers = [...blocked];
 
     // Renderizar la lista
     const renderUsers = () => {
@@ -42,54 +39,26 @@ async function chatUserList() {
             const lockIcon = document.createElement('span');
             lockIcon.style.fontSize = '1.5em';
             lockIcon.style.marginLeft = '10px';
-            lockIcon.textContent = '🔓'; // Icono desbloqueado
-
+            if (user.is_blocked)
+                lockIcon.textContent = '🔒'; // Icono desbloqueado
+            else
+                lockIcon.textContent = '🔓'; // Icono desbloqueado
             li.appendChild(lockIcon);
 
             // Lógica para bloquear al usuario
             lockIcon.addEventListener('click', async () => {
-                const blocked = await blockUser(user.id);
-                if (blocked) {
-                    lockIcon.textContent = '🔒';
-                    window.location.reload(); // Recargar la página para actualizar la lista
-                }
-            });
-
-            li.dataset.userId = user.id;
-            li.addEventListener('click', () => renderChat(user));
-            ul.appendChild(li);
-        });
-
-        // Ahora agregar los usuarios bloqueados al final
-        blockedUsers.forEach(user => {
-            const li = document.createElement('li');
-            li.style.display = 'flex';
-            li.style.justifyContent = 'space-between';
-
-            const userInfo = document.createElement('div');
-            const userName = document.createElement('h5');
-            userName.textContent = user.username;
-            userInfo.appendChild(userName);
-
-            const userStatus = document.createElement('p');
-            userStatus.textContent = user.status;
-            userInfo.appendChild(userStatus);
-
-            li.appendChild(userInfo);
-
-            const lockIcon = document.createElement('span');
-            lockIcon.style.fontSize = '1.5em';
-            lockIcon.style.marginLeft = '10px';
-            lockIcon.textContent = '🔒'; // Icono bloqueado
-
-            li.appendChild(lockIcon);
-
-            // Lógica para desbloquear al usuario
-            lockIcon.addEventListener('click', async () => {
-                const unblocked = await unblockUser(user.id);
-                if (unblocked) {
-                    lockIcon.textContent = '🔓';
-                    window.location.reload(); // Recargar la página para actualizar la lista
+                if (user.is_blocked) {
+                    const blocked = await unblockUser(user.id);
+                    if (blocked) {
+                        lockIcon.textContent = '🔓';
+                        renderChat(user);
+                    }
+                } else {
+                    const blocked = await blockUser(user.id);
+                    if (blocked) {
+                        lockIcon.textContent = '🔒';
+                        renderChat(user);
+                    }
                 }
             });
 
@@ -105,32 +74,7 @@ async function chatUserList() {
     renderUsers();
 }
 
-
-async function sendMessage() {
-    console.log("Sending...")
-    const messageInput = document.getElementById('messageInput');
-    const message = messageInput.value;
-    const users = await getChats();
-    if (message) {
-        const activeUserId = document.querySelector('.user-list li')?.dataset.userId;
-        console.log(activeUserId);
-
-        if (activeUserId) {
-            const user = users.find(u => u.id === parseInt(activeUserId));
-            if (user) {
-                user.messages.push({ user_id: activeUserId, content: message });
-                console.log(user.messages);
-                console.log("User", user);
-                renderChat(user);
-            }
-        }
-        messageInput.value = '';
-    }
-};
-//Hacer funcion en que base al id del usuario pille el chat
-
 export async function renderChat(user) {
-    console.log("Tus muertos")
     loadLanguage();
     chatUserList();
     if (!user) {
@@ -146,12 +90,36 @@ export async function renderChat(user) {
 
     // Iniciar socket
     await startSocket(room_id);
-    
-    // Obtener los mensajes del chat
+
+    // Obtener el contenedor de mensajes del chat
     const chatMessagesElement = document.getElementById('chatMessages');
+
+    // Si el usuario está bloqueado, mostrar el mensaje y el candado
+    if (user.is_blocked) {
+        chatMessagesElement.innerHTML = '';  // Limpiar el área de mensajes
+
+        // Crear el mensaje de advertencia
+        const blockedMessage = document.createElement('div');
+        blockedMessage.className = 'blocked-message';
+        blockedMessage.innerHTML = `
+        <h4 class="text-secondary">Este usuario ha sido bloqueado. No puedes enviar ni recibir mensajes.</h4>
+            <div class="w-25">
+                <svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512" fill="#6c757d"><path d="M368 192h-16v-80a96 96 0 10-192 0v80h-16a64.07 64.07 0 00-64 64v176a64.07 64.07 0 0064 64h224a64.07 64.07 0 0064-64V256a64.07 64.07 0 00-64-64zm-48 0H192v-80a64 64 0 11128 0z"/></svg>    
+            <div>
+        `;
+
+        // Añadir el mensaje de usuario bloqueado al chat
+        chatMessagesElement.appendChild(blockedMessage);
+
+        // Detener el resto de la ejecución para no cargar los mensajes
+        return;
+    }
+
+    // Si el usuario no está bloqueado, cargar los mensajes del chat
     const chat = await getChatMessages(id);
     if (chat) {
         chatMessagesElement.innerHTML = '';  // Limpiar el área de mensajes
+
         chat.forEach(message => {
             const div = document.createElement('div');
             div.className = 'message';
@@ -159,12 +127,12 @@ export async function renderChat(user) {
                 div.classList.add("my-message");
             }
             if (message.content_type === 'invitation') {
+                div.classList.add("invitation-message");
                 const invitationText = document.createElement('p');
-                invitationText.classList.add("invitation-message");
                 invitationText.textContent = "You have been invited to join a game!";
 
                 const joinButton = document.createElement('button');
-                joinButton.textContent = 'Join the game';
+                joinButton.textContent = 'Join';
                 joinButton.onclick = () => {
                     console.log("Joining game...");
                 };
@@ -176,6 +144,7 @@ export async function renderChat(user) {
             chatMessagesElement.appendChild(div);
         });
     }
+
 }
 
 // Función para cargar el chat al iniciar la página
@@ -187,7 +156,7 @@ export async function loadSelectedChatOnPageLoad() {
     if (selectedRoom && selectedUserId) {
         // Crear un objeto de usuario simulado para llamar a renderChat
         const user = { room_id: selectedRoom, id: selectedUserId };
-        
+
         // Llamar a renderChat para cargar el chat guardado
         await renderChat(user);
     }
@@ -208,7 +177,6 @@ async function startSocket(room_id) {
     };
 
     chatSocket.onmessage = (e) => {
-        console.log('Data')
         let data = JSON.parse(e.data)
 
         if (data.type === 'chat') {
@@ -220,7 +188,6 @@ async function startSocket(room_id) {
         }
     }
 
-    console.log(chatSocket);
     let messageInput = document.getElementById('messageInput');
     const sendButton = document.getElementById('sendButton');
     const chatForm = document.getElementById('chatForm');
@@ -228,7 +195,7 @@ async function startSocket(room_id) {
     chatForm.addEventListener('submit', (e) => {
         e.preventDefault();
         let message = messageInput.value;
-
+        console.log(message);
         if (message.trim() !== '') {
             chatSocket.send(JSON.stringify({
                 "content": message,

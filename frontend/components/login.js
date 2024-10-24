@@ -6,7 +6,6 @@ export function renderLogin() {
     const loginButton = document.getElementById("login-button");
     loginButton.addEventListener("click", () => {
         
-        console.log(window.location.host);
         window.location.href = `https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-da24ef20df28e232477906fab1cef244486b986e4500de2e7823304ade8d7ca3&redirect_uri=http%3A%2F%2F${window.location.host.split(':')[0]}%3A8080%2Fapi%2Fauth%2Flogin&response_type=code`
         window.location.hash = '#home';
     });

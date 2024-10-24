@@ -138,7 +138,6 @@ export async function tournamentList() {
     const buttonContainer = document.getElementById('create_tournament_button').parentNode;
 
     if (userTournament) {
-        console.log(userTournament)
         const userTournamentDiv = document.createElement('div');
         userTournamentDiv.className = 'my-game-card';
 
@@ -150,10 +149,10 @@ export async function tournamentList() {
                 <p>${userTournament.players}/${userTournament.max_players}</p> 
             </div>
             <div class="col-4">
-                <button id="leave_game_button" class="tc-btn my-2 py-2"><h4><b data-translate-key="leave_tournament" class="tc-upper">LEAVE GAME</b></h4></button>
+                <button id="leave_game_button" class="tc-btn my-2 py-2"><h4><b class="tc-upper">LEAVE GAME</b></h4></button>
             </div>`;
 
-        buttonContainer.replaceChild(userTournamentDiv, document.getElementById('create_game_button'));
+        buttonContainer.replaceChild(userTournamentDiv, document.getElementById('create_tournament_button'));
 
         document.getElementById('leave_game_button').addEventListener('click', async () => {
             if (await leaveTournament(userTournament.tournament_id))

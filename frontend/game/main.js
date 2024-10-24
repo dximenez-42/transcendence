@@ -15,8 +15,6 @@ export function selectMode() {
 	const buttonOnlineGame = document.getElementById('onlineGameButton');
 	showNav();
 
-    console.log(buttonLocalGame);
-    console.log(buttonOnlineGame);
 	if (buttonLocalGame) {
 		buttonLocalGame.addEventListener('click', () => {
 			setGameType('local');
@@ -80,7 +78,6 @@ export function renderGame(){
 				alert('Please select a game type first.');
 				return;
 			} else {
-				console.log('gameType:', getGameType());
 				startGame();
 				//startTimer(150);
 			}
@@ -123,7 +120,6 @@ export function setGame(HTMLcanvasID, HTMLplayerNameID, HTMLenamyNameID, HTMLpla
 	setDomPlayerScore(HTMLplayerScoreID);
 	setDomCanvas(HTMLcanvasID);
     let cur_gameInfoHandler = new GameInfoHandler (HTMLplayerNameID, HTMLenamyNameID);
-	console.log(getGameType);
 	if (getGameType() === 'local') {
 
 		const elementPlayerName = document.getElementById(HTMLplayerNameID);

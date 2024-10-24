@@ -22,7 +22,6 @@ export function renderProfile() {
         if (event.target.matches('button[data-lang]')) {
             sessionStorage.removeItem('lan');
             sessionStorage.setItem('lan', event.target.getAttribute('data-lang'));
-            console.log(event.target.getAttribute('data-lang'));
             loadLanguage();
             window.location.hash = "profile";
         }
