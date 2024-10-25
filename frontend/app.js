@@ -4,6 +4,7 @@ import { renderHome } from './components/home.js';
 import { renderLogin } from './components/login.js';
 import { renderonline, setMatchPoints } from './components/online.js';
 import { renderProfile } from './components/profile.js';
+import { getUser } from './api/users.js';
 
 // Load and render content based on URL
 function loadContent(url, callback) {
@@ -46,7 +47,16 @@ function executeInlineScripts(container) {
 function router() {
     const userId = sessionStorage.getItem('auth_token');
     const hash = window.location.hash;
+    
+    function logout() {
+        sessionStorage.clear();
+        window.location.hash = '#login';
+    }
+    async function checkAuthentication() {
+        await getUser();
+    }
 
+    checkAuthentication();
     if (!userId && hash !== '#login') {
         window.location.hash = '#login';
         return;

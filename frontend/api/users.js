@@ -2,24 +2,22 @@
 export async function getUser() {
     const url = `api/users/me`;
     const token = sessionStorage.getItem('auth_token');
-    try {
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Authorization': token,
-            },
-        });
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Authorization': token,
+        },
+    });
 
-        if (response.ok) {
-            const res = await response.json();
-            return res.user;
-        } else {
-            console.error("Fetch failed with status:", response.status);
-            console.log("Response error:",response);
-            return [];
-        }
-    } catch (error) {
-        console.error("There was a problem with the Fetch request:", error.message);
+    if (response.ok) {
+        const res = await response.json();
+        return res.user;
+    } else if (response.status === 401) {
+        sessionStorage.clear();
+        window.location.hash = '#login';
+    } else {
+        console.error("Fetch failed with status:", response.status);
+        console.log("Response error:", response);
         return [];
     }
 }
@@ -44,7 +42,7 @@ export async function getBlockedUsers() {
             return users.blocked;
         } else {
             console.error("Fetch failed with status:", response.status);
-            console.log("Response",response);
+            console.log("Response", response);
             return [];
         }
     } catch (error) {
@@ -59,14 +57,14 @@ export async function blockUser(userId) {
     try {
         const response = await fetch(url, {
             method: 'POST',
-            headers: { 
+            headers: {
                 "Authorization": token
             },
         })
         if (response.ok) {
             console.log("User Blocked successfully");
             return true;
-        }    
+        }
     } catch (error) {
         console.error("There was a problem blocking user:", error.message);
     }
@@ -79,14 +77,14 @@ export async function unblockUser(userId) {
     try {
         const response = await fetch(url, {
             method: 'POST',
-            headers: { 
+            headers: {
                 "Authorization": token
             },
         })
         if (response.ok) {
             console.log("User Blocked successfully");
             return true;
-        }    
+        }
     } catch (error) {
         console.error("There was a problem blocking user:", error.message);
     }
@@ -99,11 +97,11 @@ export async function updateUsername(newName) {
     try {
         const response = await fetch(url, {
             method: 'PUT',
-            headers: { 
+            headers: {
                 "Authorization": token
             },
-            body: JSON.stringify({ 
-                username: sessionStorage.getItem('username'), 
+            body: JSON.stringify({
+                username: sessionStorage.getItem('username'),
                 name: newName,
             }),
 
@@ -112,7 +110,7 @@ export async function updateUsername(newName) {
             sessionStorage.setItem('name', newName);
             console.log("Username updated successfully");
             return true;
-        }    
+        }
     } catch (error) {
         console.error("There was a problem updating username:", error.message);
     }
