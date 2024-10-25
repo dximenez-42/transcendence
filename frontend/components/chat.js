@@ -26,7 +26,7 @@ const createUserListItem = (user, currentSocket) => {
             user.is_blocked = !user.is_blocked;
             lockIcon.textContent = user.is_blocked ? '🔒' : '🔓';
             renderChat(user);
-            
+
             // Send a block/unblock message to the user
             const messageType = user.is_blocked ? 'block' : 'unblock';
             if (currentSocket && currentSocket.readyState === WebSocket.OPEN) {
@@ -48,7 +48,7 @@ const createUserListItem = (user, currentSocket) => {
 };
 
 const createMessageElement = (message, userId) => {
-    console.log(message);
+    if (message.content_type != "message") return;
     const div = document.createElement('div');
     div.className = `message ${message.sender?.id && message.sender.id == userId ? 'my-message' : 'other-message'}`;
 
@@ -106,24 +106,6 @@ export async function renderChat(user) {
     let isBlocked = user?.is_blocked ?? sessionStorage.getItem('selectedUserIsBlocked') === 'true';
     const imBlocked = user?.im_blocked ?? sessionStorage.getItem('imBlocked') === 'true';
     
-    if (user && user.room_id != "null") {
-        userName = user.name || sessionStorage.getItem('selectedUserName');
-        id = user.id;
-        const { room_id } = user;
-        currentSocket = startSocket(room_id);
-        sessionStorage.setItem('selectedChatRoom', room_id);
-        sessionStorage.setItem('selectedUserId', id);
-        if (userName) sessionStorage.setItem('selectedUserName', userName);
-        sessionStorage.setItem('selectedUserIsBlocked', user.is_blocked);
-        sessionStorage.setItem('selectedUserImBlocked', user.im_blocked);
-    }
-
-    chatUserList(currentSocket);
-    if (!user) return;
-
-    document.querySelector('.chat-username').textContent = userName;
-    const chatMessagesElement = document.getElementById('chatMessages');
-
     if (isBlocked) {
         chatMessagesElement.innerHTML = `
             <div class="blocked-message">
@@ -149,6 +131,26 @@ export async function renderChat(user) {
         deleteChatForm();
         return;
     }
+    
+    if (user && user.room_id != "null") {
+        userName = user.name || sessionStorage.getItem('selectedUserName');
+        id = user.id;
+        const { room_id } = user;
+        currentSocket = startSocket(room_id);
+        sessionStorage.setItem('selectedChatRoom', room_id);
+        sessionStorage.setItem('selectedUserId', id);
+        if (userName) sessionStorage.setItem('selectedUserName', userName);
+        sessionStorage.setItem('selectedUserIsBlocked', user.is_blocked);
+        sessionStorage.setItem('selectedUserImBlocked', user.im_blocked);
+    }
+
+    chatUserList(currentSocket);
+    if (!user) return;
+
+    document.querySelector('.chat-username').textContent = userName;
+    const chatMessagesElement = document.getElementById('chatMessages');
+
+
 
     const chat = await getChatMessages(id);
     if (chat) {
@@ -233,7 +235,7 @@ function setupInvitationButton(chatSocket) {
                     const chatMessagesElement = document.getElementById('chatMessages');
                     chatMessagesElement.appendChild(messageElement);
                     chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
-                    
+
                     sendInvitationButton.textContent = 'Eliminar invitación';
                     sendInvitationButton.dataset.gameId = createdGame.id;
                 } else {
@@ -241,15 +243,16 @@ function setupInvitationButton(chatSocket) {
                 }
             } else {
                 if (createdGame) {
-                const gameId = createdGame.game_id;
-                const success = await leaveGame(gameId);
-                if (success) {
-                    sendInvitationButton.textContent = 'Invitar partida';
-                    delete sendInvitationButton.dataset.gameId;
-                } else {
-                    console.error('Failed to leave game');
+                    const gameId = createdGame.game_id;
+                    const success = await leaveGame(gameId);
+                    if (success) {
+                        sendInvitationButton.textContent = 'Invitar partida';
+                        delete sendInvitationButton.dataset.gameId;
+                    } else {
+                        console.error('Failed to leave game');
+                    }
                 }
-            }}
+            }
         });
     }
 }
