@@ -1,5 +1,5 @@
-import { closeWebSocket, sendInfoWS, sendData } from './socket.js';
-import { meshPadEnamy, setPlayerId, getPlayerId, getBallDirectionX, getBallDirectionY, getPadPlayerPositionY, resetPositionPadEnamy, resetPositionBall, resetPositionPadPlayer } from './pong.js';
+import { sendData } from './socket.js';
+import { getPlayerId, getBallDirectionX, getBallDirectionY, getPadPlayerPositionY, resetPositionPadEnamy, resetPositionBall, resetPositionPadPlayer } from './pong.js';
 import { gameInfo, PAD_LENGTH, TABLE_HEIGHT } from './constants.js';
 import { startGame, showOverlay, hideOverlay } from './main.js';
 import { padEdgeCorrect } from './edgeJudge.js';
@@ -22,7 +22,6 @@ export class GameInfoHandler {
 
 	static sendMovePad(stepChanged) {
 
-		//console.log ('sendPosition Y:', newPosition);
 		sendData('client_move_pad', { 
 			
 			game_id: gameInfo.game_id,
@@ -31,39 +30,19 @@ export class GameInfoHandler {
 		 });
 	}
 
-	static sendGameOver () {
-
-		gameInfo.gameOver = true;
-		sendData('client_game_over', { 
-			
-			to_user_id: gameInfo.opp_id,
-			playerName: gameInfo.playerName,
-			enamyName: gameInfo.enamyName,
-			winner: gameInfo.winner,
-			is_tournament: false,
-		});
-	}
-
-	static sendPositionSyn() {
-    
-		console.log('send position');
-		sendData ('client_update_position', { 
-			
-			to_user_id: gameInfo.opp_id,
-			ball_x: getBallDirectionX(),
-			ball_y: getBallDirectionY(),
-			pad_y: getPadPlayerPositionY(),
-		});
-		// sendInfoWS (getPositionPadJSON(meshPadPlayer, getPlayerId()));
-        // sendInfoWS(getPositionBallJSON(meshBall, getPlayerId()));
-	}
-
 	static sendPing() {
 
-		sendData('ping', { myName: sessionStorage.getItem('username') });
-		// console.log("Ping sent to server.");
+		sendData('ping', { myName: gameInfo.user_name });
 	}
-	
+
+	static sendCreateGameRoom() {
+
+		sendData('client_create_game_room', {
+
+			myName: gameInfo.user_name,
+		});
+	}
+
 	static notifyPauseGame() {
 	
 		sendData('pause', { userId: getPlayerId() });

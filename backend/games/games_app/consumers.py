@@ -17,10 +17,13 @@ PAD_WIDTH = 10
 BALL_RADIUS = 4
 GAME_TIME = 150
 FPS = 60
-connected_users = {}
+connected_users = {} # user_id: websocket
 waiting_1v1_room = [] # template matching queuewww
-game_states = {}
-games = {}
+game_states = {} # game_id: {ball_x, ball_y, ball_speed_x, ball_speed_y, pad_1, pad_2, score_1, score_2, running}
+games = {} # user_id: game_id
+room_states = {} # room_id: {host_id, player_id1, player_id2...}
+rooms = {} # user_id: room_id
+
 
 # game_lock = threading.Lock() # not needed
 
@@ -54,40 +57,14 @@ class GamesConsumer(AsyncWebsocketConsumer):
             text_data_json = json.loads(text_data)
             if 'action' not in text_data_json:
                 return
-            
-            ##########################################
-            # ping pong message
-            if text_data_json['action'] == 'ping':
-                await self.send(text_data=json.dumps({
-                    'action': 'pong',
-                }))             
-                return
-            ##########################################
-            
+                  
             match text_data_json['action']:
                 
+                case 'ping':
+                    await self.send(text_data=json.dumps({'action': 'pong',}))
                 case 'client_match_request':
                     await self.handle_match_request(text_data_json['is_tournament'])
-                case 'client_update_position':
-                    if 'to_user_id' in text_data_json:
-                        if text_data_json['to_user_id'] in connected_users:
-                            await connected_users[text_data_json['to_user_id']].send(text_data=json.dumps({
-                                'action': 'server_update_position',
-                                'ball_x': text_data_json['ball_x'],
-                                'ball_y': text_data_json['ball_y'],
-                                'pad_y': text_data_json['pad_y'],
-                            }))
-                case 'client_game_over':
-                    if 'is_tournament' in text_data_json:
-                        if text_data_json['is_tournament'] == False:
-                            if 'to_user_id' in text_data_json:
-                                if text_data_json['to_user_id'] in connected_users:
-                                    await connected_users[text_data_json['to_user_id']].send(text_data=json.dumps({
-                                        'action': 'server_game_over',
-                                        'is_tournament': False
-                                    }))
                 case 'client_move_pad':
-                    # with game_lock:
                     if text_data_json['game_id'] in game_states:
                         game_state = game_states[text_data_json['game_id']]
                         newPosition = game_state['pad_' + text_data_json['user_name']] + text_data_json['pad_y']
