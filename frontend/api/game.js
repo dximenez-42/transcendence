@@ -63,13 +63,7 @@ export async function joinGame(id) {
             },
         });
 
-        if (response.ok) {
-            return true;
-        } else {
-            console.error("Fetch failed with status:", response.status);
-            console.log("Response error:",response);
-            return [];
-        }
+        return response.ok;
     } catch (error) {
         console.error("There was a problem with the Fetch request:", error.message);
         return [];
@@ -86,10 +80,7 @@ export async function leaveGame(gameId) {
                 'Content-Type': 'application/json',
             },
         });
-        if (!response.ok) {
-            throw new Error('Failed to leave game');
-        }
-        console.log('Game left successfully');
+        return response.ok;
     } catch (error) {
         console.error('Error leaving game:', error.message);
     }

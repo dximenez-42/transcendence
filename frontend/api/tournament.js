@@ -24,40 +24,9 @@ export async function getTournaments() {
     }
 }
 
-export async function renderTournaments() {
-    const tournamentsDiv = document.getElementById('tournaments');
-    tournamentsDiv.innerHTML = '';
-    const tournaments = await getTournaments(); 
-
-    if (tournaments.length === 0) {
-        tournamentsDiv.innerHTML = '<p>No hay torneos disponibles</p>';
-        return;
-    }
-
-    tournaments.forEach(tournament => {
-        const card = document.createElement('div');
-        card.classList.add('tournament-card');
-
-        const title = document.createElement('h2');
-        title.textContent = tournament.name; 
-
-        const host = document.createElement('p');
-        host.textContent = `Host: ${tournament.host}`; 
-
-        const viewButton = document.createElement('a');
-        viewButton.href = `/tournament/${tournament.id}`; 
-        viewButton.textContent = 'Ver Torneo';
-        viewButton.classList.add('view-button');
-
-        card.appendChild(title);
-        card.appendChild(host);
-        card.appendChild(viewButton);
-
-        tournamentsDiv.appendChild(card);
-    });
-}
 
 
+// Endpoint to create a tournament
 export async function createTournament() {
     const url = `/api/tournaments/create`;
     const token = sessionStorage.getItem('auth_token');
@@ -99,14 +68,34 @@ export async function leaveTournament(tournamentId) {
             },
         });
         if (response.ok) {
+            console.log("Tournament left successfully");
             return true;
         }
         else {
             throw new Error('Failed to leave Tournament');
         }
-        console.log('Tournament left successfully');
     } catch (error) {
         console.error('Error leaving Tournament:', error.message);
     }
 }
 
+// Endpoint to join a tournament
+export async function joinTournament(tournamentId) {
+    console.log("Joining Tournament", tournamentId);
+    const url = `/api/tournaments/join/${tournamentId}`;
+    const token = sessionStorage.getItem('auth_token');
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': token,
+            },
+        });
+        if (response.status == 400) {
+            return false;
+        }
+        return response.ok;
+    } catch (error) {
+        console.error('Error joining Tournament:', error.message);
+    }
+}

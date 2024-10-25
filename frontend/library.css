@@ -57,6 +57,16 @@
     padding: 1rem 2rem;
 }
 
+.tc-btn-disabled {
+    transition: .2s;
+    cursor: pointer;
+    background-color: #6b6b6b;
+    padding: 1rem 2rem;
+    color: var(--black);
+    font-family: "Pixelify Sans", sans-serif;
+    max-width: 20rem;
+    border-radius: 5px;
+}
 
 .tc-modal {
     background-color: var(--black);

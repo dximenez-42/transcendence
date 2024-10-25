@@ -20,7 +20,7 @@ async function initScripts() {
     });
 
     playButton.addEventListener('click', () => {
-        window.location.hash = '#game_settings'
+        window.location.hash = '#online'
     });
     
     const username = sessionStorage.getItem('name');;
@@ -67,7 +67,7 @@ export function renderHome() {
 }
 
 
-export function renderGameSettings() {
+export function renderonline() {
     setMatchPoints();
     
 }
