@@ -29,8 +29,8 @@ export function selectMode() {
 	if (buttonOnlineGame) {
 		buttonOnlineGame.addEventListener('click', () => {
 			setGameType('online');
-			//window.location.hash = "online";
-            window.location.hash = "game_online";
+			window.location.hash = "online";
+            //window.location.hash = "game_online";
 		});
     }
 }
@@ -78,8 +78,8 @@ export function renderGameOnline() {
 	hideNav();
 	
     showOverlay();
-	setGame('gameWindow', 'playerName', 'enamyName', 'playerScore', 'enamyScore')
     setGameType('online');
+	setGame('gameWindow', 'playerName', 'enamyName', 'playerScore', 'enamyScore')
     GameInfoHandler.sendMatchRequest(false);
     //console.log('gameType:', getGameType());
     // if (gameInfo.socketConnection === true) // if the connection is already established then we can control the game

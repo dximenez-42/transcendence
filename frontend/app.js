@@ -72,10 +72,10 @@ function router() {
         '#login': { url: 'login.html', render: renderLogin },
         '#game': { url: 'game.html', render: renderGame },
         '#profile': { url: 'profile.html', render: renderProfile },
-        '#online': { url: 'online.html', render: renderonline},
+        //'#online': { url: 'online.html', render: renderonline},
         '#create_game': { url: 'create_game.html', render: setMatchPoints},
         '#tournament_settings': { url: 'tournament_settings.html', render: () => console.log('Tournament page loaded') },
-        '#game_online': { url: 'game_online.html', render: renderGameOnline}, // add new route, modified by gao
+        '#online': { url: 'game_online.html', render: renderGameOnline}, // add new route, modified by gao
     };
 
     const route = routes[hash];
