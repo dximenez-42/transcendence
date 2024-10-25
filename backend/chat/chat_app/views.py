@@ -21,7 +21,7 @@ def list(request):
             'id': user.id,
             'name': user.name,
             'username': user.username,
-            'room_id': chat.room_id,
+            # 'room_id': chat.room_id,
             'chat_name': chat.name,
             'im_blocked': UserBlocked.objects.filter(user=user, blocked=request.user).exists(),
             'is_blocked': UserBlocked.objects.filter(user=request.user, blocked=user).exists()
@@ -36,7 +36,7 @@ def list(request):
             'id': user.id,
             'name': user.name,
             'username': user.username,
-            'room_id': None,
+            # 'room_id': None,
             'chat_name': None,
             'im_blocked': UserBlocked.objects.filter(user=user, blocked=request.user).exists(),
             'is_blocked': UserBlocked.objects.filter(user=request.user, blocked=user).exists()
