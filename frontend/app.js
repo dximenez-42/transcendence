@@ -74,12 +74,14 @@ function router() {
     };
 
     const route = routes[hash];
-
-    if (route) {
-        loadContent(route.url, route.render);
-    } else {
-        loadContent('404.html', () => console.log('404 page loaded'));
-    }
+    // Add a 1-second timeout before executing the route
+    setTimeout(() => {
+        if (route) {
+            loadContent(route.url, route.render);
+        } else {
+            loadContent('404.html', () => {});
+        }
+    }, 200);
 }
 
 window.addEventListener('hashchange', router);

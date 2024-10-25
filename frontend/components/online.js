@@ -296,6 +296,15 @@ function setupGameModalEventListeners(modal, game) {
             const response = await joinGame(game.game_id);
             if (response) {
                 handleSuccessfulJoinGame(game);
+            } else {
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'alert alert-danger';
+                errorMessage.textContent = 'Game doesnt exist';
+                modal.querySelector('.modal-body').appendChild(errorMessage);
+
+                setTimeout(() => {
+                    errorMessage.remove();
+                }, 3000);
             }
         }
     });
@@ -536,6 +545,15 @@ function setupModalEventListeners(modal, tournament) {
             const response = await joinTournament(tournament.tournament_id);
             if (response) {
                 handleSuccessfulJoinTournament(tournament);
+            } else {
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'alert alert-danger';
+                errorMessage.textContent = 'Tournament doesnt exist';
+                modal.querySelector('.modal-body').appendChild(errorMessage);
+                
+                setTimeout(() => {
+                    errorMessage.remove();
+                }, 3000);
             }
         }
     });

@@ -16,7 +16,7 @@ export async function getGames() {
             return games.data;
         } else {
             console.error("Fetch failed with status:", response.status);
-            console.log("Response",response);
+            console.log("Response", response);
             return [];
         }
     } catch (error) {
@@ -42,7 +42,7 @@ export async function createGame() {
             return res;
         } else {
             console.error("Fetch failed with status:", response.status);
-            console.log("Response error:",response);
+            console.log("Response error:", response);
             return [];
         }
     } catch (error) {
@@ -55,17 +55,21 @@ export async function createGame() {
 export async function joinGame(id) {
     const url = `/api/games/join/${id}`;
     const token = sessionStorage.getItem('auth_token');
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Authorization': token,
-            },
-        });
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Authorization': token,
+        },
+    });
 
+    if (response.status === 404) {
+        return false;
+    }
+    if (response.ok) {
         return response.ok;
-    } catch (error) {
-        console.error("There was a problem with the Fetch request:", error.message);
+    } else {
+        console.error("Fetch failed with status:", response.status);
+        console.log("Response error:", response);
         return [];
     }
 }
