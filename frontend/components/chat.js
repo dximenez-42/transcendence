@@ -33,6 +33,7 @@ const createUserListItem = (user, currentSocket) => {
                 currentSocket.send(JSON.stringify({ "content": "block", "content_type": messageType }));
             }
         }
+        return;
     });
 
     li.appendChild(userInfo);
@@ -47,6 +48,7 @@ const createUserListItem = (user, currentSocket) => {
 };
 
 const createMessageElement = (message, userId) => {
+    console.log(message);
     const div = document.createElement('div');
     div.className = `message ${message.sender?.id && message.sender.id == userId ? 'my-message' : 'other-message'}`;
 
