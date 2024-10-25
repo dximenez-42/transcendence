@@ -23,7 +23,8 @@ def list(request):
             'username': user.username,
             'room_id': chat.room_id,
             'chat_name': chat.name,
-            'is_blocked': UserBlocked.objects.filter(user=request.user, blocked=user).exists() or UserBlocked.objects.filter(user=user, blocked=request.user).exists()
+            'im_blocked': UserBlocked.objects.filter(user=user, blocked=request.user).exists(),
+            'is_blocked': UserBlocked.objects.filter(user=request.user, blocked=user).exists()
         })
 
     users = User.objects.exclude(id=request.user.id).order_by('created_at').reverse().all()
@@ -37,7 +38,8 @@ def list(request):
             'username': user.username,
             'room_id': None,
             'chat_name': None,
-            'is_blocked': UserBlocked.objects.filter(user=request.user, blocked=user).exists() or UserBlocked.objects.filter(user=user, blocked=request.user).exists()
+            'im_blocked': UserBlocked.objects.filter(user=user, blocked=request.user).exists(),
+            'is_blocked': UserBlocked.objects.filter(user=request.user, blocked=user).exists()
         })
 
     return JsonResponse({
