@@ -122,14 +122,50 @@ export async function tournamentList() {
                 <div class="col-4">
                     <p data-translate-key="points">6 points</p>
                 </div>
-            `;
-
+                `;
             tournamentDiv.innerHTML += `
                 <div class="col-4">
                     <div>
                         <button class="tc-btn my-2 py-2"><h4><b>JOIN</b></h4></button>
                     </div>
                 </div>`;
+            
+            tournamentDiv.addEventListener('click', () => {
+                console.log("click")
+                const modal = document.createElement('div');
+                modal.className = 'modal fade';
+                modal.id = `tournamentModal-${tournament.id}`;
+                modal.setAttribute('tabindex', '-1');
+                modal.setAttribute('aria-labelledby', `tournamentModalLabel-${tournament.id}`);
+                modal.setAttribute('aria-hidden', 'true');
+
+                modal.innerHTML = `
+                    <div class="modal-dialog">
+                        <div class="tc-modal modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="tournamentModalLabel-${tournament.id}">${tournament.host_username}'s Tournament</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Host: ${tournament.host_username}</p>
+                                <p>Points: ${tournament.points}</p>
+                                <p>Players: ${tournament.players}/${tournament.max_players}</p>
+                                <!-- Add more tournament details here -->
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn tc-btn" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn tc-btn">Join Tournament</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(modal);
+
+                const bootstrapModal = new bootstrap.Modal(modal);
+                bootstrapModal.show();
+            });
+                
 
             container.appendChild(tournamentDiv);
         }
@@ -213,7 +249,7 @@ export function setMatchPoints() {
     submit.addEventListener('click', async () => {
         const response = await createGame()
         if (response)
-            window.location.hash = "game_settings";
+            window.location.hash = "online";
     })
 };
 

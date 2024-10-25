@@ -25,7 +25,6 @@ export async function getChats() {
 }
 
 export async function getChatMessages(chat_id) {
-    console.log(chat_id);
     if (chat_id < 0)
         return null;
     const url = `api/chat/messages/${chat_id}`;
@@ -39,6 +38,8 @@ export async function getChatMessages(chat_id) {
     if (response.ok) {
         const {messages} = await response.json();
         return messages;
+    } else if (response.status === 403) {
+        return null;
     } else {
         console.error("Fetch failed with status:", response.status);
         return [];

@@ -44,15 +44,17 @@ async function chatUserList(currentSocket) {
             // Lógica para bloquear al usuario
             lockIcon.addEventListener('click', async () => {
                 if (user.is_blocked) {
-                    const blocked = await unblockUser(user.id);
-                    if (blocked) {
+                    const unblocked = await unblockUser(user.id);
+                    if (unblocked) {
                         lockIcon.textContent = '🔓';
+                        user.is_blocked = false;
                         renderChat(user);
                     }
                 } else {
                     const blocked = await blockUser(user.id);
                     if (blocked) {
                         lockIcon.textContent = '🔒';
+                        user.is_blocked = true;
                         renderChat(user);
                     }
                 }
@@ -81,7 +83,7 @@ export async function renderChat(user) {
     let id = -1;
     const userId = sessionStorage.getItem('id');
 
-
+    console.log(user);
     if (user) {
         const { room_id } = user;
         currentSocket = startSocket(room_id);
@@ -111,7 +113,7 @@ export async function renderChat(user) {
         `;
 
         chatMessagesElement.appendChild(blockedMessage);
-
+        deleteChatForm();
         return;
     }
 
@@ -155,7 +157,7 @@ export async function renderChat(user) {
             chatMessagesElement.appendChild(div);
 
         });
-        createChatFrom();
+        createChatForm();
 
         // Desplazar hacia abajo para mostrar los mensajes más recientes
         chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
@@ -290,8 +292,25 @@ function startSocket(room_id) {
     return chatSocket;
 }
 
+function deleteChatForm() {
+    console.log("deleteChatForm");
+    // Remove the send invitation button
+    const sendInvitationButton = document.getElementById('sendInvitationButton');
+    if (sendInvitationButton) {
+        sendInvitationButton.remove();
+    }
 
-function createChatFrom() {
+    // Remove the chat form
+    const chatForm = document.getElementById('chatForm');
+    if (chatForm) {
+        chatForm.remove();
+    }
+
+
+}
+
+
+function createChatForm() {
     // Seleccionar el contenedor donde se crearán los elementos
     const chatFormContainer = document.getElementById('chat-form-container');
 

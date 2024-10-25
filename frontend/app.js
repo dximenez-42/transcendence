@@ -1,5 +1,5 @@
 import { loadSelectedChatOnPageLoad } from './components/chat.js';
-import { renderGame, selectMode } from './game/main.js';
+import { renderGame } from './game/main.js';
 import { renderHome } from './components/home.js';
 import { renderLogin } from './components/login.js';
 import { renderGameSettings, setMatchPoints } from './components/gameSettings.js';
@@ -58,8 +58,7 @@ function router() {
         '#login': { url: 'login.html', render: renderLogin },
         '#game': { url: 'game.html', render: renderGame },
         '#profile': { url: 'profile.html', render: renderProfile },
-        '#vs_settings': { url: '1vs1_settings.html', render:selectMode },
-        '#game_settings': { url: 'game_settings.html', render: renderGameSettings},
+        '#online': { url: 'online.html', render: renderGameSettings},
         '#create_game': { url: 'create_game.html', render: setMatchPoints},
         '#tournament_settings': { url: 'tournament_settings.html', render: () => console.log('Tournament page loaded') }
     };
