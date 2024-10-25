@@ -1,6 +1,11 @@
 import { setUserSession } from "../api/session.js";
 import { getUser } from "../api/users.js";
 
+//////////////////////////////////////// // add new imports modifyed by gao
+import { createWebSocket } from "../game/socket.js";
+import { gameInfo } from "../game/constants.js";
+////////////////////////////////////////
+
 export function renderLogin() {
     
     const loginButton = document.getElementById("login-button");
@@ -23,6 +28,12 @@ window.onload = async function() {
         sessionStorage.setItem('username', user.username);
         sessionStorage.setItem('email', user.email);
         sessionStorage.setItem('name', user.name);
+
+        //////////////////////////////////////// // add new code modifyed by gao
+        gameInfo.user_name = user.username;
+        gameInfo.user_id = code;
+        createWebSocket();
+        ////////////////////////////////////////
 
         window.location.hash = 'home';
     }

@@ -1,14 +1,19 @@
 import { keyMovePad, setGameType, getGameType, setDomPlayerScore, setDomEnamyScore, setDomCanvas} from './pong.js';
-import { FPS, FPS_BALL, GAME_TIME} from './constants.js';
-import { createWebSocket } from './socket.js';
+import { FPS, GAME_TIME, gameInfo} from './constants.js'; // modifyed by gao
 import { GameInfoHandler } from './infoHandler.js';
 import { hideNav, showNav } from '../components/home.js';
-import { createGame, getGames } from '../api/game.js';
-import { loadLanguage } from '../api/languages.js';
 
 let timer = GAME_TIME;
 // ------------- GAME SETTINGS ----------------
 
+export function showOverlay() {
+    document.getElementById('overlay').style.display = 'flex';
+}
+
+
+export function hideOverlay() {
+    document.getElementById('overlay').style.display = 'none';
+}
 
 export function selectMode() {
 	const buttonLocalGame = document.getElementById('localGameButton');
@@ -24,14 +29,20 @@ export function selectMode() {
 	if (buttonOnlineGame) {
 		buttonOnlineGame.addEventListener('click', () => {
 			setGameType('online');
-			window.location.hash = "online";
+			//window.location.hash = "online";
+            window.location.hash = "game_online";
 		});
     }
 }
 
 // ----------------------------------------
 
-export let startGame = createGameController();
+export let startGame = createGameController();  // this function will be called to start or pause the game, for online mode, it will start render or stop render the game
+                                                // only local game it will caculate the game logic and render the game, for online mode, it will only render the game
+                                                // when this function is called secend time, it will pause the game
+                                                // for local mode, it will pause the game and stop the game logic
+                                                // for online mode, it will only stop the game render
+
 
 function startTimer(intervalIdTimerRef) {
     let display = document.getElementById("timer-display");
@@ -62,10 +73,22 @@ function pauseTimer(intervalIdTimerRef) {
     }
 }
 
+export function renderGameOnline() {
+
+	hideNav();
+	
+    showOverlay();
+	setGame('gameWindow', 'playerName', 'enamyName', 'playerScore', 'enamyScore')
+    setGameType('online');
+    GameInfoHandler.sendMatchRequest(false);
+    //console.log('gameType:', getGameType());
+    // if (gameInfo.socketConnection === true) // if the connection is already established then we can control the game
+    //     startGame();
+
+}
 
 
-
-export function renderGame(){
+export function renderGame(){  // render_local_game
 	const buttonStart = document.getElementById('pause');
 	hideNav();
 
@@ -88,54 +111,40 @@ export function renderGame(){
 
 }
 
-// function infoHandler(newInfo, HTMLplayerNameID, HTMLenamyNameID) {
-//     switch (newInfo.action) {
-//         case 'initInfo':
-//             if (HTMLenamyNameID && HTMLplayerNameID) {
-//                 const elementPlayerName = document.getElementById(HTMLplayerNameID);
-//                 const elementEnamyName = document.getElementById(HTMLenamyNameID);
-//                 elementEnamyName.innerHTML = newInfo.enamyName;
-//                 elementPlayerName.innerHTML = newInfo.playerName;
-//                 setPlayerId(newInfo.userId);
-//             }
-//             break;
-//         case 'updatePad':
-//             setPositionPad(newInfo.newPosition, meshPadEnamy);
-//             break;
-//         case 'updateBall':
-//             setPositionBall(newInfo.newPosition, meshBall);
-//             break;
-//         case 'gameOver':
-//             alert('Game Over');
-//             closeWebSocket();
-//             break;
-//         default:
-//             console.error('Invalid info type from server.');
-//     }
-// }
-
 export function setGame(HTMLcanvasID, HTMLplayerNameID, HTMLenamyNameID, HTMLplayerScoreID, HTMLenamyScoreID) {
 
 	setDomEnamyScore(HTMLenamyScoreID);
 	setDomPlayerScore(HTMLplayerScoreID);
 	setDomCanvas(HTMLcanvasID);
+    gameInfo.DOMPlayerNameID = HTMLplayerNameID;
+    gameInfo.DOMEnamyNameID = HTMLenamyNameID;
+    gameInfo.DOMEnamyScoreID = HTMLenamyScoreID;
+    gameInfo.DOMPlayerScoreID = HTMLplayerScoreID;
+    
     let cur_gameInfoHandler = new GameInfoHandler (HTMLplayerNameID, HTMLenamyNameID);
-	if (getGameType() === 'local') {
+	//console.log(getGameType);
 
-		const elementPlayerName = document.getElementById(HTMLplayerNameID);
-		const elementEnamyName = document.getElementById(HTMLenamyNameID);
-		elementEnamyName.innerHTML = 'Player 2';
-		elementPlayerName.innerHTML = 'Player 1';
+    const elementPlayerName = document.getElementById(HTMLplayerNameID);
+    const elementEnamyName = document.getElementById(HTMLenamyNameID);
+    if (gameInfo.playerName === '' || gameInfo.enamyName === '') {
+        elementEnamyName.innerHTML = 'Player 2';
+        elementPlayerName.innerHTML = 'Player 1';
+    }else {
+
+        elementEnamyName.innerHTML = gameInfo.enamyName;
+        elementPlayerName.innerHTML = gameInfo.playerName;
+    }
+
+	if (getGameType() === 'local') {
 		// setGameType(gameType);
 		console.log('Game type set to local');
 	} else if (getGameType() === 'online') {
-
 		// setGameType(gameType);
 		console.log('Game type set to online');
-		createWebSocket(cur_gameInfoHandler);
+		// createWebSocket(cur_gameInfoHandler);
 	} else {
 		console.error('Invalid game type.');
-		window.location.href = "#home";
+		window.location.href = "#vs_settings";
 	}
 }
 
@@ -143,7 +152,7 @@ function createGameController() {
 
 	let gameState = false;
     let intervalId = null;
-    let intervalIdBall = null;
+    //let intervalIdBall = null;
     let ballState = false;
     let intervalIdTimerRef = { current: null };
 
@@ -159,8 +168,8 @@ function createGameController() {
         if (gameState) {
 
             clearInterval(intervalId);
-            if (getGameType() === 'online')
-                clearInterval(intervalIdBall);
+            // if (getGameType() === 'online')
+            //     clearInterval(intervalIdBall);
             gameState = false;
             ballState = false;
             pauseTimer(intervalIdTimerRef);
@@ -169,8 +178,8 @@ function createGameController() {
 
             intervalId = setInterval(keyMovePad, 1000 / FPS);
             startTimer(intervalIdTimerRef);
-            if (getGameType() === 'online')
-                intervalIdBall = setInterval(GameInfoHandler.sendPositionBall, 1000 / FPS_BALL);
+            // if (getGameType() === 'online')
+            //     intervalIdBall = setInterval(GameInfoHandler.sendPositionSyn, 1000 / FPS_INFO);
             gameState = true;
             ballState = true;
             console.log('Game started');

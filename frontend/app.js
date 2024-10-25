@@ -1,10 +1,14 @@
 import { loadSelectedChatOnPageLoad } from './components/chat.js';
-import { renderGame } from './game/main.js';
+//import { renderGame } from './game/main.js';  // modifyed by gao
 import { renderHome } from './components/home.js';
 import { renderLogin } from './components/login.js';
 import { renderonline, setMatchPoints } from './components/online.js';
 import { renderProfile } from './components/profile.js';
 import { getUser } from './api/users.js';
+
+//////////////////////////////////////// // add new imports
+import { renderGame, renderGameOnline, selectMode } from './game/main.js';
+////////////////////////////////////////
 
 // Load and render content based on URL
 function loadContent(url, callback) {
@@ -70,7 +74,8 @@ function router() {
         '#profile': { url: 'profile.html', render: renderProfile },
         '#online': { url: 'online.html', render: renderonline},
         '#create_game': { url: 'create_game.html', render: setMatchPoints},
-        '#tournament_settings': { url: 'tournament_settings.html', render: () => console.log('Tournament page loaded') }
+        '#tournament_settings': { url: 'tournament_settings.html', render: () => console.log('Tournament page loaded') },
+        '#game_online': { url: 'game_online.html', render: renderGameOnline}, // add new route, modified by gao
     };
 
     const route = routes[hash];
