@@ -116,7 +116,7 @@ def list(request):
 
     data = []
     for game in games:
-        if UserBlocked.objects.filter(user=request.user, blocked_id=game.host_id).exists():
+        if UserBlocked.objects.filter(user=request.user, blocked_id=game.host_id).exists() or UserBlocked.objects.filter(user_id=game.host_id, blocked=request.user).exists():
             continue
 
         username = User.objects.get(id=game.host_id).username

@@ -65,7 +65,7 @@ def list(request):
 
     data = []
     for tournament in tournaments:
-        if UserBlocked.objects.filter(user=request.user, blocked_id=tournament.host_id).exists():
+        if UserBlocked.objects.filter(user=request.user, blocked_id=tournament.host_id).exists() or UserBlocked.objects.filter(user_id=tournament.host_id, blocked=request.user).exists():
             continue
 
         username = User.objects.get(id=tournament.host_id).username
