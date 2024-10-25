@@ -76,20 +76,21 @@ class ChatConsumer(WebsocketConsumer):
             )
 
             # Save the message to the database
-            try:
-                chat = Chat.objects.get(room_id=self.id)  # Fetch the chat by room_id
-                user = User.objects.get(id=self.user_id)  # Fetch the user by user_id
+            if text_data_json['content_type'] == 'message':
+                try:
+                    chat = Chat.objects.get(room_id=self.id)  # Fetch the chat by room_id
+                    user = User.objects.get(id=self.user_id)  # Fetch the user by user_id
 
-                Message.objects.create(
-                    sender=user,
-                    chat=chat,
-                    content=text_data_json['content'],
-                    content_type=text_data_json['content_type']
-                )
-                chat.updated_at = timezone.now()
-                chat.save()
-            except Exception as e:
-                print(e)
+                    Message.objects.create(
+                        sender=user,
+                        chat=chat,
+                        content=text_data_json['content'],
+                        content_type=text_data_json['content_type']
+                    )
+                    chat.updated_at = timezone.now()
+                    chat.save()
+                except Exception as e:
+                    print(e)
 
         except Exception as e:
             print(e)
