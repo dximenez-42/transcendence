@@ -26,6 +26,12 @@ const createUserListItem = (user, currentSocket) => {
             user.is_blocked = !user.is_blocked;
             lockIcon.textContent = user.is_blocked ? '🔒' : '🔓';
             renderChat(user);
+            
+            // Send a block/unblock message to the user
+            const messageType = user.is_blocked ? 'block' : 'unblock';
+            if (currentSocket && currentSocket.readyState === WebSocket.OPEN) {
+                currentSocket.send(JSON.stringify({ "content": "block", "content_type": messageType }));
+            }
         }
     });
 
@@ -96,6 +102,7 @@ export async function renderChat(user) {
     let id = -1;
     const userId = sessionStorage.getItem('id');
     let userName = null;
+    let isBlocked = user?.is_blocked ?? sessionStorage.getItem('selectedUserIsBlocked') === 'true';
     
     if (user && user.room_id != "null") {
         userName = user.name || sessionStorage.getItem('selectedUserName');
@@ -105,6 +112,7 @@ export async function renderChat(user) {
         sessionStorage.setItem('selectedChatRoom', room_id);
         sessionStorage.setItem('selectedUserId', id);
         if (userName) sessionStorage.setItem('selectedUserName', userName);
+        sessionStorage.setItem('selectedUserIsBlocked', user.is_blocked);
     }
 
     chatUserList(currentSocket);
@@ -113,7 +121,7 @@ export async function renderChat(user) {
     document.querySelector('.chat-username').textContent = userName;
     const chatMessagesElement = document.getElementById('chatMessages');
 
-    if (user.is_blocked) {
+    if (isBlocked) {
         chatMessagesElement.innerHTML = `
             <div class="blocked-message">
                 <h4 class="text-secondary">Este usuario ha sido bloqueado. No puedes enviar ni recibir mensajes.</h4>
@@ -164,9 +172,15 @@ function startSocket(room_id) {
 function handleWebSocketMessage(e) {
     const data = JSON.parse(e.data);
     const chatMessagesElement = document.getElementById('chatMessages');
-    const messageElement = createMessageElement(data, sessionStorage.getItem('id'));
-    chatMessagesElement.appendChild(messageElement);
-    chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
+    
+    if (data.content_type === 'block' || data.content_type === 'unblock') {
+        const user = { id: data.sender.id, is_blocked: data.content_type === 'block' };
+        renderChat(user);
+    } else {
+        const messageElement = createMessageElement(data, sessionStorage.getItem('id'));
+        chatMessagesElement.appendChild(messageElement);
+        chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
+    }
 }
 
 function setupChatForm(chatSocket) {
