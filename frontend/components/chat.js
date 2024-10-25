@@ -74,7 +74,6 @@ const createMessageElement = (message, userId) => {
         div.appendChild(invitationText);
         div.appendChild(joinButton);
     } else {
-        console.log(message.content);
         div.textContent = message.content;
     }
 
@@ -103,6 +102,7 @@ export async function renderChat(user) {
     const userId = sessionStorage.getItem('id');
     let userName = null;
     let isBlocked = user?.is_blocked ?? sessionStorage.getItem('selectedUserIsBlocked') === 'true';
+    const imBlocked = user?.im_blocked ?? sessionStorage.getItem('imBlocked') === 'true';
     
     if (user && user.room_id != "null") {
         userName = user.name || sessionStorage.getItem('selectedUserName');
@@ -113,6 +113,7 @@ export async function renderChat(user) {
         sessionStorage.setItem('selectedUserId', id);
         if (userName) sessionStorage.setItem('selectedUserName', userName);
         sessionStorage.setItem('selectedUserIsBlocked', user.is_blocked);
+        sessionStorage.setItem('selectedUserImBlocked', user.im_blocked);
     }
 
     chatUserList(currentSocket);
@@ -125,6 +126,19 @@ export async function renderChat(user) {
         chatMessagesElement.innerHTML = `
             <div class="blocked-message">
                 <h4 class="text-secondary">Este usuario ha sido bloqueado. No puedes enviar ni recibir mensajes.</h4>
+                <div class="w-25">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512" fill="#6c757d"><path d="M368 192h-16v-80a96 96 0 10-192 0v80h-16a64.07 64.07 0 00-64 64v176a64.07 64.07 0 0064 64h224a64.07 64.07 0 0064-64V256a64.07 64.07 0 00-64-64zm-48 0H192v-80a64 64 0 11128 0z"/></svg>
+                </div>
+            </div>
+        `;
+        deleteChatForm();
+        return;
+    }
+
+    if (imBlocked) {
+        chatMessagesElement.innerHTML = `
+            <div class="blocked-message">
+                <h4 class="text-secondary">Este usuario te ha bloqueado. No puedes enviar ni recibir mensajes.</h4>
                 <div class="w-25">
                     <svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512" fill="#6c757d"><path d="M368 192h-16v-80a96 96 0 10-192 0v80h-16a64.07 64.07 0 00-64 64v176a64.07 64.07 0 0064 64h224a64.07 64.07 0 0064-64V256a64.07 64.07 0 00-64-64zm-48 0H192v-80a64 64 0 11128 0z"/></svg>
                 </div>
@@ -172,9 +186,8 @@ function startSocket(room_id) {
 function handleWebSocketMessage(e) {
     const data = JSON.parse(e.data);
     const chatMessagesElement = document.getElementById('chatMessages');
-    
     if (data.content_type === 'block' || data.content_type === 'unblock') {
-        const user = { id: data.sender.id, is_blocked: data.content_type === 'block' };
+        const user = { id: data.id, im_blocked: data.content_type === 'block' };
         renderChat(user);
     } else {
         const messageElement = createMessageElement(data, sessionStorage.getItem('id'));
