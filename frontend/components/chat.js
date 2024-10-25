@@ -42,7 +42,7 @@ const createUserListItem = (user, currentSocket) => {
 
 const createMessageElement = (message, userId) => {
     const div = document.createElement('div');
-    div.className = `message ${message.sender.id == userId ? 'my-message' : ''}`;
+    div.className = `message ${message.sender?.id && message.sender.id == userId ? 'my-message' : 'other-message'}`;
 
     if (message.content_type === 'invitation') {
         div.classList.add("invitation-message");
@@ -68,6 +68,7 @@ const createMessageElement = (message, userId) => {
         div.appendChild(invitationText);
         div.appendChild(joinButton);
     } else {
+        console.log(message.content);
         div.textContent = message.content;
     }
 
@@ -234,7 +235,7 @@ function createChatForm() {
     chatFormContainer.innerHTML = `
         <button id="sendInvitationButton" class="px-3">Invitar partida</button>
         <form id="chatForm" class="chat-form w-100">
-            <input class="tc-input w-100" id="messageInput" type="text" data-translate-key="write_message" placeholder="Escribe un mensaje...">
+            <input class="tc-input w-100" id="messageInput" autocomplete="off" type="text" data-translate-key="write_message" placeholder="Escribe un mensaje...">
             <input id="sendButton" type="submit" class="px-3" value="Enviar" data-translate-key="send">
         </form>
     `;
