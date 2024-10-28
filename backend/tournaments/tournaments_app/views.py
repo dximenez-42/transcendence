@@ -28,8 +28,8 @@ def create(request):
     if body['max_players'] < 3:
         return JsonResponse({'error': 'Max players must be at least 3.'}, status=400)
 
-    if Tournament.objects.filter(host_id=request.user.id, status='open').count() >= 2:
-        return JsonResponse({'error': 'User cannot host more than 2 tournaments.'}, status=400)
+    if Tournament.objects.filter(host_id=request.user.id, status='open').count() >= 1:
+        return JsonResponse({'error': 'User cannot host more than 1 tournament.'}, status=400)
     
     tournament = True
     while tournament:
