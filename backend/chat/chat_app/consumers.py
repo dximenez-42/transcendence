@@ -12,6 +12,8 @@ class ChatConsumer(WebsocketConsumer):
             self.user_id = self.scope['url_route']['kwargs']['user_id']
             self.room_group_name = 'chat_room_%s' % self.id
 
+            self.user = User.objects.get(id=self.user_id)  # Fetch the user by user_id
+
             # Add the user to a group
             async_to_sync(self.channel_layer.group_add)(
                 self.room_group_name,
@@ -100,9 +102,14 @@ class ChatConsumer(WebsocketConsumer):
         try:
             if event['id'] != self.user_id:
                 self.send(text_data=json.dumps({
-                    'id': event['id'],
+                    # 'id': event['id'],
                     'content': event['content'],
                     'content_type': event['content_type'],
+                    'sender': {
+                        'id': self.user.id,
+                        'username': self.user.username,
+                        'name': self.user.name,
+                    },
                     'datetime': event['datetime'],
                 }))
         except Exception as e:
