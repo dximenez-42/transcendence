@@ -4,10 +4,10 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import async_to_sync
 from django.utils import timezone
 import threading
-import uuid
 import time
 import math
 import asyncio
+from games_app.extra.utiles import *
 
 
 TABLE_HEIGHT = 100
@@ -17,7 +17,7 @@ PAD_WIDTH = 10
 BALL_RADIUS = 4
 GAME_TIME = 150
 FPS = 60
-connected_users = {} # user_id: websocket
+connected_users_id = {} # user_id: websocket
 waiting_1v1_room = [] # template matching queuewww
 game_states = {} # game_id: {ball_x, ball_y, ball_speed_x, ball_speed_y, pad_1, pad_2, score_1, score_2, running}
 games = {} # user_id: game_id
@@ -27,18 +27,16 @@ rooms = {} # user_id: room_id
 
 # game_lock = threading.Lock() # not needed
 
-def generate_unique_id():
-    return str(uuid.uuid4())
-
 class GamesConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         try:
             
             self.user_name = self.scope['url_route']['kwargs']['user_name']  # user_name
             self.user_id = self.scope['url_route']['kwargs']['user_id']  # user_id (token)
+            self.room_id = None
 
             await self.accept()
-            connected_users[self.user_id] = self
+            connected_users_id[self.user_id] = self
             
             await self.send(text_data=json.dumps({
                 'action': 'server_confirm_connection',
@@ -49,8 +47,8 @@ class GamesConsumer(AsyncWebsocketConsumer):
             print(e)
 
     async def disconnect(self, close_code): # need to rewrite
-        if self.user_id in connected_users:
-            del connected_users[self.user_id]
+        if self.user_id in connected_users_id:
+            del connected_users_id[self.user_id]
 
     async def receive(self, text_data): 
         try:
@@ -65,14 +63,17 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 case 'client_match_request':
                     await self.handle_match_request(text_data_json['is_tournament'])
                 case 'client_move_pad':
-                    if text_data_json['game_id'] in game_states:
-                        game_state = game_states[text_data_json['game_id']]
-                        newPosition = game_state['pad_' + text_data_json['user_name']] + text_data_json['pad_y']
-                        if (newPosition + PAD_LENGTH / 2) > TABLE_HEIGHT / 2:
-                            newPosition = TABLE_HEIGHT / 2 - PAD_LENGTH / 2
-                        if (newPosition - PAD_LENGTH / 2) < -TABLE_HEIGHT / 2:
-                            newPosition = -TABLE_HEIGHT / 2 + PAD_LENGTH / 2
-                        game_state['pad_' + text_data_json['user_name']] = newPosition
+                    self.handle_move_pad(text_data_json)
+                case 'client_create_room':
+                    await self.create_room()
+                case 'client_join_room':
+                    await self.join_room(text_data_json['room_id'])
+                case 'client_leave_room':
+                    await self.leave_room()
+                case 'client_start_game_room':
+                    await self.start_game_room()
+                case 'client_get_room_list_by_id':
+                    await self.get_room_list_by_id()
         except Exception as e:
             print(e)
     
@@ -183,11 +184,6 @@ class GamesConsumer(AsyncWebsocketConsumer):
                         game_state['ball_speed_y'] *= -1
                     
                     if game_state['score_' + self.user_name] > 5 or game_state['score_' + self.opp_name] > 5:
-                        # self.send(json.dumps({
-                        
-                        #     'score_' + self.user_name: game_state['score_' + self.user_name],
-                        #     'score_' + self.opp_name: game_state['score_' + self.opp_name],
-                        # }))
                         await self.end_game(self.game_id)
                         break
                     game_state['ball_x'] += game_state['ball_speed_x']
@@ -216,8 +212,8 @@ class GamesConsumer(AsyncWebsocketConsumer):
         game_state = game_states[game_id]
 
         # send the ball position to both players
-        if self.user_id in connected_users:
-            await connected_users[self.user_id].send(text_data=json.dumps({
+        if self.user_id in connected_users_id:
+            await connected_users_id[self.user_id].send(text_data=json.dumps({
                 'action': 'server_update_position',
                 'ball_x': game_state['ball_x'],
                 'ball_y': game_state['ball_y'],
@@ -227,8 +223,8 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 'pad_' + self.opp_name: game_state['pad_' + self.opp_name]
             }))
 
-        if self.opp_id in connected_users:
-            await connected_users[self.opp_id].send(text_data=json.dumps({
+        if self.opp_id in connected_users_id:
+            await connected_users_id[self.opp_id].send(text_data=json.dumps({
                 'action': 'server_update_position',
                 'ball_x': -game_state['ball_x'],
                 'ball_y': -game_state['ball_y'],
@@ -238,16 +234,6 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 'pad_' + self.opp_name: game_state['pad_' + self.opp_name]
             }))
 
-
-    # def update_pad_position(self, data):
-    #     if 'to_user_id' in data and data['to_user_id'] in connected_users:
-    #         connected_users[data['to_user_id']].send(text_data=json.dumps({
-    #             'action': 'server_update_position',
-    #             'ball_x': data['ball_x'],
-    #             'ball_y': data['ball_y'],
-    #             'pad_y': data['pad_y']
-    #         }))
-
     async def end_game(self, game_id):
         if game_id in game_states:
             game_states[game_id]["running"] = False
@@ -256,8 +242,227 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 'action': 'server_game_over',
                 'is_tournament': False
             }))
-            await connected_users[self.opp_id].send(json.dumps({
+            await connected_users_id[self.opp_id].send(json.dumps({
                 'action': 'server_game_over',
                 'is_tournament': False
             }))
+    
+    def handle_move_pad(self, data_json):
+        if data_json['game_id'] in game_states:
+            game_state = game_states[data_json['game_id']]
+            newPosition = game_state['pad_' + data_json['user_name']] + data_json['pad_y']
+            if (newPosition + PAD_LENGTH / 2) > TABLE_HEIGHT / 2:
+                newPosition = TABLE_HEIGHT / 2 - PAD_LENGTH / 2
+            if (newPosition - PAD_LENGTH / 2) < -TABLE_HEIGHT / 2:
+                newPosition = -TABLE_HEIGHT / 2 + PAD_LENGTH / 2
+            game_state['pad_' + data_json['user_name']] = newPosition
+
+    async def create_room(self):
+        room_id = generate_unique_id()
+        self.room_id = room_id
+        rooms[self.user_id] = room_id
+        room_states[room_id] = {
+            'players_1': self.user_id,
+            'room_state': 'open',
+            'numbers': 1,
+            'game_times': 0,
+            'room_id': room_id
+        }
+        await self.send(json.dumps({
+            'action': 'server_room_created',
+            'room_id': room_id
+        }))
+        
+    async def join_room(self, room_id):
+        if room_id in room_states:
+            if room_states[room_id]['room_state'] == 'open':
+                room_states[room_id]['numbers'] += 1
+                room_states[room_id]['game_times'] += 1
+                cur_num = room_states[room_id]['numbers']
+                room_states[room_id][f'players_{cur_num}'] = self.user_id
+                rooms[self.user_id] = room_id
+                self.room_id = room_id
+                await self.send(json.dumps({
+                    'action': 'server_room_joined',
+                    'room_id': room_id
+                }))
+            else:
+                await self.send(json.dumps({
+                    'action': 'server_room_joined_denied',
+                }))
+        else:
+            await self.send(json.dumps({
+                'action': 'server_room_not_exist'
+            }))
+    
+    async def leave_room(self):
+        
+        if self.room_id is None:
+            await self.send(json.dumps({
+                'action': 'server_room_left_error',
+                'error': 'User not in any room'
+            }))
+            return
+        if self.room_id not in room_states:
+            await self.send(json.dumps({
+                'action': 'server_room_left_error',
+                'error': 'Room not exist'
+            }))
+            return
+        room_id = self.room_id
+        room = room_states[room_id]
+
+        # 如果房间状态不是 'open'，则禁止离开
+        if room['room_state'] != 'open':
+            await self.send(json.dumps({
+                'action': 'server_room_left_error',
+                'error': 'Room is closed'
+            }))
+            return
+
+        # 房主离开房间逻辑
+        if room['players_1'] == self.user_id:
+            if room['numbers'] == 1:
+                del rooms[self.user_id]
+                del room_states[room_id]
+                self.room_id = None
+                await self.send(json.dumps({
+                    'action': 'server_room_left_success'
+                }))
+            else:
+                del rooms[self.user_id]
+                self.room_id = None
+                for i in range(2, room['numbers'] + 1):
+                    player_key = f'players_{i}'
+                    if player_key in room:
+                        room[f'players_{i - 1}'] = room[player_key]
+                del room[f'players_{room["numbers"]}']
+                room['numbers'] -= 1
+                room['game_times'] -= 1
+                await self.send(json.dumps({
+                    'action': 'server_room_left_success'
+                }))
+                new_host_id = room['players_1']
+                if new_host_id in connected_users_id:
+                    await connected_users_id[new_host_id].send(json.dumps({
+                        'action': 'server_room_host_change',
+                        'new_host_id': new_host_id,
+                        'new_host_name': connected_users_id[new_host_id].user_name
+                    }))
+        else:
+            # 房间成员离开逻辑
+            for i in range(2, room['numbers'] + 1):
+                player_key = f'players_{i}'
+                if player_key in room and room[player_key] == self.user_id:
+                    # 移除该成员，并更新房间信息
+                    for j in range(i + 1, room['numbers'] + 1):
+                        room[f'players_{j - 1}'] = room[f'players_{j}']
+                    room['numbers'] -= 1
+                    room['game_times'] -= 1
+                    del room[f'players_{room["numbers"]}']
+                    del rooms[self.user_id]
+                    self.room_id = None
+                    await self.send(json.dumps({
+                        'action': 'server_room_left_success'
+                    }))
+                    return
             
+            # 如果用户不在房间成员列表中
+            await self.send(json.dumps({
+                'action': 'server_room_left_error'
+            }))
+            
+    async def start_game_room(self):
+        if self.room_id is None:
+            await self.send(json.dumps({
+                'action': 'server_game_start_denied',
+                'error': 'User not in any room'
+            }))
+            return
+        if self.room_id not in room_states:
+            await self.send(json.dumps({
+                'action': 'server_game_start_denied',
+                'error': 'Room not exist'
+            }))
+            return
+        if room_states[self.room_id]['players_1'] != self.user_id:
+            await self.send(json.dumps({
+                'action': 'server_game_start_denied',
+                'error': 'User is not the host'
+            }))
+            return
+        room_id = self.room_id
+        room = room_states[room_id]
+        if room['room_state'] == 'open':
+            if room['numbers'] < 2:
+                await self.send(json.dumps({
+                    'action': 'server_game_start_denied'
+                }))
+            else:
+                room['room_state'] = 'playing'
+                await self.send(json.dumps({
+                    'action': 'server_game_start_success'
+                }))
+                for i in range(1, room['numbers'] + 1):
+                    player_key = f'players_{i}'
+                    if player_key in room:
+                        player_id = room[player_key]
+                        if player_id in connected_users_id:
+                            await connected_users_id[player_id].send(json.dumps({
+                                'action': 'server_game_start_success'
+                            }))
+            
+    async def get_room_list_by_id(self):
+        if self.room_id is None:
+            await self.send(json.dumps({
+                'action': 'server_room_list_error',
+                'error': 'User not in any room'
+            }))
+            return
+        await self.send(json.dumps({
+            'action': 'server_room_list',
+            'room_list': room_states[self.room_id]
+        }))
+    async def get_all_rooms(self):
+        await self.send(json.dumps({
+            'action': 'server_all_rooms',
+            'room_list': room_states
+        }))
+        
+    # async def leave_room(self, room_id):
+    #     if room_id in room_states:
+    #         if room_states[room_id]['room_state'] == 'open':
+    #             if room_states[room_id]['host_id'] == self.user_id:
+    #                 for i in range(1, room_states[room_id]['numbers'] + 1):
+    #                     if f'players_{i}' in room_states[room_id]:
+    #                         player = connected_users_id[room_states[room_id][f'players_{i}']]
+    #                         await player.send(json.dumps({
+    #                             'action': 'server_room_deleted',
+    #                         }))
+    #                         del rooms[player.user_id]
+    #                 del room_states[room_id]
+    #                 del rooms[self.user_id]
+    #                 await self.send(json.dumps({
+    #                     'action': 'server_room_deleted',
+    #                 }))
+    #             else:
+    #                 for i in range(1, room_states[room_id]['numbers'] + 1):
+    #                     if f'players_{i}' in room_states[room_id] and room_states[room_id][f'players_{i}'] == self.user_id:
+    #                         del room_states[room_id][f'players_{i}']
+    #                         del rooms[self.user_id]
+    #                         room_states[room_id]['numbers'] -= 1
+    #                         await self.send(json.dumps({
+    #                             'action': 'server_room_left_success',
+    #                         }))
+    #                     else:
+    #                         await self.send(json.dumps({
+    #                             'action': 'server_room_left_error',
+    #                         }))
+    #         else:
+    #             await self.send(json.dumps({
+    #                 'action': 'server_room_left_denied',
+    #             }))
+    #     else:
+    #         await self.send(json.dumps({
+    #             'action': 'server_room_not_exist'
+    #         }))
