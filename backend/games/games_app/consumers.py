@@ -74,53 +74,81 @@ class GamesConsumer(AsyncWebsocketConsumer):
                     await self.start_game_room()
                 case 'client_get_room_list_by_id':
                     await self.get_room_list_by_id()
+                case 'client_get_all_rooms':
+                    await self.get_all_rooms()
         except Exception as e:
             print(e)
     
     
             
-    async def handle_match_request(self, is_tournament):
-        if not is_tournament:
-            if len(waiting_1v1_room) >= 1:
-                opp = waiting_1v1_room.pop()
-                game_id = generate_unique_id()
-                opp.game_id = game_id
-                self.game_id = game_id
-                self.opp_id = opp.user_id
-                self.opp_name = opp.user_name
-                opp.opp_id = self.user_id
-                opp.opp_name = self.user_name
+    # async def handle_match_request(self, is_tournament):
+    #     if not is_tournament:
+    #         if len(waiting_1v1_room) >= 1:
+    #             opp = waiting_1v1_room.pop()
+    #             game_id = generate_unique_id()
+    #             opp.game_id = game_id
+    #             self.game_id = game_id
+    #             self.opp_id = opp.user_id
+    #             self.opp_name = opp.user_name
+    #             opp.opp_id = self.user_id
+    #             opp.opp_name = self.user_name
                 
-                await opp.send(text_data=json.dumps({
-                    'action': 'server_game_matched',
-                    'opp_name': self.user_name,
-                    'opp_id': self.user_id,
-                    'game_id': game_id,
-                    'is_tournament': False
-                }))
-                await self.send(text_data=json.dumps({
-                    'action': 'server_game_matched',
-                    'opp_name': opp.user_name,
-                    'opp_id': opp.user_id,
-                    'game_id': game_id,
-                    'is_tournament': False
-                }))
+    #             await opp.send(text_data=json.dumps({
+    #                 'action': 'server_game_matched',
+    #                 'opp_name': self.user_name,
+    #                 'opp_id': self.user_id,
+    #                 'game_id': game_id,
+    #                 'is_tournament': False
+    #             }))
+    #             await self.send(text_data=json.dumps({
+    #                 'action': 'server_game_matched',
+    #                 'opp_name': opp.user_name,
+    #                 'opp_id': opp.user_id,
+    #                 'game_id': game_id,
+    #                 'is_tournament': False
+    #             }))
   
-                await self.start_game(opp)
-            else:
-                waiting_1v1_room.append(self)
-                await self.send(text_data=json.dumps({
-                    'action': 'server_game_waiting',
-                    'is_tournament': False
-                }))
+    #             await self.start_game(opp)
+    #         else:
+    #             waiting_1v1_room.append(self)
+    #             await self.send(text_data=json.dumps({
+    #                 'action': 'server_game_waiting',
+    #                 'is_tournament': False
+    #             }))
 
+    
     async def start_game(self, opp):
+        
+        game_id = generate_unique_id()
+        opp.game_id = game_id
+        self.game_id = game_id
+        self.opp_id = opp.user_id
+        self.opp_name = opp.user_name
+        opp.opp_id = self.user_id
+        opp.opp_name = self.user_name
+                
+        await opp.send(text_data=json.dumps({
+            'action': 'server_game_matched',
+            'opp_name': self.user_name,
+            'opp_id': self.user_id,
+            'game_id': game_id,
+            'is_tournament': False
+        }))
+        await self.send(text_data=json.dumps({
+            'action': 'server_game_matched',
+            'opp_name': opp.user_name,
+            'opp_id': opp.user_id,
+            'game_id': game_id,
+            'is_tournament': False
+        }))
+        
+        
         game_states[self.game_id] = {
             'ball_x': 0, 'ball_y': 0,
             'ball_speed_x': 1.5,
             'ball_speed_y': 1.5,
             'pad_' + self.user_name: 0,
-            'pad_' + opp.user_name: 0,
+            'pad_' + self.opp_name: 0,
             'score_' + self.user_name: 0,
             'score_' + self.opp_name: 0,
             'running': True,
@@ -373,6 +401,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
             }))
             
     async def start_game_room(self):
+        players = []
         if self.room_id is None:
             await self.send(json.dumps({
                 'action': 'server_game_start_denied',
@@ -391,15 +420,16 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 'error': 'User is not the host'
             }))
             return
-        room_id = self.room_id
+        room_id = self.room_id # 这里的room_id是房间号 而且此时的self是房主 即players_1
         room = room_states[room_id]
         if room['room_state'] == 'open':
             if room['numbers'] < 2:
                 await self.send(json.dumps({
-                    'action': 'server_game_start_denied'
+                    'action': 'server_game_start_denied',
+                    'error': 'Not enough players, at least 2 players: current players => ' + str(room['numbers'])
                 }))
             else:
-                room['room_state'] = 'playing'
+                room['room_state'] = 'closed'
                 await self.send(json.dumps({
                     'action': 'server_game_start_success'
                 }))
@@ -408,6 +438,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
                     if player_key in room:
                         player_id = room[player_key]
                         if player_id in connected_users_id:
+                            players.append(connected_users_id[player_id])
                             await connected_users_id[player_id].send(json.dumps({
                                 'action': 'server_game_start_success'
                             }))
