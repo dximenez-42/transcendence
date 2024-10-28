@@ -8,7 +8,6 @@ const createUserListItem = (user, currentSocket) => {
     const li = document.createElement('li');
     li.style.display = 'flex';
     li.style.justifyContent = 'space-between';
-    console.log(user);
     const userInfo = document.createElement('div');
     userInfo.innerHTML = `
         <h5>${user.username}</h5>
@@ -30,7 +29,7 @@ const createUserListItem = (user, currentSocket) => {
             // Send a block/unblock message to the user
             const messageType = user.is_blocked ? 'block' : 'unblock';
             if (currentSocket && currentSocket.readyState === WebSocket.OPEN) {
-                currentSocket.send(JSON.stringify({ "content": "block", "content_type": messageType }));
+                currentSocket.send(JSON.stringify({ "content": null, "content_type": messageType }));
             }
         }
         return;
@@ -48,7 +47,10 @@ const createUserListItem = (user, currentSocket) => {
 };
 
 const createMessageElement = (message, userId) => {
-    if (message.content_type != "message") return;
+    if (message.content_type != "message" && message.content_type != "invitation") {
+        const span = document.createElement('span');
+        return span;
+    }
     const div = document.createElement('div');
     div.className = `message ${message.sender?.id && message.sender.id == userId ? 'my-message' : 'other-message'}`;
 
@@ -96,16 +98,19 @@ async function chatUserList(currentSocket) {
     userListElement.appendChild(ul);
 }
 
+let currentSocket = null;
 export async function renderChat(user) {
     loadLanguage();
-
-    let currentSocket = null;
     let id = -1;
     const userId = sessionStorage.getItem('id');
     let userName = null;
     let isBlocked = user?.is_blocked ?? sessionStorage.getItem('selectedUserIsBlocked') === 'true';
     const imBlocked = user?.im_blocked ?? sessionStorage.getItem('imBlocked') === 'true';
-    
+    chatUserList(currentSocket);
+    if (!user) return;
+
+    document.querySelector('.chat-username').textContent = userName;
+    const chatMessagesElement = document.getElementById('chatMessages');
     if (isBlocked) {
         chatMessagesElement.innerHTML = `
             <div class="blocked-message">
@@ -131,11 +136,21 @@ export async function renderChat(user) {
         deleteChatForm();
         return;
     }
-    
-    if (user && user.room_id != "null") {
+
+    const chat = await getChatMessages(user.id);
+    console.log(chat);
+    let room_id;
+    if (chat) {
+        chatMessagesElement.innerHTML = '';
+        chat.messages.reverse().forEach(message => {
+            chatMessagesElement.appendChild(createMessageElement(message, userId));
+        });
+        chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
+        room_id = chat.chat.room_id;
+    }   
+
+    if (room_id != "null") {
         userName = user.name || sessionStorage.getItem('selectedUserName');
-        id = user.id;
-        const { room_id } = user;
         currentSocket = startSocket(room_id);
         sessionStorage.setItem('selectedChatRoom', room_id);
         sessionStorage.setItem('selectedUserId', id);
@@ -144,22 +159,11 @@ export async function renderChat(user) {
         sessionStorage.setItem('selectedUserImBlocked', user.im_blocked);
     }
 
-    chatUserList(currentSocket);
-    if (!user) return;
-
-    document.querySelector('.chat-username').textContent = userName;
-    const chatMessagesElement = document.getElementById('chatMessages');
 
 
 
-    const chat = await getChatMessages(id);
-    if (chat) {
-        chatMessagesElement.innerHTML = '';
-        chat.reverse().forEach(message => {
-            chatMessagesElement.appendChild(createMessageElement(message, userId));
-        });
-        chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
-    }
+
+
 }
 
 export async function loadSelectedChatOnPageLoad() {
@@ -175,7 +179,7 @@ export async function loadSelectedChatOnPageLoad() {
 function startSocket(room_id) {
     const userId = sessionStorage.getItem('id');
     const url = `ws://${window.location.host}/ws/chat/${room_id}/${userId}`;
-
+    console.log(url);
     const chatSocket = new WebSocket(url);
     chatSocket.onopen = () => console.log('WebSocket connection established');
     chatSocket.onerror = (error) => console.error('WebSocket Error: ', error);
@@ -188,6 +192,7 @@ function startSocket(room_id) {
 }
 
 function handleWebSocketMessage(e) {
+    console.log("WebSocket message: ", e.data);
     const data = JSON.parse(e.data);
     const chatMessagesElement = document.getElementById('chatMessages');
     if (data.content_type === 'block' || data.content_type === 'unblock') {
@@ -209,9 +214,10 @@ function setupChatForm(chatSocket) {
         e.preventDefault();
         const message = messageInput.value.trim();
         if (message !== '') {
+            console.log("Sending message: ", message);
             chatSocket.send(JSON.stringify({ "content": message, "content_type": "message" }));
             messageInput.value = '';
-            const messageElement = createMessageElement({ content: message, sender: { id: sessionStorage.getItem('id') } }, sessionStorage.getItem('id'));
+            const messageElement = createMessageElement({ content: message, "content_type": "message", sender: { id: sessionStorage.getItem('id') } }, sessionStorage.getItem('id'));
             const chatMessagesElement = document.getElementById('chatMessages');
             chatMessagesElement.appendChild(messageElement);
             chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;

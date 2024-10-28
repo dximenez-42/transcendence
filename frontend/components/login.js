@@ -13,11 +13,10 @@ export function renderLogin() {
 
 window.onload = async function() {
     const fragment = window.location.hash;
-    const params = new URLSearchParams(fragment.slice(fragment.indexOf('?') + 1));
+    const params = new URLSearchParams(fragment ? fragment.slice(fragment.indexOf('?') + 1) : '');
     const code = params.get('token');
     if (code) {
         sessionStorage.setItem('auth_token', code);
-
         const user = await getUser();
         sessionStorage.setItem('id', user.id);
         sessionStorage.setItem('username', user.username);

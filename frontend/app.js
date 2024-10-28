@@ -13,6 +13,7 @@ function loadContent(url, callback) {
 
     fetch(url)
         .then(response => {
+
             if (!response.ok) {
                 throw new Error('Error loading the page');
             }
@@ -27,6 +28,7 @@ function loadContent(url, callback) {
             appDiv.innerHTML = '<h1>404</h1><p>Page not found</p>';
             console.error('Error:', error);
         });
+        
 }
 
 function executeInlineScripts(container) {
@@ -61,7 +63,6 @@ function router() {
         window.location.hash = '#login';
         return;
     }
-
     const routes = {
         '#home': { url: 'home.html', render: renderHome },
         '#chat': { url: 'chat.html', render: loadSelectedChatOnPageLoad },
@@ -75,13 +76,12 @@ function router() {
 
     const route = routes[hash];
     // Add a 1-second timeout before executing the route
-    setTimeout(() => {
         if (route) {
             loadContent(route.url, route.render);
         } else {
-            loadContent('404.html', () => {});
+
+            loadContent('404.html', () => {})
         }
-    }, 200);
 }
 
 window.addEventListener('hashchange', router);
