@@ -403,10 +403,14 @@ class GamesConsumer(AsyncWebsocketConsumer):
         room['game_queue'] = room['player_ids'][:]
         room['game_times'] = len(room['player_ids']) - 1
         
-        await self.send(json.dumps({
-            'action': 'server_game_start_success'
-        }))
-
+        # await self.send(json.dumps({
+        #     'action': 'server_game_start_success'
+        # }))
+        
+        await self.spread_room_msg (room_id, {
+            'action': 'server_game_started_waiting',
+        })
+        
         # Start games in parallel
         while True:
             game_tasks = []
@@ -479,7 +483,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
         
         winner_id = None
         loser_id = None
-        is_another_game = False
+        loser = None
         
         if game_id in game_states:
             game_states[game_id]["running"] = False
@@ -507,9 +511,6 @@ class GamesConsumer(AsyncWebsocketConsumer):
                     room['game_times'] -= 1
                     if room['game_times'] != 0:
                         room['game_queue'].append(winner_id)
-                        is_another_game = True
-                    else:
-                        is_another_game = False
             #     if room['game_times'] == 0:
             #         room['room_state'] = 'open'
             #         room['game_queue'] = room['player_ids'][:]
@@ -524,22 +525,13 @@ class GamesConsumer(AsyncWebsocketConsumer):
             
             # # del game_states[game_id]
             
-                    loser = None
-                    winner = None
-                    if loser_id in connected_users_id:
-                        loser = connected_users_id[loser_id]
-                        await loser.send(json.dumps({
-                        'action': 'server_game_waiting_result',
-                        'winner': game_states[game_id]['winner'],
-                        'msg': 'Waiting for the result of the tournament',
-                        }))
-                    if winner_id in connected_users_id:
-                        winner = connected_users_id[winner_id]
-                        if not is_another_game:
-                            await winner.send(json.dumps({
-                                'action': 'server_game_over',
-                                'winner': game_states[game_id]['winner'],
-                            }))
+            if loser_id in connected_users_id:
+                loser = connected_users_id[loser_id]
+                await loser.send(json.dumps({
+                'action': 'server_game_waiting_result',
+                'winner': game_states[game_id]['winner'],
+                'msg': 'Waiting for the result of the tournament',
+                }))
             # await self.send(json.dumps({
             #     'action': 'server_game_over',
             #     'winner': game_states[game_id]['winner'],
@@ -558,3 +550,10 @@ class GamesConsumer(AsyncWebsocketConsumer):
             opp.game_id = None
             opp.opp_id = None
             opp.opp_name = None
+            
+    async def spread_room_msg(self, room_id, msg):
+        if room_id in room_states:
+            room = room_states[room_id]
+            for player_id in room['player_ids']:
+                if player_id in connected_users_id:
+                    await connected_users_id[player_id].send(json.dumps(msg))
