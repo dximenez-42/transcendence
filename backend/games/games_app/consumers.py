@@ -190,11 +190,14 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 await self.send(json.dumps({
                     'action': 'server_room_left_success'
                 }))
-                new_host = Game.connected_users_id [room['host_id']]
-                await new_host.send(json.dumps({
-                    'action': 'server_room_new_host',
-                    'host_id': room['host_id']
-                }))
+                host_id = room['host_id']
+                if host_id in Game.connected_users_id :
+                    new_host = Game.connected_users_id [room['host_id']]
+                    new_host.room_id = room_id
+                    await new_host.send(json.dumps({
+                        'action': 'server_room_new_host',
+                        'host_id': room['host_id']
+                    }))
         else:
             # 房间成员离开逻辑
             # room member leave logic
@@ -306,4 +309,11 @@ class GamesConsumer(AsyncWebsocketConsumer):
         room['game_queue'] = []
         room['game_times'] = 0
         room['result'] = []
+        del Game.room_states[room_id]
+        for user_id in room['player_ids']:
+            if user_id in Game.connected_users_id :
+                cur_user = Game.connected_users_id [user_id]
+                del Game.rooms[user_id]
+                cur_user.room_id = None
+                
         
