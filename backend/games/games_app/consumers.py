@@ -9,6 +9,7 @@ import math
 import asyncio
 from games_app.extra.utiles import *
 from asyncio import Lock
+import games_app.extra.game as Game
 
 
 TABLE_HEIGHT = 100
