@@ -32,6 +32,8 @@ class GamesConsumer(AsyncWebsocketConsumer):
             self.game_id = None
 
             await self.accept()
+            await Game.rejoin_game_set(self)
+            # asyncio.create_task(Game.rejoin_game_set(self))
             Game.connected_users_id [self.user_id] = self
             
             await self.send(text_data=json.dumps({
@@ -42,9 +44,12 @@ class GamesConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             print(e)
 
-    async def disconnect(self, close_code): # need to rewrite
-        if self.user_id in Game.connected_users_id :
-            del Game.connected_users_id [self.user_id]
+    async def disconnect(self, close_code):
+        try:
+            if self.user_id in Game.connected_users_id :
+                del Game.connected_users_id [self.user_id]
+        except Exception as e:
+            print("disconnect error: ", e)
 
     async def receive(self, text_data): 
         try:
@@ -73,7 +78,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             print(e)
     
-    def handle_move_pad(self, data_json):
+    async def handle_move_pad(self, data_json):
         if data_json['game_id'] in Game.game_states:
             game_state = Game.game_states[data_json['game_id']]
             newPosition = game_state['pad_' + data_json['user_name']] + data_json['pad_y']
@@ -227,93 +232,98 @@ class GamesConsumer(AsyncWebsocketConsumer):
         }))
 
     async def start_room_game(self):
-        if self.room_id is None:
-            await self.send(json.dumps({
-                'action': 'server_game_start_denied',
-                'error': 'User not in any room'
-            }))
-            return
-            
-        room_id = self.room_id
-        
-        # if room_id not in Game.room_locks:
-        #     Game.room_locks[room_id] = Lock()
-            
-        # async with Game.room_locks[room_id]:
-        if room_id not in Game.room_states:
-            await self.send(json.dumps({
-                'action': 'server_game_start_denied',
-                'error': 'Room not exist'
-            }))
-            return
-
-        room = Game.room_states[room_id]
-        
-        if room['host_id'] != self.user_id:
-            await self.send(json.dumps({
-                'action': 'server_game_start_denied',
-                'error': 'User is not the host'
-            }))
-            return
-            
-        if room['numbers'] < 2:
-            await self.send(json.dumps({
-                'action': 'server_game_start_denied',
-                'error': 'Not enough players'
-            }))
-            return
-
-        # Initialize tournament
-        room['room_state'] = 'closed'
-        room['game_queue'] = room['player_ids'][:]
-        room['game_times'] = len(room['player_ids']) - 1
-        
-        # await self.send(json.dumps({
-        #     'action': 'server_game_start_success'
-        # }))
-        
-        await Game.spread_room_msg (room_id, {
-            'action': 'server_game_started_waiting',
-        })
-        
-        # Start games in parallel
-        while True:
-            game_tasks = []
-            while len(room['game_queue']) >= 2:
-                player1_id = room['game_queue'].pop(0)
-                player2_id = room['game_queue'].pop(0)
-                game_task = asyncio.create_task(Game.start_game(player1_id, player2_id))
-                game_tasks.append(game_task)
-                
-            # Wait for all games to complete
-            if game_tasks:
-                await asyncio.gather(*game_tasks)
-                await asyncio.sleep(3)
-            
-            
-            if len(room['game_queue']) < 2:
-                break
-
-        # Notify tournament completion
-        results = room['result']
-        for player_id in room['player_ids']:
-            if player_id in Game.connected_users_id :
-                await Game.connected_users_id [player_id].send(json.dumps({
-                    'action': 'server_game_over',
-                    'result': results,
-                    'msg': 'Tournament Complete'
+        try:
+            if self.room_id is None:
+                await self.send(json.dumps({
+                    'action': 'server_game_start_denied',
+                    'error': 'User not in any room'
                 }))
+                return
+                
+            room_id = self.room_id
+            
+            # if room_id not in Game.room_locks:
+            #     Game.room_locks[room_id] = Lock()
+                
+            # async with Game.room_locks[room_id]:
+            if room_id not in Game.room_states:
+                await self.send(json.dumps({
+                    'action': 'server_game_start_denied',
+                    'error': 'Room not exist'
+                }))
+                return
 
-        # Reset room state
-        room['room_state'] = 'open'
-        room['game_queue'] = []
-        room['game_times'] = 0
-        room['result'] = []
-        del Game.room_states[room_id]
-        for user_id in room['player_ids']:
-            if user_id in Game.connected_users_id :
-                cur_user = Game.connected_users_id [user_id]
-                del Game.rooms[user_id]
-                cur_user.room_id = None
+            room = Game.room_states[room_id]
+            
+            if room['host_id'] != self.user_id:
+                await self.send(json.dumps({
+                    'action': 'server_game_start_denied',
+                    'error': 'User is not the host'
+                }))
+                return
+                
+            if room['numbers'] < 2:
+                await self.send(json.dumps({
+                    'action': 'server_game_start_denied',
+                    'error': 'Not enough players'
+                }))
+                return
+
+            # Initialize tournament
+            room['room_state'] = 'closed'
+            room['game_queue'] = room['player_ids'][:]
+            room['game_times'] = len(room['player_ids']) - 1
+            
+            # await self.send(json.dumps({
+            #     'action': 'server_game_start_success'
+            # }))
+            
+            await Game.spread_room_msg (room_id, {
+                'action': 'server_game_started_waiting',
+            })
+            
+            # Start games in parallel
+            while True:
+                game_tasks = []
+                print('start match games circle start')
+                while len(room['game_queue']) >= 2:
+                    player1_id = room['game_queue'].pop(0)
+                    player2_id = room['game_queue'].pop(0)
+                    game_task = asyncio.create_task(Game.start_game(player1_id, player2_id))
+                    game_tasks.append(game_task)
+                    
+                print("wait the target to finish")
+                # Wait for all games to complete
+                if game_tasks:
+                    await asyncio.gather(*game_tasks)
+                    await asyncio.sleep(3)
+                
+                print('start match games circle end ready to check if continue the circle') 
+                if len(room['game_queue']) < 2:
+                    break
+
+            # Notify tournament completion
+            results = room['result']
+            for player_id in room['player_ids']:
+                if player_id in Game.connected_users_id :
+                    await Game.connected_users_id [player_id].send(json.dumps({
+                        'action': 'server_game_over',
+                        'result': results,
+                        'msg': 'Tournament Complete'
+                    }))
+
+            # Reset room state
+            room['room_state'] = 'open'
+            room['game_queue'] = []
+            room['game_times'] = 0
+            room['result'] = []
+            del Game.room_states[room_id]
+            for user_id in room['player_ids']:
+                if user_id in Game.connected_users_id :
+                    cur_user = Game.connected_users_id [user_id]
+                    del Game.rooms[user_id]
+                    cur_user.room_id = None
+        except Exception as e:
+            print("start_room_game error: ", e)
                 
         
