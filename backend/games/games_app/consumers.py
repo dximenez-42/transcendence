@@ -41,6 +41,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
             self.user_name = self.scope['url_route']['kwargs']['user_name']  # user_name
             self.user_id = self.scope['url_route']['kwargs']['user_id']  # user_id (token)
             self.room_id = None
+            self.next_game = True
 
             await self.accept()
             connected_users_id[self.user_id] = self
@@ -83,274 +84,6 @@ class GamesConsumer(AsyncWebsocketConsumer):
                     await self.get_all_rooms()
         except Exception as e:
             print(e)
- 
-    # async def start_game(self, player1_id, player2_id):
-        
-    #     if player1_id not in connected_users_id or player2_id not in connected_users_id:
-    #         return
-    #     player1 = connected_users_id[player1_id]
-    #     player2 = connected_users_id[player2_id]
-
-    #     game_id = generate_unique_id()
-    #     player2.game_id = game_id
-    #     player1.game_id = game_id
-    #     player1.opp_id = player2.user_id
-    #     player1.opp_name = player2.user_name
-    #     player2.opp_id = player1.user_id
-    #     player2.opp_name = player1.user_name
-                
-    #     await player2.send(text_data=json.dumps({
-    #         'action': 'server_game_matched',
-    #         'opp_name': player1.user_name,
-    #         'opp_id': player1.user_id,
-    #         'game_id': game_id,
-    #         'is_tournament': False
-    #     }))
-    #     await player1.send(text_data=json.dumps({
-    #         'action': 'server_game_matched',
-    #         'opp_name': player2.user_name,
-    #         'opp_id': player2.user_id,
-    #         'game_id': game_id,
-    #         'is_tournament': False
-    #     }))
-        
-        
-    #     game_states[player1.game_id] = {
-    #         'ball_x': 0, 'ball_y': 0,
-    #         'ball_speed_x': 1.5,
-    #         'ball_speed_y': 1.5,
-    #         'pad_' + player1.user_name: 0,
-    #         'pad_' + player1.opp_name: 0,
-    #         'score_' + player1.user_name: 0,
-    #         'score_' + player1.opp_name: 0,
-    #         'running': True,
-    #         'winner_id': None,
-    #         'winner': None,
-    #         'is_tournament': False
-    #     }
-        
-    #     games[player1.user_id] = player1.game_id
-    #     games[player1.opp_id] = player1.game_id
-        
-    #     print('Game started')
-    #     # await player1.start_ball_movement(player1.game_id)
-    #     asyncio.create_task(self.start_ball_movement(player1.game_id))
-    #     print('Ball movement started')
-        
-    #     # while game_states[player1.game_id]['running']:
-    #     #     await asyncio.sleep(1)
-        
-    #     # winner_id = game_states[player1.game_id]['winner_id']
-    #     # del game_states[player1.game_id]
-    #     # del games[player1.user_id]
-    #     # del games[player1.opp_id]
-    #     # player1.game_id = None
-    #     # player1.opp_id = None
-    #     # player1.opp_name = None
-    #     # opp = connected_users_id[player1.opp_id]
-    #     # opp.game_id = None
-    #     # opp.opp_id = None
-    #     # opp.opp_name = None
-    #     # return {'winner_id': winner_id}
-    
-    
-    #     # winner_id = None
-    #     # if game_states[player1.game_id]['score_' + player1.user_name] > game_states[player1.game_id]['score_' + player1.opp_name]:
-    #     #     game_states[player1.game_id]['winner'] = player1.user_name
-    #     #     winner_id = player1.user_id
-    #     # else:
-    #     #     game_states[player1.game_id]['winner'] = player1.opp_name
-    #     #     winner_id = player1.opp_id
-    #     # room_id = rooms[player1.user_id]
-    #     # if room_id not in room_locks:
-    #     #     room_locks[room_id] = Lock()
-    #     # async with room_locks[room_id]:
-    #     #     if room_id in room_states:
-    #     #         room = room_states[room_id]
-    #     #         room['result'].append({          
-    #     #             player1.user_name: game_states[player1.game_id]['score_' + player1.user_name],
-    #     #             player1.opp_name: game_states[player1.game_id]['score_' + player1.opp_name],
-    #     #             'winner': game_states[player1.game_id]['winner'],
-    #     #             'winner_id': winner_id
-    #     #         })
-    #     #         room['game_times'] -= 1
-    #     #         if room['game_times'] != 0:
-    #     #             room['game_queue'].append(winner_id)
-    #     # del game_states[player1.game_id]
-    #     # del games[player1.user_id]
-    #     # del games[player1.opp_id]
-    #     # player1.game_id = None
-    #     # player1.opp_id = None
-    #     # player1.opp_name = None
-    #     # opp = connected_users_id[player1.opp_id]
-    #     # opp.game_id = None
-    #     # opp.opp_id = None
-    #     # opp.opp_name = None
-        
-    #     # return {'winner_id': winner_id}
-    
-    # async def start_ball_movement(self, game_id):
-    #     async def move_ball():
-    #         while game_id in game_states and game_states[game_id]['running']:
-                
-    #             try:
-    #                 game_state = game_states[game_id]
-    #                 ball_x = game_state['ball_x']
-    #                 ball_y = game_state['ball_y']
-    #                 ball_speed_x = game_state['ball_speed_x']
-    #                 ball_speed_y = game_state['ball_speed_y']
-                
-    #                 # 更新球的位置
-    #                 new_ball_x = ball_x + ball_speed_x
-    #                 new_ball_y = ball_y + ball_speed_y
-    #                 collisionBuffer = BALL_RADIUS + ball_speed_x * 0.1 
-    #                 radiusBuffer = BALL_RADIUS + ball_speed_y * 0.1 
-
-    #                 if new_ball_x < -TABLE_LENGTH / 2 + PAD_WIDTH + collisionBuffer:  # border of player 1 (the last matched player)
-    #                     pad_top = game_state['pad_' + self.user_name] + PAD_LENGTH / 2
-    #                     pad_bottom = game_state['pad_' + self.user_name] - PAD_LENGTH / 2
-    #                     if pad_bottom - radiusBuffer <= new_ball_y <= pad_top + radiusBuffer:
-    #                         collide_point = new_ball_y - game_state['pad_' + self.user_name]
-    #                         normalized_collide_point = collide_point / (PAD_LENGTH / 2)
-    #                         angle = normalized_collide_point * (math.pi / 4)
-    #                         speed = math.sqrt(ball_speed_x**2 + ball_speed_y**2) + 0.1
-    #                         game_state['ball_speed_x'] = abs(speed * math.cos(angle))
-    #                         game_state['ball_speed_y'] = speed * math.sin(angle)
-    #                     else:
-    #                         game_state['score_' + self.opp_name] += 1
-    #                         new_ball_x = 0
-    #                         new_ball_y = 0
-    #                         await self.reset_ball(game_state)
-    #                 if new_ball_x > TABLE_LENGTH / 2 - PAD_WIDTH - collisionBuffer:  # border of player 2 (the first matched player)
-    #                     pad_top = -game_state['pad_' + self.opp_name] + PAD_LENGTH / 2 # remember to add minus sign (!!!!!)
-    #                     pad_bottom = -game_state['pad_' + self.opp_name] - PAD_LENGTH / 2  # remember to add minus sign (holy shit)
-    #                     if pad_bottom - radiusBuffer <= new_ball_y <= pad_top + radiusBuffer:
-    #                         collide_point = new_ball_y - game_state['pad_' + self.opp_name]
-    #                         normalized_collide_point = collide_point / (PAD_LENGTH / 2)
-    #                         angle = normalized_collide_point * (math.pi / 4)
-    #                         speed = math.sqrt(ball_speed_x**2 + ball_speed_y**2) + 0.1
-    #                         game_state['ball_speed_x'] = -abs(speed * math.cos(angle))
-    #                         game_state['ball_speed_y'] = speed * math.sin(angle)
-    #                     else:
-    #                         game_state['score_' + self.user_name] += 1
-    #                         new_ball_x = 0
-    #                         new_ball_y = 0
-    #                         await self.reset_ball(game_state)
-    #                 # check the limbo of the table
-    #                 if new_ball_y > TABLE_HEIGHT / 2 - collisionBuffer or new_ball_y < -TABLE_HEIGHT / 2 + collisionBuffer:
-    #                     game_state['ball_speed_y'] *= -1
-                    
-    #                 if game_state['score_' + self.user_name] > 5 or game_state['score_' + self.opp_name] > 5:
-    #                     await self.end_game(self.game_id)
-    #                     break
-    #                 game_state['ball_x'] += game_state['ball_speed_x']
-    #                 game_state['ball_y'] += game_state['ball_speed_y']
-
-    #                 # spred the ball position to both players  
-    #                 await self.broadcast_position(game_id)
-
-    #                 await asyncio.sleep(1 / FPS)
-    #             except Exception as e:
-    #                 self.send(json.dumps({
-    #                     'error': str(e)
-    #                 }))
-    #     # start the ball movement
-    #     asyncio.create_task(move_ball())
-        
-    async def reset_ball(self, game_state):
-        game_state['ball_x'] = 0
-        game_state['ball_y'] = 0
-        # game_state['ball_speed_x'] = random.choice([1, -1]) * (1 + random.random() * 0.5)  # don't need to randomize the speed
-        # game_state['ball_speed_y'] = random.choice([1, -1]) * (1 + random.random() * 0.5)
-        await self.broadcast_position(self.game_id)
-        # await asyncio.sleep(1) # if delay the reset ball, the ball will have lagging effect, maybe because of the async nature of the function
-        
-    async def broadcast_position(self, game_id):
-        game_state = game_states[game_id]
-
-        # send the ball position to both players
-        if self.user_id in connected_users_id:
-            await connected_users_id[self.user_id].send(text_data=json.dumps({
-                'action': 'server_update_position',
-                'ball_x': game_state['ball_x'],
-                'ball_y': game_state['ball_y'],
-                'score_' + self.user_name: game_state['score_' + self.user_name],
-                'score_' + self.opp_name: game_state['score_' + self.opp_name],
-                'pad_' + self.user_name: game_state['pad_' + self.user_name],
-                'pad_' + self.opp_name: game_state['pad_' + self.opp_name]
-            }))
-
-        if self.opp_id in connected_users_id:
-            await connected_users_id[self.opp_id].send(text_data=json.dumps({
-                'action': 'server_update_position',
-                'ball_x': -game_state['ball_x'],
-                'ball_y': -game_state['ball_y'],
-                'score_' + self.user_name: game_state['score_' + self.user_name],
-                'score_' + self.opp_name: game_state['score_' + self.opp_name],
-                'pad_' + self.user_name: game_state['pad_' + self.user_name],
-                'pad_' + self.opp_name: game_state['pad_' + self.opp_name]
-            }))
-
-    async def end_game(self, game_id):
-        
-        winner_id = None
-        if game_id in game_states:
-            game_states[game_id]["running"] = False
-            if game_states[game_id]['score_' + self.user_name] > game_states[game_id]['score_' + self.opp_name]:
-                game_states[game_id]['winner'] = self.user_name
-                winner_id = self.user_id
-            else:
-                game_states[game_id]['winner'] = self.opp_name
-                winner_id = self.opp_id
-            
-            room_id = self.room_id
-            if room_id not in room_locks:
-                room_locks[room_id] = Lock()
-            async with room_locks[room_id]:
-                if room_id in room_states:
-                    room = room_states[room_id]
-                    room['result'].append({          
-                        self.user_name: game_states[game_id]['score_' + self.user_name],
-                        self.opp_name: game_states[game_id]['score_' + self.opp_name],
-                        'winner': game_states[game_id]['winner'],
-                        'winner_id': winner_id
-                    })
-                    room['game_times'] -= 1
-                    if room['game_times'] != 0:
-                        room['game_queue'].append(winner_id)
-            #     if room['game_times'] == 0:
-            #         room['room_state'] = 'open'
-            #         room['game_queue'] = room['player_ids'][:]
-            #         room['numbers'] = len(room['player_ids'])
-            #         room['result'] = []
-            #         for player_id in room['player_ids']:
-            #             await connected_users_id[player_id].send(json.dumps({
-            #                 'action': 'server_game_over',
-            #                 'winner': game_states[game_id]['winner'],
-            #                 'result': room['result'],
-            #             }))    
-            
-            # # del game_states[game_id]
-            await self.send(json.dumps({
-                'action': 'server_game_over',
-                'winner': game_states[game_id]['winner'],
-                'is_tournament': False
-            }))
-            await connected_users_id[self.opp_id].send(json.dumps({
-                'action': 'server_game_over',
-                'winner': game_states[game_id]['winner'],
-                'is_tournament': False
-            }))
-            opp = connected_users_id[self.opp_id]
-            del game_states[game_id]
-            del games[self.user_id]
-            del games[self.opp_id]
-            self.game_id = None
-            self.opp_id = None
-            self.opp_name = None
-            opp.game_id = None
-            opp.opp_id = None
-            opp.opp_name = None
     
     def handle_move_pad(self, data_json):
         if data_json['game_id'] in game_states:
@@ -478,102 +211,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
             self.room_id = None
             await self.send(json.dumps({
                 'action': 'server_room_left_success'
-            }))
-            
-                
-    # async def start_room_game(self):
-    #     if self.room_id is None:
-    #         await self.send(json.dumps({
-    #             'action': 'server_game_start_denied',
-    #             'error': 'User not in any room'
-    #         }))
-    #         return
-    #     room_id = self.room_id # 这里的room_id是房间号 而且此时的self是房主 即players_1
-    #     room = room_states[room_id]
-        
-    #     if room_id not in room_locks:
-    #         room_locks[room_id] = Lock()
-    #     async with room_locks[room_id]:
-    #         if room_id not in room_states:
-    #             await self.send(json.dumps({
-    #                 'action': 'server_game_start_denied',
-    #                 'error': 'Room not exist'
-    #             }))
-    #             return
-    #         if room['host_id'] != self.user_id:
-    #             await self.send(json.dumps({
-    #                 'action': 'server_game_start_denied',
-    #                 'error': 'User is not the host'
-    #             }))
-    #             return
-    #         if room['numbers'] < 2:
-    #             await self.send(json.dumps({
-    #                 'action': 'server_game_start_denied',
-    #                 'error': 'Not enough players, at least 2 players: current players => ' + str(room['numbers'])
-    #             }))
-    #             return
-            
-    #         room['room_state'] = 'closed'
-    #         room['game_queue'] = room['player_ids'][:]
-    #         room['game_times'] = len(room['player_ids']) - 1
-    #         await self.send(json.dumps({
-    #             'action': 'server_game_start_success'
-    #         }))
-            
-        
-    #         # 使用 asyncio.create_task() 来并行地启动游戏
-    #         game_tasks = []
-
-    #         # while room['game_times'] > 0:
-    #         #     while len(room['game_queue']) >= 2:
-    #         #         player1 = room['game_queue'].pop(0)
-    #         #         player2 = room['game_queue'].pop(0)
-    #         #         game_task = asyncio.create_task(self.start_game(player1, player2))
-    #         #         game_tasks.append(game_task)
-
-    #         #     # 等待所有游戏任务完成
-    #         #     if game_tasks:
-    #         #         done, pending = await asyncio.wait(game_tasks, return_when=asyncio.FIRST_COMPLETED)
-    #         #         game_tasks = list(pending)
-    #         #         for finished_game in done:
-    #         #             await finished_game
-                                
-    #         # while room['game_times'] > 0 :
-    #         #     while len(room['game_queue']) >= 2:
-    #         #         player1 = room['game_queue'].pop(0)
-    #         #         player2 = room['game_queue'].pop(0)
-    #         #         await self.start_game(player1, player2)
-    
-    #         while room['game_times'] != 0:
-    #             player1 = room['game_queue'].pop(0)
-    #             player2 = room['game_queue'].pop(0)
-                
-    #             game_task = asyncio.create_task(self.start_game(player1, player2))
-    #             game_tasks.append(game_task)
-                
-    #         if game_tasks:
-    #             done, pending = await asyncio.wait(game_tasks, return_when=asyncio.FIRST_COMPLETED)
-    #             game_tasks = list(pending)
-    #             for finished_game in done:
-    #                 await finished_game
-            
-    #         results = room['result']
-    #         for player_id in room['player_ids']:
-    #             if player_id in connected_users_id:
-    #                 await connected_users_id[player_id].send(json.dumps({
-    #                     'action': 'server_game_over',
-    #                     'result': results,
-    #                     'msg': 'Game Over'
-    #                 }))
-                    
-    #         #////////////////////////////////////////////////////////////////
-    #         # del room_states[room_id]
-    #         # for player_id in room['player_ids']:
-    #         #     if player_id in connected_users_id:
-    #         #         player_id.room_id = None
-    #         #         del rooms[player_id]
-    #         #////////////////////////////////////////////////////////////////
-                    
+            }))   
         
     async def get_room_list_by_id(self):
         if self.room_id is None:
@@ -617,7 +255,6 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 'opp_name': player2.user_name,
                 'opp_id': player2.user_id,
                 'game_id': game_id,
-                'is_tournament': True
             }))
             
             await player2.send(text_data=json.dumps({
@@ -625,7 +262,6 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 'opp_name': player1.user_name,
                 'opp_id': player1.user_id,
                 'game_id': game_id,
-                'is_tournament': True
             }))
 
             # Initialize game state
@@ -640,7 +276,6 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 'running': True,
                 'winner_id': None,
                 'winner': None,
-                'is_tournament': True
             }
 
             # Start ball movement without awaiting it
@@ -681,6 +316,8 @@ class GamesConsumer(AsyncWebsocketConsumer):
                         game_state['ball_speed_y'] = speed * math.sin(angle)
                     else:
                         game_state['score_' + self.opp_name] += 1
+                        new_ball_x = 0
+                        new_ball_y = 0
                         await self.reset_ball(game_state)
                         continue
 
@@ -696,6 +333,8 @@ class GamesConsumer(AsyncWebsocketConsumer):
                         game_state['ball_speed_y'] = speed * math.sin(angle)
                     else:
                         game_state['score_' + self.user_name] += 1
+                        new_ball_x = 0
+                        new_ball_y = 0
                         await self.reset_ball(game_state)
                         continue
 
@@ -801,3 +440,121 @@ class GamesConsumer(AsyncWebsocketConsumer):
         room['game_queue'] = []
         room['game_times'] = 0
         room['result'] = []
+        
+    async def reset_ball(self, game_state):
+        game_state['ball_x'] = 0
+        game_state['ball_y'] = 0
+        # game_state['ball_speed_x'] = random.choice([1, -1]) * (1 + random.random() * 0.5)  # don't need to randomize the speed
+        # game_state['ball_speed_y'] = random.choice([1, -1]) * (1 + random.random() * 0.5)
+        await self.broadcast_position(self.game_id)
+        # await asyncio.sleep(1) # if delay the reset ball, the ball will have lagging effect, maybe because of the async nature of the function
+        
+    async def broadcast_position(self, game_id):
+        game_state = game_states[game_id]
+
+        # send the ball position to both players
+        if self.user_id in connected_users_id:
+            await connected_users_id[self.user_id].send(text_data=json.dumps({
+                'action': 'server_update_position',
+                'ball_x': game_state['ball_x'],
+                'ball_y': game_state['ball_y'],
+                'score_' + self.user_name: game_state['score_' + self.user_name],
+                'score_' + self.opp_name: game_state['score_' + self.opp_name],
+                'pad_' + self.user_name: game_state['pad_' + self.user_name],
+                'pad_' + self.opp_name: game_state['pad_' + self.opp_name]
+            }))
+
+        if self.opp_id in connected_users_id:
+            await connected_users_id[self.opp_id].send(text_data=json.dumps({
+                'action': 'server_update_position',
+                'ball_x': -game_state['ball_x'],
+                'ball_y': -game_state['ball_y'],
+                'score_' + self.user_name: game_state['score_' + self.user_name],
+                'score_' + self.opp_name: game_state['score_' + self.opp_name],
+                'pad_' + self.user_name: game_state['pad_' + self.user_name],
+                'pad_' + self.opp_name: game_state['pad_' + self.opp_name]
+            }))
+
+    async def end_game(self, game_id):
+        
+        winner_id = None
+        loser_id = None
+        is_another_game = False
+        
+        if game_id in game_states:
+            game_states[game_id]["running"] = False
+            if game_states[game_id]['score_' + self.user_name] > game_states[game_id]['score_' + self.opp_name]:
+                game_states[game_id]['winner'] = self.user_name
+                winner_id = self.user_id
+                loser_id = self.opp_id
+            else:
+                game_states[game_id]['winner'] = self.opp_name
+                winner_id = self.opp_id
+                loser_id = self.user_id
+            
+            room_id = self.room_id
+            if room_id not in room_locks:
+                room_locks[room_id] = Lock()
+            async with room_locks[room_id]:
+                if room_id in room_states:
+                    room = room_states[room_id]
+                    room['result'].append({          
+                        self.user_name: game_states[game_id]['score_' + self.user_name],
+                        self.opp_name: game_states[game_id]['score_' + self.opp_name],
+                        'winner': game_states[game_id]['winner'],
+                        'winner_id': winner_id
+                    })
+                    room['game_times'] -= 1
+                    if room['game_times'] != 0:
+                        room['game_queue'].append(winner_id)
+                        is_another_game = True
+                    else:
+                        is_another_game = False
+            #     if room['game_times'] == 0:
+            #         room['room_state'] = 'open'
+            #         room['game_queue'] = room['player_ids'][:]
+            #         room['numbers'] = len(room['player_ids'])
+            #         room['result'] = []
+            #         for player_id in room['player_ids']:
+            #             await connected_users_id[player_id].send(json.dumps({
+            #                 'action': 'server_game_over',
+            #                 'winner': game_states[game_id]['winner'],
+            #                 'result': room['result'],
+            #             }))    
+            
+            # # del game_states[game_id]
+            
+                    loser = None
+                    winner = None
+                    if loser_id in connected_users_id:
+                        loser = connected_users_id[loser_id]
+                        await loser.send(json.dumps({
+                        'action': 'server_game_waiting_result',
+                        'winner': game_states[game_id]['winner'],
+                        'msg': 'Waiting for the result of the tournament',
+                        }))
+                    if winner_id in connected_users_id:
+                        winner = connected_users_id[winner_id]
+                        if not is_another_game:
+                            await winner.send(json.dumps({
+                                'action': 'server_game_over',
+                                'winner': game_states[game_id]['winner'],
+                            }))
+            # await self.send(json.dumps({
+            #     'action': 'server_game_over',
+            #     'winner': game_states[game_id]['winner'],
+            # }))
+            # await connected_users_id[self.opp_id].send(json.dumps({
+            #     'action': 'server_game_over',
+            #     'winner': game_states[game_id]['winner'],
+            # }))
+            opp = connected_users_id[self.opp_id]
+            del game_states[game_id]
+            del games[self.user_id]
+            del games[self.opp_id]
+            self.game_id = None
+            self.opp_id = None
+            self.opp_name = None
+            opp.game_id = None
+            opp.opp_id = None
+            opp.opp_name = None
