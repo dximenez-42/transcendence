@@ -175,6 +175,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
         room = room_states[room_id]
 
         # 如果房间状态不是 'open'，则禁止离开
+        # if the room is not open, then deny leaving
         if room['room_state'] != 'open':
             await self.send(json.dumps({
                 'action': 'server_room_left_error',
@@ -183,6 +184,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
             return
 
         # 房主离开房间逻辑
+        # host leave room logic
         if room['host_id'] == self.user_id:
             if room['numbers'] == 1:
                 del rooms[self.user_id]
@@ -207,6 +209,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 }))
         else:
             # 房间成员离开逻辑
+            # room member leave logic
             room['player_ids'].remove(self.user_id)
             room['numbers'] -= 1
             del rooms[self.user_id]
