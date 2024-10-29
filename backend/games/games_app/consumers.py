@@ -149,10 +149,12 @@ class GamesConsumer(AsyncWebsocketConsumer):
             else:
                 await self.send(json.dumps({
                     'action': 'server_room_joined_denied',
+                    'error': 'Room is closed'
                 }))
         else:
             await self.send(json.dumps({
-                'action': 'server_room_not_exist'
+                'action': 'server_room_joined_denied',
+                'error': 'Room not exist'
             }))
     
     async def leave_room(self):
@@ -216,7 +218,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
     async def get_room_list_by_id(self):
         if self.room_id is None:
             await self.send(json.dumps({
-                'action': 'server_room_list_error',
+                'action': 'server_info_room_error',
                 'error': 'User not in any room'
             }))
             return
