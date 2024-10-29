@@ -27,7 +27,9 @@ class GamesConsumer(AsyncWebsocketConsumer):
             self.user_name = self.scope['url_route']['kwargs']['user_name']  # user_name
             self.user_id = self.scope['url_route']['kwargs']['user_id']  # user_id (token)
             self.room_id = None
-            self.next_game = True
+            self.opp_name = None
+            self.opp_id = None
+            self.game_id = None
 
             await self.accept()
             Game.connected_users_id [self.user_id] = self
