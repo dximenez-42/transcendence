@@ -11,7 +11,7 @@ export const RGB_BALL = 0xD8DFE1;
 export const BALL_RADIUS = 4;
 export const GAME_TIME = 150;
 export const FPS_BALL = 20;
-export const BK_COLOR = 0x000000;
+export const BK_COLOR = 0x0b1215;
 export var   ballSpeed = 1;
 export let   isGameOver = false;
 export function setBallSpeed(speed){
