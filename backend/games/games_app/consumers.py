@@ -14,12 +14,6 @@ import games_app.extra.game as Game
 
 # game_lock = threading.Lock() # not needed
 
-# def sendMsgToUser(user_id, msg):
-#     if user_id in Game.connected_users_id :
-#         Game.connected_users_id [user_id].send(json.dumps(msg))
-#     else:
-#         print('User not connected')
-
 class GamesConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         try:
@@ -53,6 +47,11 @@ class GamesConsumer(AsyncWebsocketConsumer):
             # async with Game.connected_lock:
             if self.user_id in Game.connected_users_id :
                 del Game.connected_users_id [self.user_id]
+            if self.room_id is not None:
+                if self.room_id in Game.room_states:
+                    room = Game.room_states[self.room_id]
+                    if room['room_state'] == 'open':
+                        await self.leave_room()
         except Exception as e:
             print("disconnect error: ", e)
 
