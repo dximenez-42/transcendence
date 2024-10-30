@@ -227,10 +227,18 @@ class GamesConsumer(AsyncWebsocketConsumer):
                     'error': 'User not in any room'
                 }))
                 return
-            await self.send(json.dumps({
-                'action': 'server_room_list',
-                'room_list': Game.room_states[self.room_id]
-            }))
+            info = None
+            if self.room_id in Game.room_states:
+                info = Game.room_states[self.room_id]
+                await self.send(json.dumps({
+                    'action': 'server_room_list',
+                    'room_list': info
+                }))
+            else:
+                await self.send(json.dumps({
+                    'action': 'server_info_room_error',
+                    'error': 'Room not exist'
+                }))
         except Exception as e:
             print("get_room_list_by_id error: ", e)
             
