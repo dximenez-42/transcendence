@@ -14,11 +14,11 @@ import games_app.extra.game as Game
 
 # game_lock = threading.Lock() # not needed
 
-def sendMsgToUser(user_id, msg):
-    if user_id in Game.connected_users_id :
-        Game.connected_users_id [user_id].send(json.dumps(msg))
-    else:
-        print('User not connected')
+# def sendMsgToUser(user_id, msg):
+#     if user_id in Game.connected_users_id :
+#         Game.connected_users_id [user_id].send(json.dumps(msg))
+#     else:
+#         print('User not connected')
 
 class GamesConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -32,8 +32,12 @@ class GamesConsumer(AsyncWebsocketConsumer):
             self.game_id = None
 
             await self.accept()
+            
+            # if self.user_id not in Game.history:
+            #     Game.history[self.user_id] = self.user_name
             await Game.rejoin_game_set(self)
             # asyncio.create_task(Game.rejoin_game_set(self))
+            # async with Game.connected_lock:
             Game.connected_users_id [self.user_id] = self
             
             await self.send(text_data=json.dumps({
@@ -46,6 +50,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         try:
+            # async with Game.connected_lock:
             if self.user_id in Game.connected_users_id :
                 del Game.connected_users_id [self.user_id]
         except Exception as e:
@@ -196,6 +201,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
                     'action': 'server_room_left_success'
                 }))
                 host_id = room['host_id']
+                # async with Game.connected_lock:
                 if host_id in Game.connected_users_id :
                     new_host = Game.connected_users_id [room['host_id']]
                     new_host.room_id = room_id
@@ -215,21 +221,29 @@ class GamesConsumer(AsyncWebsocketConsumer):
             }))   
         
     async def get_room_list_by_id(self):
-        if self.room_id is None:
+        try:
+            if self.room_id is None:
+                await self.send(json.dumps({
+                    'action': 'server_info_room_error',
+                    'error': 'User not in any room'
+                }))
+                return
             await self.send(json.dumps({
-                'action': 'server_info_room_error',
-                'error': 'User not in any room'
+                'action': 'server_room_list',
+                'room_list': Game.room_states[self.room_id]
             }))
-            return
-        await self.send(json.dumps({
-            'action': 'server_room_list',
-            'room_list': Game.room_states[self.room_id]
-        }))
+        except Exception as e:
+            print("get_room_list_by_id error: ", e)
+            
     async def get_all_rooms(self):
-        await self.send(json.dumps({
-            'action': 'server_all_rooms',
-            'room_list': Game.room_states
-        }))
+        try:
+            await self.send(json.dumps({
+                'action': 'server_all_rooms',
+                'room_list': Game.room_states
+            }))
+        except Exception as e:
+            print("get_all_rooms error: ", e)
+        
 
     async def start_room_game(self):
         try:
@@ -286,6 +300,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
             while True:
                 game_tasks = []
                 print('start match games circle start')
+                await asyncio.sleep(3)
                 while len(room['game_queue']) >= 2:
                     player1_id = room['game_queue'].pop(0)
                     player2_id = room['game_queue'].pop(0)
@@ -296,14 +311,17 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 # Wait for all games to complete
                 if game_tasks:
                     await asyncio.gather(*game_tasks)
-                    await asyncio.sleep(3)
+                    # await asyncio.sleep(3)
                 
                 print('start match games circle end ready to check if continue the circle') 
-                if len(room['game_queue']) < 2:
+                if len(room['game_queue']) == 0:
+                    print ('no more games to play, end circle')
+                    game_tasks = []
                     break
 
             # Notify tournament completion
             results = room['result']
+            # async with Game.connected_lock:
             for player_id in room['player_ids']:
                 if player_id in Game.connected_users_id :
                     await Game.connected_users_id [player_id].send(json.dumps({
@@ -313,16 +331,20 @@ class GamesConsumer(AsyncWebsocketConsumer):
                     }))
 
             # Reset room state
-            room['room_state'] = 'open'
-            room['game_queue'] = []
-            room['game_times'] = 0
-            room['result'] = []
-            del Game.room_states[room_id]
+            # room['room_state'] = 'open'
+            # room['game_queue'] = []
+            # room['game_times'] = 0
+            # room['result'] = []
+            # async with Game.connected_lock:
             for user_id in room['player_ids']:
                 if user_id in Game.connected_users_id :
                     cur_user = Game.connected_users_id [user_id]
-                    del Game.rooms[user_id]
                     cur_user.room_id = None
+                    del Game.rooms[user_id]
+
+            # del Game.room_states[room_id]  # need to see if need to delete the room
+                                             # when i commit this line, the code works fine
+                                             # theritically, the room should be deleted after the game is over
         except Exception as e:
             print("start_room_game error: ", e)
                 

@@ -16,16 +16,19 @@ BALL_RADIUS = 4
 GAME_TIME = 150
 FPS = 60
 connected_users_id = {} # user_id: websocket
+# history = {} # user_id: user_name
 game_states = {} # game_id: {ball_x, ball_y, ball_speed_x, ball_speed_y, pad_1, pad_2, score_1, score_2, running}
 games = {} # user_id: game_id
 room_states = {} # room_id: {host_id, player_id1, player_id2...}
 rooms = {} # user_id: room_id
 room_locks = {} # room_id: Lock
+connected_lock = Lock()
 
 
 
 async def start_game(player1_id, player2_id):
 	try:
+		# async with connected_lock:
 		if player1_id not in connected_users_id  or player2_id not in connected_users_id :
 			return
 			
@@ -189,6 +192,7 @@ async def broadcast_position(game_id):
 		player2_id = game_states[game_id]['user2_id']
 
 		# send the ball position to both players
+		# async with connected_lock:
 		if player1_id in connected_users_id :
 			player1 = connected_users_id [player1_id]
 			try:
@@ -206,7 +210,7 @@ async def broadcast_position(game_id):
 				}))
 			except Exception as e:
 				print(f"Error in broadcast_position to player1: {e}")
-
+		# async with connected_lock:
 		if player2_id in connected_users_id :
 			player2 = connected_users_id [player2_id]
 			try:
@@ -250,20 +254,20 @@ async def end_game(game_id):
 				loser_id = game_states[game_id]['user1_id']
 			
 			room_id = game_states[game_id]['room_id']
-			if room_id not in room_locks:
-				room_locks[room_id] = Lock()
-			async with room_locks[room_id]:
-				if room_id in room_states:
-					room = room_states[room_id]
-					room['result'].append({          
-						user1_name: game_states[game_id]['score_' + user1_name],
-						user2_name: game_states[game_id]['score_' + user2_name],
-						'winner': game_states[game_id]['winner'],
-						'winner_id': winner_id
-					})
-					room['game_times'] -= 1
-					if room['game_times'] != 0:
-						room['game_queue'].append(winner_id)
+			# if room_id not in room_locks:
+			# 	room_locks[room_id] = Lock()
+			# async with room_locks[room_id]:
+			if room_id in room_states:
+				room = room_states[room_id]
+				room['result'].append({          
+					user1_name: game_states[game_id]['score_' + user1_name],
+					user2_name: game_states[game_id]['score_' + user2_name],
+					'winner': game_states[game_id]['winner'],
+					'winner_id': winner_id
+				})
+				room['game_times'] -= 1
+				if room['game_times'] != 0:
+					room['game_queue'].append(winner_id)
 			#     if room['game_times'] == 0:
 			#         room['room_state'] = 'open'
 			#         room['game_queue'] = room['player_ids'][:]
@@ -277,7 +281,7 @@ async def end_game(game_id):
 			#             }))    
 			
 			# # del game_states[game_id]
-			
+			# async with connected_lock:
 			if loser_id in connected_users_id :
 				loser = connected_users_id [loser_id]
 				await loser.send(json.dumps({
@@ -317,6 +321,7 @@ async def end_game(game_id):
 async def spread_room_msg(room_id, msg):
     
 	try:
+		# async with connected_lock:
 		if room_id in room_states:
 			room = room_states[room_id]
 			for player_id in room['player_ids']:
@@ -331,22 +336,26 @@ async def rejoin_game_set(ws):
 		opp_name = None
 		opp_id = None
 		game_id = None
+		if ws.user_id in rooms:
+			room_id = rooms[ws.user_id]
+			ws.room_id = room_id
 		if ws.user_id in games:
 			game_id = games[ws.user_id]
-			game_state = game_states[game_id]
-			opp_id = game_state['user1_id'] if game_state['user1_id'] != ws.user_id else game_state['user2_id']
-			opp_name = game_state['user1_name'] if game_state['user1_id'] != ws.user_id else game_state['user2_name']
-			ws.game_id = game_id
-			ws.opp_id = opp_id
-			ws.opp_name = opp_name
-			ws.room_id = game_state['room_id']
-				
-			await ws.send(json.dumps({
-				'action': 'server_game_matched(rejoin)',
-				'opp_name': opp_name,
-				'opp_id': opp_id,
-				'game_id': game_id,
-			}))
+			if game_id in game_states:
+				game_state = game_states[game_id]
+				if game_state['running']:
+					opp_id = game_state['user1_id'] if game_state['user1_id'] != ws.user_id else game_state['user2_id']
+					opp_name = game_state['user1_name'] if game_state['user1_id'] != ws.user_id else game_state['user2_name']
+					ws.game_id = game_id
+					ws.opp_id = opp_id
+					ws.opp_name = opp_name
+					
+					await ws.send(json.dumps({
+						'action': 'server_game_matched(rejoin)',
+						'opp_name': opp_name,
+						'opp_id': opp_id,
+						'game_id': game_id,
+					}))
 	except Exception as e:
 		print(f"Error in rejoin_game_set: {e}")
 	
