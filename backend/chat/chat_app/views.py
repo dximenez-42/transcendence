@@ -12,13 +12,34 @@ import string
 # Create your views here.
 @api_view(['GET'])
 def list(request):
-    chats = Chat.objects.filter(userschat__user=request.user).order_by('updated_at').reverse().all()
     response = []
+
+    chats = Chat.objects.filter(userschat__user=request.user).order_by('updated_at').reverse().all()
     for chat in chats:
+        user = UsersChat.objects.filter(chat=chat).exclude(user=request.user).first().user
         response.append({
-            'id': chat.id,
-            'room_id': chat.room_id,
-            'name': chat.name,
+            'id': user.id,
+            'name': user.name,
+            'username': user.username,
+            # 'room_id': chat.room_id,
+            'chat_name': chat.name,
+            'im_blocked': UserBlocked.objects.filter(user=user, blocked=request.user).exists(),
+            'is_blocked': UserBlocked.objects.filter(user=request.user, blocked=user).exists()
+        })
+
+    users = User.objects.exclude(id=request.user.id).order_by('created_at').reverse().all()
+    for user in users:
+        # Check if user is already in response (check response.id)
+        if user.id in [r['id'] for r in response]:
+            continue
+        response.append({
+            'id': user.id,
+            'name': user.name,
+            'username': user.username,
+            # 'room_id': None,
+            'chat_name': None,
+            'im_blocked': UserBlocked.objects.filter(user=user, blocked=request.user).exists(),
+            'is_blocked': UserBlocked.objects.filter(user=request.user, blocked=user).exists()
         })
 
     return JsonResponse({
@@ -36,6 +57,9 @@ def messages(request, user_id):
 
     if UserBlocked.objects.filter(user=request.user, blocked=user).exists():
         return JsonResponse({'error': 'User is blocked'}, status=403)
+    
+    if UserBlocked.objects.filter(user=user, blocked=request.user).exists():
+        return JsonResponse({'error': 'You are blocked'}, status=403)
 
     chat = Chat.objects.filter(userschat__user=user).filter(userschat__user=request.user).first()
     if not chat:
@@ -66,6 +90,11 @@ def messages(request, user_id):
         'chat': {
             'id': chat.id,
             'room_id': chat.room_id,
+            'user': {
+                'id': user.id,
+                'name': user.name,
+                'username': user.username,
+            },
             'name': chat.name,
         },
         'messages': response

@@ -3,11 +3,27 @@
         <h1 class="tc-text-primary tc-title text-light">P<span>O</span>NG</h1>
     </div>
     
+    <!-- Language selector -->
     <div id="language-selector" class="language-buttons my-5">
         <button class="tc-btn" data-lang="en">English</button>
         <button class="tc-btn" data-lang="es">Español</button>
         <button class="tc-btn" data-lang="fr">Français</button>
     </div>
+    
+    <!-- Input to update profile name -->
+    <div class="my-4 d-flex flex-column align-items-center">
+        <label for="profile-name-input" class="tc-text-primary">Actualizar nombre de perfil</label>
+        <div class="d-flex ">
+            <input id="profile-name-input" type="text" class="tc-input" placeholder="Escribe tu nuevo nombre" />
+            <button id="update-profile-button" class="tab-button"><b class="tc-upper">Guardar cambios</b></button>
+        </div>
+    </div>
 
-    <button id="logout-button" class="tc-btn"><h1 class="tc-text-primary"><b class="tc-upper" data-translate-key="logout">LOG OUT</b></h1></button>
+
+    <!-- Logout button -->
+    <button id="logout-button" class="tc-btn mt-4">
+        <h1 class="tc-text-primary">
+            <b class="tc-upper" data-translate-key="logout">LOG OUT</b>
+        </h1>
+    </button>
 </div>

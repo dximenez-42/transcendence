@@ -3,7 +3,7 @@ DOCKER = docker compose
 all: up
 
 up:
-	$(DOCKER) up --detach --build
+	$(DOCKER) up  --build
 
 start: 
 	$(DOCKER) start

@@ -20,8 +20,8 @@ import string
 # Create your views here.
 @api_view(['POST'])
 def create(request):
-    if Game.objects.filter(host_id=request.user.id, status='open').count() >= 5:
-        return JsonResponse({'error': 'User cannot host more than 5 games.'}, status=400)
+    if Game.objects.filter(host_id=request.user.id, status='open').count() >= 1:
+        return JsonResponse({'error': 'User cannot host more than 1 game.'}, status=400)
 
     game = True
     while game:
@@ -116,7 +116,7 @@ def list(request):
 
     data = []
     for game in games:
-        if UserBlocked.objects.filter(user=request.user, blocked_id=game.host_id).exists():
+        if UserBlocked.objects.filter(user=request.user, blocked_id=game.host_id).exists() or UserBlocked.objects.filter(user_id=game.host_id, blocked=request.user).exists():
             continue
 
         username = User.objects.get(id=game.host_id).username

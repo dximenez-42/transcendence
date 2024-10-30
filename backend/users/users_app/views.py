@@ -15,6 +15,7 @@ def info(request, id):
 @api_view(['GET'])
 def me(request):
     user = {
+        'id': request.user.id,
         'username': request.user.username,
         'email': request.user.email,
         'name': request.user.name,
@@ -29,21 +30,35 @@ def edit(request):
         return JsonResponse({'error': 'Missing data'}, status=400)
 
     if 'name' in data:
+        data['name'] = data['name'].strip()
+
         if data['name'] == '':
             return JsonResponse({'error': 'Name cannot be empty'}, status=400)
         
         if len(data['name']) > 40:
             return JsonResponse({'error': 'Name too long'}, status=400)
-
+        
+        for char in data['name']:
+            if char.isalpha() == False and char != ' ':
+                return JsonResponse({'error': 'Name must be alphanumeric and can only include spaces'}, status=400)
+        
         request.user.name = data['name']
 
     if 'username' in data:
+        data['username'] = data['username'].strip()
+
         if data['username'] == '':
             return JsonResponse({'error': 'Username cannot be empty'}, status=400)
         
+        if data['username'] in os.getenv('BANNED_USERNAMES').split(','):
+            return JsonResponse({'error': 'Username not allowed'}, status=400)
+
+        if len(data['username']) > 40:
+            return JsonResponse({'error': 'Username too long'}, status=400)
+        
         for char in data['username']:
             if char.isalnum() == False and char != '-':
-                return JsonResponse({'error': 'Username must be alphanumeric and can only include -'}, status=400)
+                return JsonResponse({'error': 'Username must be alphanumeric and -'}, status=400)
         
         if User.objects.filter(username=data['username']).exclude(id=request.user.id).exists():
             return JsonResponse({'error': 'Username already taken'}, status=400)

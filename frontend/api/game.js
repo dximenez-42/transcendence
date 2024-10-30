@@ -1,8 +1,6 @@
 
-const URL_API='/api';
-
 export async function getGames() {
-    const url = `/games/list`;
+    const url = `/api/games/list`;
     const token = sessionStorage.getItem('auth_token');
     try {
         const response = await fetch(url, {
@@ -14,10 +12,11 @@ export async function getGames() {
 
         if (response.ok) {
             const games = await response.json();
+            console.log(games.data)
             return games.data;
         } else {
             console.error("Fetch failed with status:", response.status);
-            console.log("Response",response);
+            console.log("Response", response);
             return [];
         }
     } catch (error) {
@@ -28,7 +27,7 @@ export async function getGames() {
 
 
 export async function createGame() {
-    const url = `${URL_API}/games/create`;
+    const url = `/api/games/create`;
     const token = sessionStorage.getItem('auth_token');
     try {
         const response = await fetch(url, {
@@ -43,7 +42,7 @@ export async function createGame() {
             return res;
         } else {
             console.error("Fetch failed with status:", response.status);
-            console.log("Response error:",response);
+            console.log("Response error:", response);
             return [];
         }
     } catch (error) {
@@ -52,20 +51,43 @@ export async function createGame() {
     }
 }
 
+
+export async function joinGame(id) {
+    const url = `/api/games/join/${id}`;
+    const token = sessionStorage.getItem('auth_token');
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Authorization': token,
+        },
+    });
+
+    if (response.status === 404) {
+        return false;
+    }
+    if (response.ok) {
+        return response.ok;
+    } else {
+        console.error("Fetch failed with status:", response.status);
+        console.log("Response error:", response);
+        return [];
+    }
+}
+
+
 export async function leaveGame(gameId) {
     try {
-        const response = await fetch(`/games/leave/${gameId}`, {
+        const response = await fetch(`/api/games/leave/${gameId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': sessionStorage.getItem('auth_token'),
                 'Content-Type': 'application/json',
             },
         });
-        if (!response.ok) {
-            throw new Error('Failed to leave game');
-        }
-        console.log('Game left successfully');
+        return response.ok;
     } catch (error) {
         console.error('Error leaving game:', error.message);
     }
 }
+
+

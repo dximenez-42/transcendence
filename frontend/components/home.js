@@ -1,4 +1,5 @@
 import { loadLanguage } from "../api/languages.js";
+import { selectMode } from "../game/main.js";
 
 
 async function initScripts() {
@@ -19,10 +20,10 @@ async function initScripts() {
     });
 
     playButton.addEventListener('click', () => {
-        window.location.hash = '#game_settings'
+        window.location.hash = '#online'
     });
     
-    const username = sessionStorage.getItem('username');;
+    const username = sessionStorage.getItem('name');;
 
     greeting_username.innerHTML = `Welcome ${username}`;
 }
@@ -62,10 +63,11 @@ export function showNav()
 export function renderHome() {
     loadLanguage();
     initScripts();
+    selectMode();
 }
 
 
-export function renderGameSettings() {
+export function renderonline() {
     setMatchPoints();
     
 }

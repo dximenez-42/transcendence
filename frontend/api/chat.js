@@ -1,25 +1,46 @@
-export function getUsersChat() {
-    const users = [
-        { id: 1, name: 'Pedro', status: 'online', messages: [{user_id: 1, content: 'Hola, ¿cómo estás?'}, {user_id: 2, content: 'Bien!, gracias'}] },
-        { id: 2, name: 'Elena', status: 'online', messages: [{user_id: 2, content: '¿Qué tal tu día?'}, {user_id: 2, content: '¿Qué tal tu día? jajajaja'}] },
-        { id: 3, name: 'Fede', status: 'online', messages: [{user_id: 2, content: 'Hola a todos!'}, {user_id: 3, content: '¿Alguien ha visto la última película?'}] },
-    ];
-    return users;
+export async function getChats() {
+    const url = 'api/chat/list';
+    const token = sessionStorage.getItem('auth_token');
+
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': token,
+            },
+        });
+
+        if (response.ok) {
+            const {chats} = await response.json();
+            return chats;
+        } else {
+            console.error("Fetch failed with status:", response.status);
+            return [];
+        }
+    } catch (error) {
+        console.error("There was a problem with the Fetch request:", error.message);
+        return [];
+    }
 }
 
-function getChat(user_id) {
-    return null;
+export async function getChatMessages(chat_id) {
+    if (chat_id < 0)
+        return null;
+    const url = `api/chat/messages/${chat_id}`;
+    const token = sessionStorage.getItem('auth_token');
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Authorization': token,
+        },
+    })
+    if (response.ok) {
+        const chats = await response.json();
+        return chats;
+    } else if (response.status === 403) {
+        return null;
+    } else {
+        console.error("Fetch failed with status:", response.status);
+        return [];
+    }
 }
-
-export function getChatMessages(chat_id) {
-    const chats = [
-        { id: 1, name: 'Pedro', status: 'online', messages: [{user_id: 1, content: 'Hola, ¿cómo estás?'}, {user_id: 2, content: 'Bien!, gracias'}] },
-        { id: 2, name: 'Elena', status: 'online', messages: [{user_id: 2, content: '¿Qué tal tu día?'}, {user_id: 2, content: '¿Qué tal tu día? jajajaja'}] },
-        { id: 3, name: 'Fede', status: 'online', messages: [{user_id: 2, content: 'Hola a todos!'}, {user_id: 3, content: '¿Alguien ha visto la última película?'}] },
-    ];
-    const chat = chats.find(c => c.id === chat_id)
-    
-    
-    return chat.messages;
-}
-

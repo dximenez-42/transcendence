@@ -1,9 +1,9 @@
-export function padEdgeCorrect (padYPosition, padLength,tableLength) {
+export function padEdgeCorrect (padYPosition, PAD_LENGTH,TABLE_LENGTH) {
 
-	if (padYPosition < - tableLength / 2 + padLength / 2)
-		return - tableLength / 2 + padLength / 2;
-	else if (padYPosition > tableLength / 2 - padLength / 2)
-		return tableLength / 2 - padLength / 2;
+	if (padYPosition < - TABLE_LENGTH / 2 + PAD_LENGTH / 2)
+		return - TABLE_LENGTH / 2 + PAD_LENGTH / 2;
+	else if (padYPosition > TABLE_LENGTH / 2 - PAD_LENGTH / 2)
+		return TABLE_LENGTH / 2 - PAD_LENGTH / 2;
 	else
 		return padYPosition;
 }

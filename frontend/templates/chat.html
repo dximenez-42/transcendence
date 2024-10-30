@@ -1,23 +1,20 @@
 <div id="chat">
-
-    <!-- Lista de Usuarios -->
-    <div class="user-list" id="chatUserList">
-            <input class="tc-input" id="messageInput" type="text" value="" data-translate-key="write_message" placeholder="Escribe un mensaje...">
+    <div class="d-flex flex-column user-container">
         <h2 data-translate-key="users"></h2>
+
+        <div class="user-list" id="chatUserList">
+        </div>
     </div>
 
     <div class="chat-area">
-        <div class="chat-header">
+        <div class="chat-header ">
             <h1>Chat</h1>
         </div>
-        <div class="chat-messages" id="chatMessages">
-            <div class="message">Hola, ¿cómo estás?</div>
-            <div class="message my-message">¡Estoy bien, gracias! ¿Y tú?</div>
-        </div>
-        <div class="chat-input">
-            <input class="tc-input" id="messageInput" type="text" value="" data-translate-key="write_message" placeholder="Escribe un mensaje...">
-            <button id="sendButton" data-translate-key="send">Enviar</button>
-        </div>
-    </div>
+        <div class="chat-username text-light">
 
+        </div>
+        <div class="chat-messages" id="chatMessages">
+        </div>
+        <div id="chat-form-container"></div>
+    </div>
 </div>
