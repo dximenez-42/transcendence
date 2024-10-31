@@ -30,8 +30,12 @@ async def start_game(player1_id, player2_id):
 	try:
 		# async with connected_lock:
 		if player1_id not in connected_users_id  or player2_id not in connected_users_id :
+			print(f"{player1_id} or {player2_id} not in connected_users_id")
+			print(connected_users_id)
 			return
 		if player1_id not in rooms or player2_id not in rooms:
+			print(f"{player1_id} or {player2_id} not in rooms")
+			print(rooms)
 			return
 			
 		player1 = connected_users_id [player1_id]
@@ -330,8 +334,14 @@ async def spread_room_msg(room_id, msg):
 		if room_id in room_states:
 			room = room_states[room_id]
 			for player_id in room['player_ids']:
-				if player_id in connected_users_id :
-					await connected_users_id [player_id].send(json.dumps(msg))
+				if player_id in connected_users_id:
+					player_ws = connected_users_id[player_id]
+					try:
+						await player_ws.send(json.dumps(msg))
+					except Exception as e:
+						print(f"Error in spread_room_msg to player: {e}")
+				else:
+					print(f"player_id not in connected_users_id: {player_id}")
 	except Exception as e:
 		print(f"Error in spread_room_msg: {e}")
 				

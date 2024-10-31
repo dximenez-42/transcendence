@@ -29,10 +29,12 @@ class GamesConsumer(AsyncWebsocketConsumer):
             
             # if self.user_id not in Game.history:
             #     Game.history[self.user_id] = self.user_name
-            await Game.rejoin_game_set(self)
             # asyncio.create_task(Game.rejoin_game_set(self))
             # async with Game.connected_lock:
+            if self.user_id in Game.connected_users_id :
+                del Game.connected_users_id [self.user_id]
             Game.connected_users_id [self.user_id] = self
+            await Game.rejoin_game_set(self)
             
             await self.send(text_data=json.dumps({
                 'action': 'server_confirm_connection',
@@ -245,6 +247,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
                     'room_info': info
                 }))
             else:
+                print ('room_id:', room_id)
                 await self.send(json.dumps({
                     'action': 'server_info_room_error',
                     'error': 'Room not exist'
@@ -316,13 +319,16 @@ class GamesConsumer(AsyncWebsocketConsumer):
             # Start games in parallel
             while True:
                 game_tasks = []
-                print('start match games circle start')
+                print('==================start match games circle start==================')
                 await asyncio.sleep(3)
                 while len(room['game_queue']) >= 2:
+                    
+                    print ('inicio of the circle => current game queue:', room['game_queue'])
                     player1_id = room['game_queue'].pop(0)
                     player2_id = room['game_queue'].pop(0)
                     game_task = asyncio.create_task(Game.start_game(player1_id, player2_id))
                     game_tasks.append(game_task)
+                    print ('end of the circle => current game queue:', room['game_queue'])
                     
                 print("wait the target to finish")
                 # Wait for all games to complete
@@ -332,7 +338,9 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 
                 print('start match games circle end ready to check if continue the circle') 
                 if len(room['game_queue']) == 0:
-                    print ('no more games to play, end circle')
+                    print ('room state:', room['room_state'])
+                    print ('game state:', room['game_queue'])
+                    print ('==================no more games to play, end circle==================')
                     game_tasks = []
                     break
 
