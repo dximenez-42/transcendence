@@ -231,8 +231,8 @@ class GamesConsumer(AsyncWebsocketConsumer):
             if self.room_id in Game.room_states:
                 info = Game.room_states[self.room_id]
                 await self.send(json.dumps({
-                    'action': 'server_room_list',
-                    'room_list': info
+                    'action': 'server_info_room',
+                    'room_info': info
                 }))
             else:
                 await self.send(json.dumps({
@@ -349,7 +349,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
                     cur_user.room_id = None
                     del Game.rooms[user_id]
 
-            # del Game.room_states[room_id]  # need to see if need to delete the room
+            del Game.room_states[room_id]  # need to see if need to delete the room
                                              # when i commit this line, the code works fine
                                              # theritically, the room should be deleted after the game is over
         except Exception as e:

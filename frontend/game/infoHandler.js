@@ -12,13 +12,13 @@ export class GameInfoHandler {
         this.HTMLenamyNameID = HTMLenamyNameID;
     }
 
-	static sendMatchRequest(isTournament) {
+	// static sendMatchRequest(isTournament) {
 
-		sendData('client_match_request', { 
+	// 	sendData('client_match_request', { 
 			
-			is_tournament: isTournament,
-		 });
-	}
+	// 		is_tournament: isTournament,
+	// 	 });
+	// }
 
 	static sendMovePad(stepChanged) {
 
@@ -35,18 +35,40 @@ export class GameInfoHandler {
 		sendData('ping', { myName: gameInfo.user_name });
 	}
 
-	static sendCreateGameRoom() {
+	static sendCreateRoom() {
 
-		sendData('client_create_game_room', {
-
-			myName: gameInfo.user_name,
-		});
+		sendData('client_create_room', {});
 	}
 
-	static notifyPauseGame() {
+	static sendJoinRoom(roomId) {
+		
+		sendData('client_join_room', { room_id: roomId });
+	}
+
+	static sendLeaveRoom() {
+		
+		sendData('client_leave_room', {});
+	}
+
+	static sendStartGame() {
+		
+		sendData('client_start_room', {});
+	}
+
+	static sendInfoRoom() {
+		
+		sendData('client_info_room', {});
+	}
+
+	static sendGetRoomList() {
+		
+		sendData('client_get_rooms', {});
+	}
+
+	// static notifyPauseGame() {
 	
-		sendData('pause', { userId: getPlayerId() });
-	}
+	// 	sendData('pause', { userId: getPlayerId() });
+	// }
 
     static infoHandler(newInfo) {
 		//console.log('Unknown info:', newInfo);
@@ -86,6 +108,66 @@ export class GameInfoHandler {
 				console.log("Waiting for another player to join the game.");
 				showOverlay();
 				break;
+			case 'server_room_created':
+				if ('room_id' in newInfo) {
+					gameInfo.room_id = newInfo.room_id;
+					console.log("Room created by server.");
+				} else {
+					console.error("Room creation failed.");
+				}
+				break;
+			case 'server_room_created_denied':
+				if ('error' in newInfo) {
+					console.error("Room creation denied by server. Reason: " + newInfo.error);
+				}
+				break;
+			case 'server_room_joined':
+				if ('room_id' in newInfo) {
+					gameInfo.room_id = newInfo.room_id;
+					console.log("Room joined by server.");
+				}
+				break;
+			case 'server_room_joined_denied':
+				if ('error' in newInfo) {
+					console.error("Room join denied by server. Reason: " + newInfo.error);
+				}
+				break;
+			case 'server_room_left_success':
+				console.log("Room left successfully.");
+				break;
+			case 'server_room_left_error':
+				if ('error' in newInfo) {
+					console.error("Room leave failed. Reason: " + newInfo.error);
+				}
+				break;
+			case 'server_info_room':
+				if ('room_info' in newInfo) {
+					console.log("Room info received from server.");
+					console.log(newInfo.room_info);
+					// aqui se puede abordar la logica del room
+				}
+				break;
+			case 'server_info_room_error':
+				if ('error' in newInfo) {
+					console.error("Room info failed. Reason: " + newInfo.error);
+				}
+				break;
+			case 'server_all_rooms':
+				if ('room_list' in newInfo) {
+					console.log("All rooms received from server.");
+					console.log(newInfo.room_list);
+					// aqui se puede abordar la logica de la lista de rooms
+				}
+				break;
+			case 'server_game_started_waiting':
+				console.log("Game started waiting for another player to join.");
+				break;
+			case 'server_game_start_denied':
+				if ('error' in newInfo) {
+					console.error("Game start denied by server. Reason: " + newInfo.error);
+				}
+				break;
+			
             // case 'initInfo':
             //     if (this.HTMLenamyNameID && this.HTMLplayerNameID) {
             //         const elementPlayerName = document.getElementById(this.HTMLplayerNameID);
@@ -114,30 +196,38 @@ export class GameInfoHandler {
 
 				console.log('reset position');
 				break;
+			case 'server_game_waiting_result':
+				console.log("Waiting for the game result.");
+				break;
 			case 'server_game_over':
-
-				alert('Game Over');
-				if (newInfo.is_tournament === false) {
-
-					gameInfo.gameOver = true;
-					gameInfo.opp_id = '';
-					gameInfo.opp_name = '';
-					gameInfo.winner = '';
-					gameInfo.game_id = '';
-					gameInfo.status = 'off';
-					startGame();
-					window.location.hash = 'home';
+				
+				if ('result' in newInfo) {
+					gameInfo.result = newInfo.result;
+					console.log("Game over by server.");
+					console.log(newInfo.result);
+					// abordar la logica del resultado
+					// console.log("Winner: " + newInfo.result.win_name);
 				}
+				alert('Game Over');
+				gameInfo.gameOver = true;
+				gameInfo.opp_id = '';
+				gameInfo.opp_name = '';
+				gameInfo.winner = '';
+				gameInfo.game_id = '';
+				gameInfo.status = 'off';
+				startGame();
+				window.location.hash = 'home';
+				
 				break;
 
-			case 'pause':
-				console.log("Game paused by server.");
-				startGame();
-				break;
-			case 'resume':
-				console.log("Game resumed by server.");
-				startGame();
-				break;
+			// case 'pause':
+			// 	console.log("Game paused by server.");
+			// 	startGame();
+			// 	break;
+			// case 'resume':
+			// 	console.log("Game resumed by server.");
+			// 	startGame();
+			// 	break;
             default:
 				
                 console.log('Unknown info:', newInfo);

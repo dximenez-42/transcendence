@@ -27,13 +27,9 @@ export const   gameInfo = {
 	opp_name: '',
 	opp_id: '',
 	game_id: '',
+	room_id: '',
 	isAnotherGame: false,
-	result: {
-
-		cur_name: '',
-		opp_name: '',
-		win_name: '',
-	},
+	result: [],
 	DOMPlayerNameID: '',
 	DOMEnamyNameID: '',
 	DOMPlayerScoreID: '',
