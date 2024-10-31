@@ -39,12 +39,12 @@ async def start_game(player1_id, player2_id):
 		games[player1_id] = game_id
 		games[player2_id] = game_id
 		
-		player1.game_id = game_id
-		player2.game_id = game_id
-		player1.opp_id = player2_id
-		player2.opp_id = player1_id
-		player1.opp_name = player2.user_name
-		player2.opp_name = player1.user_name
+		# player1.game_id = game_id
+		# player2.game_id = game_id
+		# player1.opp_id = player2_id
+		# player2.opp_id = player1_id
+		# player1.opp_name = player2.user_name
+		# player2.opp_name = player1.user_name
 
 		# Send match information to both players
 		if player1_id in connected_users_id :
@@ -188,8 +188,10 @@ async def broadcast_position(game_id):
     
 	try:
 		game_state = game_states[game_id]
-		player1_id = game_states[game_id]['user1_id']
-		player2_id = game_states[game_id]['user2_id']
+		player1_id = game_state['user1_id']
+		player2_id = game_state['user2_id']
+		player1_name = game_state['user1_name']
+		player2_name = game_state['user2_name']
 
 		# send the ball position to both players
 		# async with connected_lock:
@@ -200,12 +202,12 @@ async def broadcast_position(game_id):
 					'action': 'server_update_position',
 					'ball_x': game_state['ball_x'],
 					'ball_y': game_state['ball_y'],
-					'score_' + player1.user_name: game_state['score_' + player1.user_name],
-					'score_' + player1.opp_name: game_state['score_' + player1.opp_name],
-					'pad_' + player1.user_name: game_state['pad_' + player1.user_name],
-					'pad_' + player1.opp_name: game_state['pad_' + player1.opp_name],
-					'user1_name': player1.user_name,
-					'user2_name': player1.opp_name,
+					'score_' + player1_name: game_state['score_' + player1_name],
+					'score_' + player2_name: game_state['score_' + player2_name],
+					'pad_' + player1_name: game_state['pad_' + player1_name],
+					'pad_' + player2_name: game_state['pad_' + player2_name],
+					'user1_name': player1_name,
+					'user2_name': player2_name,
 					'game_id': game_id
 				}))
 			except Exception as e:
@@ -218,12 +220,12 @@ async def broadcast_position(game_id):
 					'action': 'server_update_position',
 					'ball_x': -game_state['ball_x'],
 					'ball_y': -game_state['ball_y'],
-					'score_' + player2.user_name: game_state['score_' + player2.user_name],
-					'score_' + player2.opp_name: game_state['score_' + player2.opp_name],
-					'pad_' + player2.user_name: game_state['pad_' + player2.user_name],
-					'pad_' + player2.opp_name: game_state['pad_' + player2.opp_name],
-					'user1_name': player2.opp_name,
-					'user2_name': player2.user_name,
+					'score_' + player2_name: game_state['score_' + player2_name],
+					'score_' + player1_name: game_state['score_' + player1_name],
+					'pad_' + player2_name: game_state['pad_' + player2_name],
+					'pad_' + player1_name: game_state['pad_' + player1_name],
+					'user1_name': player1_name,
+					'user2_name': player2_name,
 					'game_id': game_id
 				}))
 			except Exception as e:
@@ -305,14 +307,14 @@ async def end_game(game_id):
 				if winner_id in games:
 					del games[winner_id]
 				winner.game_id = None
-				winner.opp_id = None
-				winner.opp_name = None
+				# winner.opp_id = None
+				# winner.opp_name = None
 			if loser_id in connected_users_id :
 				if loser_id in games:
 					del games[loser_id]
 				loser.game_id = None
-				loser.opp_id = None
-				loser.opp_name = None
+				# loser.opp_id = None
+				# loser.opp_name = None
 	except Exception as e:
 		print(f"Error in end_game: {e}")
 	
@@ -346,9 +348,9 @@ async def rejoin_game_set(ws):
 				if game_state['running']:
 					opp_id = game_state['user1_id'] if game_state['user1_id'] != ws.user_id else game_state['user2_id']
 					opp_name = game_state['user1_name'] if game_state['user1_id'] != ws.user_id else game_state['user2_name']
-					ws.game_id = game_id
-					ws.opp_id = opp_id
-					ws.opp_name = opp_name
+					# ws.game_id = game_id
+					# ws.opp_id = opp_id
+					# ws.opp_name = opp_name
 					
 					await ws.send(json.dumps({
 						'action': 'server_game_matched(rejoin)',

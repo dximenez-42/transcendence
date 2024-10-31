@@ -21,9 +21,9 @@ class GamesConsumer(AsyncWebsocketConsumer):
             self.user_name = self.scope['url_route']['kwargs']['user_name']  # user_name
             self.user_id = self.scope['url_route']['kwargs']['user_id']  # user_id (token)
             self.room_id = None
-            self.opp_name = None
-            self.opp_id = None
-            self.game_id = None
+            # self.opp_name = None
+            # self.opp_id = None
+            # self.game_id = None
 
             await self.accept()
             
@@ -345,7 +345,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
             # async with Game.connected_lock:
             for user_id in room['player_ids']:
                 if user_id in Game.connected_users_id :
-                    cur_user = Game.connected_users_id [user_id]
+                    cur_user = Game.connected_users_id[user_id]
                     cur_user.room_id = None
                     del Game.rooms[user_id]
 
