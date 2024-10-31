@@ -31,6 +31,8 @@ async def start_game(player1_id, player2_id):
 		# async with connected_lock:
 		if player1_id not in connected_users_id  or player2_id not in connected_users_id :
 			return
+		if player1_id not in rooms or player2_id not in rooms:
+			return
 			
 		player1 = connected_users_id [player1_id]
 		player2 = connected_users_id [player2_id]
@@ -38,6 +40,7 @@ async def start_game(player1_id, player2_id):
 		game_id = generate_unique_id()
 		games[player1_id] = game_id
 		games[player2_id] = game_id
+		room_id = rooms[player1_id]
 		
 		# player1.game_id = game_id
 		# player2.game_id = game_id
@@ -79,7 +82,7 @@ async def start_game(player1_id, player2_id):
 			'user2_name': player2.user_name,
 			'user1_id': player1.user_id,
 			'user2_id': player2.user_id,
-			'room_id': player1.room_id
+			'room_id': room_id
 		}
 
 		# Start ball movement without awaiting it
@@ -338,9 +341,9 @@ async def rejoin_game_set(ws):
 		opp_name = None
 		opp_id = None
 		game_id = None
-		if ws.user_id in rooms:
-			room_id = rooms[ws.user_id]
-			ws.room_id = room_id
+		# if ws.user_id in rooms:
+		# 	room_id = rooms[ws.user_id]
+		# 	ws.room_id = room_id
 		if ws.user_id in games:
 			game_id = games[ws.user_id]
 			if game_id in game_states:

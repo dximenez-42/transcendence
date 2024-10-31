@@ -20,7 +20,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
             
             self.user_name = self.scope['url_route']['kwargs']['user_name']  # user_name
             self.user_id = self.scope['url_route']['kwargs']['user_id']  # user_id (token)
-            self.room_id = None
+            # self.room_id = None
             # self.opp_name = None
             # self.opp_id = None
             # self.game_id = None
@@ -47,9 +47,10 @@ class GamesConsumer(AsyncWebsocketConsumer):
             # async with Game.connected_lock:
             if self.user_id in Game.connected_users_id :
                 del Game.connected_users_id [self.user_id]
-            if self.room_id is not None:
-                if self.room_id in Game.room_states:
-                    room = Game.room_states[self.room_id]
+            if self.user_id in Game.rooms:
+                room_id = Game.rooms[self.user_id]
+                if room_id in Game.room_states:
+                    room = Game.room_states[room_id]
                     if room['room_state'] == 'open':
                         await self.leave_room()
         except Exception as e:
@@ -79,6 +80,8 @@ class GamesConsumer(AsyncWebsocketConsumer):
                     await self.get_room_list_by_id()
                 case 'client_get_rooms':
                     await self.get_all_rooms()
+                case 'test_game_list':
+                    await self.test_game_list()
         except Exception as e:
             print(e)
     
@@ -94,14 +97,16 @@ class GamesConsumer(AsyncWebsocketConsumer):
 
     async def create_room(self):
         
-        if self.room_id is not None:
-            await self.send(json.dumps({
-                'action': 'server_room_created_denied',
-                'error': 'User already in a room'
-            }))
-            return
+        if self.user_id in Game.rooms:
+            room_id = Game.rooms[self.user_id]
+            if room_id in Game.room_states:
+                await self.send(json.dumps({
+                    'action': 'server_room_created_denied',
+                    'error': 'User already in a room'
+                }))
+                return
         room_id = generate_unique_id()
-        self.room_id = room_id
+        # self.room_id = room_id
         Game.rooms[self.user_id] = room_id
         Game.room_states[room_id] = {
             'host_id': self.user_id,
@@ -125,12 +130,14 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 'error': 'Room id not provided'
             }))
             return
-        if self.room_id is not None:
-            await self.send(json.dumps({
-                'action': 'server_room_joined_denied',
-                'error': 'User already in a room'
-            }))
-            return
+        if self.user_id in Game.rooms:
+            room_id = Game.rooms[self.user_id]
+            if room_id in Game.room_states:
+                await self.send(json.dumps({
+                    'action': 'server_room_joined_denied',
+                    'error': 'User already in a room'
+                }))
+                return
         room_id = data_json['room_id']
         if room_id in Game.room_states:
             room = Game.room_states[room_id]
@@ -138,7 +145,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 room['player_ids'].append(self.user_id)
                 room['numbers'] += 1
                 Game.rooms[self.user_id] = room_id
-                self.room_id = room_id
+                # self.room_id = room_id
                 await self.send(json.dumps({
                     'action': 'server_room_joined',
                     'room_id': room_id
@@ -156,19 +163,21 @@ class GamesConsumer(AsyncWebsocketConsumer):
     
     async def leave_room(self):
         
-        if self.room_id is None:
+        if self.user_id not in Game.rooms:
             await self.send(json.dumps({
                 'action': 'server_room_left_error',
                 'error': 'User not in any room'
             }))
             return
-        if self.room_id not in Game.room_states:
-            await self.send(json.dumps({
-                'action': 'server_room_left_error',
-                'error': 'Room not exist'
-            }))
-            return
-        room_id = self.room_id
+        if self.user_id in Game.rooms:
+            room_id = Game.rooms[self.user_id]
+            if room_id not in Game.room_states:
+                await self.send(json.dumps({
+                    'action': 'server_room_left_error',
+                    'error': 'Room not exist'
+                }))
+                return
+        room_id = Game.rooms[self.user_id]
         room = Game.room_states[room_id]
 
         # 如果房间状态不是 'open'，则禁止离开
@@ -186,7 +195,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
             if room['numbers'] == 1:
                 del Game.rooms[self.user_id]
                 del Game.room_states[room_id]
-                self.room_id = None
+                # self.room_id = None
                 await self.send(json.dumps({
                     'action': 'server_room_left_success'
                 }))
@@ -194,7 +203,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 room['player_ids'].remove(self.user_id)
                 room['numbers'] -= 1
                 del Game.rooms[self.user_id]
-                self.room_id = None
+                # self.room_id = None
                 room['host_id'] = room['player_ids'][0]
                 await self.send(json.dumps({
                     'action': 'server_room_left_success'
@@ -214,22 +223,23 @@ class GamesConsumer(AsyncWebsocketConsumer):
             room['player_ids'].remove(self.user_id)
             room['numbers'] -= 1
             del Game.rooms[self.user_id]
-            self.room_id = None
+            # self.room_id = None
             await self.send(json.dumps({
                 'action': 'server_room_left_success'
             }))   
         
     async def get_room_list_by_id(self):
         try:
-            if self.room_id is None:
+            if self.user_id not in Game.rooms:
                 await self.send(json.dumps({
                     'action': 'server_info_room_error',
                     'error': 'User not in any room'
                 }))
                 return
             info = None
-            if self.room_id in Game.room_states:
-                info = Game.room_states[self.room_id]
+            room_id = Game.rooms[self.user_id]
+            if room_id in Game.room_states:
+                info = Game.room_states[room_id]
                 await self.send(json.dumps({
                     'action': 'server_info_room',
                     'room_info': info
@@ -254,14 +264,14 @@ class GamesConsumer(AsyncWebsocketConsumer):
 
     async def start_room_game(self):
         try:
-            if self.room_id is None:
+            if self.user_id not in Game.rooms:
                 await self.send(json.dumps({
                     'action': 'server_game_start_denied',
                     'error': 'User not in any room'
                 }))
                 return
                 
-            room_id = self.room_id
+            room_id = Game.rooms[self.user_id]
             
             # if room_id not in Game.room_locks:
             #     Game.room_locks[room_id] = Lock()
@@ -346,7 +356,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
             for user_id in room['player_ids']:
                 if user_id in Game.connected_users_id :
                     cur_user = Game.connected_users_id[user_id]
-                    cur_user.room_id = None
+                    # cur_user.room_id = None
                     del Game.rooms[user_id]
 
             del Game.room_states[room_id]  # need to see if need to delete the room
@@ -354,5 +364,14 @@ class GamesConsumer(AsyncWebsocketConsumer):
                                              # theritically, the room should be deleted after the game is over
         except Exception as e:
             print("start_room_game error: ", e)
-                
+    
+    async def test_game_list(self):
+        try:
+            await self.send(json.dumps({
+                'action': 'server_game_list',
+                'game_list': Game.game_states,
+                'games': Game.games
+            }))
+        except Exception as e:
+            print("test_game_list error: ", e)
         
