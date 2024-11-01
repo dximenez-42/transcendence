@@ -101,14 +101,16 @@ class ChatConsumer(WebsocketConsumer):
         # Send the message to WebSocket
         try:
             if event['id'] != self.user_id:
+                sender = User.objects.get(id=event['id'])
+
                 self.send(text_data=json.dumps({
                     # 'id': event['id'],
                     'content': event['content'],
                     'content_type': event['content_type'],
                     'sender': {
-                        'id': self.user.id,
-                        'username': self.user.username,
-                        'name': self.user.name,
+                        'id': sender.id,
+                        'username': sender.username,
+                        'name': sender.name,
                     },
                     'datetime': event['datetime'],
                 }))
