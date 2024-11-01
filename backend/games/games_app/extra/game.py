@@ -249,7 +249,7 @@ async def end_game(game_id):
 		loser = None
 		if game_id in game_states:
 			game_states[game_id]["running"] = False
-			print("================================Game Over =======================================")
+			print("================Game Over ================")
 			print(game_states[game_id]['running'])
 			user1_name = game_states[game_id]['user1_name']
 			user2_name = game_states[game_id]['user2_name']

@@ -16,6 +16,7 @@ import games_app.extra.game as Game
 
 class GamesConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+
         try:
             
             self.user_name = self.scope['url_route']['kwargs']['user_name']  # user_name
@@ -34,6 +35,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
             if self.user_id in Game.connected_users_id :
                 del Game.connected_users_id [self.user_id]
             Game.connected_users_id [self.user_id] = self
+            print ('== > connected_users_id:', Game.connected_users_id)
             await Game.rejoin_game_set(self)
             
             await self.send(text_data=json.dumps({
@@ -45,10 +47,14 @@ class GamesConsumer(AsyncWebsocketConsumer):
             print(e)
 
     async def disconnect(self, close_code):
+        
         try:
             # async with Game.connected_lock:
-            if self.user_id in Game.connected_users_id :
-                del Game.connected_users_id [self.user_id]
+            # if self.user_id in Game.connected_users_id :     # the bug is here, now it is fixed, those two lines are not needed
+            #     del Game.connected_users_id [self.user_id]   # the thing is that we are not sure the order of the disconnect func in
+                                                               # async tasks, it may have resourse risk whitch may cause that 
+                                                               # when host wanna restart a game in new room, the user is not in the
+                                                               # connected_users_id. So this part will be realized in `connect` func
             if self.user_id in Game.rooms:
                 room_id = Game.rooms[self.user_id]
                 if room_id in Game.room_states:
@@ -267,6 +273,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
 
     async def start_room_game(self):
         try:
+            print ('start_room_game_init: <<<<<<<<', Game.connected_users_id, '>>>>>>>>')
             if self.user_id not in Game.rooms:
                 await self.send(json.dumps({
                     'action': 'server_game_start_denied',
@@ -343,7 +350,8 @@ class GamesConsumer(AsyncWebsocketConsumer):
                     print ('==================no more games to play, end circle==================')
                     game_tasks = []
                     break
-
+                
+            print ('start_room_game_middle: <<<<<<<<', Game.connected_users_id, '>>>>>>>>')
             # Notify tournament completion
             results = room['result']
             # async with Game.connected_lock:
@@ -370,6 +378,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
             del Game.room_states[room_id]  # need to see if need to delete the room
                                              # when i commit this line, the code works fine
                                              # theritically, the room should be deleted after the game is over
+            print ('start_room_game_end: <<<<<<<<', Game.connected_users_id, '>>>>>>>>')
         except Exception as e:
             print("start_room_game error: ", e)
     
