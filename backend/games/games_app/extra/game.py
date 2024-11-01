@@ -345,8 +345,8 @@ async def spread_room_msg(room_id, msg):
 	except Exception as e:
 		print(f"Error in spread_room_msg: {e}")
 				
-async def rejoin_game_set(ws):
-    
+async def rejoin_game_set(ws): # in this func need to consider more situation like the game is not started yet
+							   # or the game is already ended
 	try:
 		opp_name = None
 		opp_id = None
@@ -366,7 +366,7 @@ async def rejoin_game_set(ws):
 					# ws.opp_name = opp_name
 					
 					await ws.send(json.dumps({
-						'action': 'server_game_matched(rejoin)',
+						'action': 'server_game_matched',
 						'opp_name': opp_name,
 						'opp_id': opp_id,
 						'game_id': game_id,

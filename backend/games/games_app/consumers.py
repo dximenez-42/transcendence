@@ -130,9 +130,11 @@ class GamesConsumer(AsyncWebsocketConsumer):
             'action': 'server_room_created',
             'room_id': room_id
         }))
-        
-    async def join_room(self, data_json):
-        if 'room_id' not in data_json:
+    
+    # need to discuss if is needed to spread the message to all users in the room
+    # if is needed, this func need to write a new part to spread the message
+    async def join_room(self, data_json): 
+        if 'room_id' not in data_json:    
             await self.send(json.dumps({
                 'action': 'server_room_joined_denied',
                 'error': 'Room id not provided'
@@ -260,7 +262,8 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 }))
         except Exception as e:
             print("get_room_list_by_id error: ", e)
-            
+    
+    # this func used to get all rooms list     
     async def get_all_rooms(self):
         try:
             await self.send(json.dumps({
@@ -375,7 +378,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
                     # cur_user.room_id = None
                     del Game.rooms[user_id]
 
-            del Game.room_states[room_id]  # need to see if need to delete the room
+            del Game.room_states[room_id]    # need to see if need to delete the room
                                              # when i commit this line, the code works fine
                                              # theritically, the room should be deleted after the game is over
             print ('start_room_game_end: <<<<<<<<', Game.connected_users_id, '>>>>>>>>')
