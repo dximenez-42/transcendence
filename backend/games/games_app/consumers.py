@@ -88,8 +88,8 @@ class GamesConsumer(AsyncWebsocketConsumer):
                     await self.get_room_list_by_id()
                 case 'client_get_rooms':
                     await self.get_all_rooms()
-                case 'test_game_list':
-                    await self.test_game_list()
+                # case 'test_game_list':
+                #     await self.test_game_list()
         except Exception as e:
             print(e)
     
@@ -382,13 +382,13 @@ class GamesConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             print("start_room_game error: ", e)
     
-    async def test_game_list(self):
-        try:
-            await self.send(json.dumps({
-                'action': 'server_game_list',
-                'game_list': Game.game_states,
-                'games': Game.games
-            }))
-        except Exception as e:
-            print("test_game_list error: ", e)
+    # async def test_game_list(self):
+    #     try:
+    #         await self.send(json.dumps({
+    #             'action': 'server_game_list',
+    #             'game_list': Game.game_states,
+    #             'games': Game.games
+    #         }))
+    #     except Exception as e:
+    #         print("test_game_list error: ", e)
         
