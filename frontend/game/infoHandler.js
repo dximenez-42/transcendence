@@ -170,10 +170,11 @@ export class GameInfoHandler {
 			case 'server_room_list_update':
 				if ('room_list' in newInfo) {
 					
+					const simpleList = [];
 					gameInfo.room_list = newInfo.room_list;
 					// use above function to get the simple room list
 					// if (gameInfo.status === 'on') {
-					// 	getSimpleRoomList(newInfo.room_list);
+					// 	simpleList = getSimpleRoomList(newInfo.room_list);
 					//	here write the logic of showing the room list
 					// }
 					// the format will be like this
