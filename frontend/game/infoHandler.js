@@ -170,14 +170,14 @@ export class GameInfoHandler {
 			case 'server_room_list_update':
 				if ('room_list' in newInfo) {
 					
-					const simpleList = [];
 					gameInfo.room_list = newInfo.room_list;
+					const simpleList = getSimpleRoomList(newInfo.room_list);
 					// use above function to get the simple room list
 					// if (gameInfo.status === 'off') {
-					// 	simpleList = getSimpleRoomList(newInfo.room_list);
-					//	here write the logic of showing the room list
+					//	here write the logic of showing the room list using the simpleList
+					//  you can write a func to show the room list like "updateRoomListUI(simpleList)"
 					// }
-					// the format will be like this
+					// the format of simpleList will be like this
 					// [
 					// 	["test2", 1, "open"],
 					// 	["test1", 1, "open"]
@@ -224,13 +224,14 @@ export class GameInfoHandler {
 					// 	["test3", 0]
 					// ]
 					// here write the logic of the ranking
+					// you can write a func to show the ranking like "showRankingUI(gameInfo.result)"
 					// after showing the result, the result should be cleared
 					// gameInfo.result = [];
 					//////////////////////////////////////
 					console.log("Game over by server.");
 					console.log(gameInfo.result);
 				}
-				alert('Game Over');
+				alert('Game Over'); // this is not that necessary, can be removed
 				gameInfo.gameOver = true;
 				gameInfo.opp_id = '';
 				gameInfo.opp_name = '';
