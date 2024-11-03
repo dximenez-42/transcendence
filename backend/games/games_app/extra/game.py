@@ -344,6 +344,22 @@ async def spread_room_msg(room_id, msg):
 					print(f"player_id not in connected_users_id: {player_id}")
 	except Exception as e:
 		print(f"Error in spread_room_msg: {e}")
+  
+  
+async def spread_msg(msg):
+	
+	print(f"spread_msg: {msg}")
+	try:
+		# async with connected_lock:
+		for player_id in connected_users_id:
+			print(f"player_id: {player_id}")
+			player_ws = connected_users_id[player_id]
+			try:
+				await player_ws.send(json.dumps(msg))
+			except Exception as e:
+				print(f"Error in spread_msg to player: {e}")
+	except Exception as e:
+		print(f"Error in spread_msg: {e}")
 				
 async def rejoin_game_set(ws): # in this func need to consider more situation like the game is not started yet
 							   # or the game is already ended

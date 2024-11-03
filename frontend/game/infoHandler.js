@@ -3,6 +3,7 @@ import { getPlayerId, getBallDirectionX, getBallDirectionY, getPadPlayerPosition
 import { gameInfo, PAD_LENGTH, TABLE_HEIGHT } from './constants.js';
 import { startGame, showOverlay, hideOverlay } from './main.js';
 import { padEdgeCorrect } from './edgeJudge.js';
+import { getRankingListByResults, getSimpleRoomList, getRoomIdByHost } from './utiles.js';
 
 export class GameInfoHandler {
 
@@ -11,14 +12,6 @@ export class GameInfoHandler {
         this.HTMLplayerNameID = HTMLplayerNameID;
         this.HTMLenamyNameID = HTMLenamyNameID;
     }
-
-	// static sendMatchRequest(isTournament) {
-
-	// 	sendData('client_match_request', { 
-			
-	// 		is_tournament: isTournament,
-	// 	 });
-	// }
 
 	static sendMovePad(stepChanged) {
 
@@ -40,8 +33,17 @@ export class GameInfoHandler {
 		sendData('client_create_room', {});
 	}
 
-	static sendJoinRoom(roomId) {
+	static sendJoinRoom(hostName) {
 		
+		if (gameInfo.room_list.length === 0) {
+			console.error('No room available.');
+			return;
+		}
+		roomId = getRoomIdByHost(gameInfo.room_list, hostName);
+		if (roomId === '') {
+			console.error('Room not found.');
+			return;
+		}
 		sendData('client_join_room', { room_id: roomId });
 	}
 
@@ -65,11 +67,6 @@ export class GameInfoHandler {
 		sendData('client_get_rooms', {});
 	}
 
-	// static notifyPauseGame() {
-	
-	// 	sendData('pause', { userId: getPlayerId() });
-	// }
-
     static infoHandler(newInfo) {
 		//console.log('Unknown info:', newInfo);
         switch (newInfo.action) {
@@ -91,6 +88,12 @@ export class GameInfoHandler {
 				}
 				break;
 			case 'server_game_matched':
+				// if is reconnection , it has to jump to the page of the game
+				// //////////////////////////////////////
+				// write the logic here
+				// window.location.hash = 'game_online';
+				// //////////////////////////////////////
+				gameInfo.gameOver = false;
 				gameInfo.opp_name = newInfo.opp_name;
 				gameInfo.opp_id = newInfo.opp_id;
 				gameInfo.game_id = newInfo.game_id;
@@ -102,11 +105,6 @@ export class GameInfoHandler {
 				// console.log("Game matched by server.");
 				hideOverlay();
 				startGame();
-				break;
-			case 'server_game_waiting':
-
-				console.log("Waiting for another player to join the game.");
-				showOverlay();
 				break;
 			case 'server_room_created':
 				if ('room_id' in newInfo) {
@@ -133,6 +131,7 @@ export class GameInfoHandler {
 				}
 				break;
 			case 'server_room_left_success':
+				gameInfo.room_id = '';
 				console.log("Room left successfully.");
 				break;
 			case 'server_room_left_error':
@@ -161,22 +160,34 @@ export class GameInfoHandler {
 				break;
 			case 'server_game_started_waiting':
 				console.log("Game started waiting for another player to join.");
+				showOverlay('Waiting for player to join');
 				break;
 			case 'server_game_start_denied':
 				if ('error' in newInfo) {
 					console.error("Game start denied by server. Reason: " + newInfo.error);
 				}
 				break;
-			
-            // case 'initInfo':
-            //     if (this.HTMLenamyNameID && this.HTMLplayerNameID) {
-            //         const elementPlayerName = document.getElementById(this.HTMLplayerNameID);
-            //         const elementEnamyName = document.getElementById(this.HTMLenamyNameID);
-            //         elementEnamyName.innerHTML = newInfo.enamyName;
-            //         elementPlayerName.innerHTML = newInfo.playerName;
-            //         setPlayerId(newInfo.userId);
-            //     }
-            //     break;
+			case 'server_room_list_update':
+				if ('room_list' in newInfo) {
+					
+					gameInfo.room_list = newInfo.room_list;
+					// use above function to get the simple room list
+					// if (gameInfo.status === 'on') {
+					// 	getSimpleRoomList(newInfo.room_list);
+					//	here write the logic of showing the room list
+					// }
+					// the format will be like this
+					// [
+					// 	["test2", 1, "open"],
+					// 	["test1", 1, "open"]
+					// ]
+					// the first element is the host name, the second element is the number of players, the third element is the room state
+					// so you can refresh the room list by using the above function
+					console.log("Room list updated by server.");
+					console.log(newInfo.room_list);
+					// aqui se puede abordar la logica de la lista de rooms
+				}
+				break;
 			case 'server_update_position':
 				console.log('server update position');
 				console.log(newInfo);
@@ -198,15 +209,25 @@ export class GameInfoHandler {
 				break;
 			case 'server_game_waiting_result':
 				console.log("Waiting for the game result.");
+				showOverlay('Waiting for the game result');
 				break;
 			case 'server_game_over':
 				
 				if ('result' in newInfo) {
-					gameInfo.result = newInfo.result;
+					gameInfo.result = getRankingListByResults(newInfo.result);
+					//////////////////////////////////////
+					// the format will be like this
+					// [
+					// 	["test1", 2],
+					// 	["test2", 0],
+					// 	["test3", 0]
+					// ]
+					// here write the logic of the ranking
+					// after showing the result, the result should be cleared
+					// gameInfo.result = [];
+					//////////////////////////////////////
 					console.log("Game over by server.");
-					console.log(newInfo.result);
-					// abordar la logica del resultado
-					// console.log("Winner: " + newInfo.result.win_name);
+					console.log(gameInfo.result);
 				}
 				alert('Game Over');
 				gameInfo.gameOver = true;
@@ -217,17 +238,8 @@ export class GameInfoHandler {
 				gameInfo.status = 'off';
 				startGame();
 				window.location.hash = 'home';
-				
 				break;
 
-			// case 'pause':
-			// 	console.log("Game paused by server.");
-			// 	startGame();
-			// 	break;
-			// case 'resume':
-			// 	console.log("Game resumed by server.");
-			// 	startGame();
-			// 	break;
             default:
 				
                 console.log('Unknown info:', newInfo);

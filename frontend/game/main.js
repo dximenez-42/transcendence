@@ -6,7 +6,10 @@ import { hideNav, showNav } from '../components/home.js';
 let timer = GAME_TIME;
 // ------------- GAME SETTINGS ----------------
 
-export function showOverlay() {
+export function showOverlay(content) {
+    if (content) {
+        document.getElementById('overlay-content').innerHTML = content;
+    }
     document.getElementById('overlay').style.display = 'flex';
 }
 

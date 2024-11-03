@@ -13,7 +13,6 @@ import games_app.extra.game as Game
 
 
 # game_lock = threading.Lock() # not needed
-
 class GamesConsumer(AsyncWebsocketConsumer):
     async def connect(self):
 
@@ -122,6 +121,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
             Game.rooms[self.user_id] = room_id
             Game.room_states[room_id] = {
                 'host_id': self.user_id,
+                'host_name': self.user_name,
                 'player_ids': [self.user_id],
                 'game_queue': [],
                 'room_state': 'open',
@@ -134,6 +134,12 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 'action': 'server_room_created',
                 'room_id': room_id
             }))
+        # ///////////////////////////////////////////////////
+        await Game.spread_msg ({
+            'action': 'server_room_list_update',
+            'room_list': Game.room_states
+        })
+        # ///////////////////////////////////////////////////
     
     # need to discuss if is needed to spread the message to all users in the room
     # if is needed, this func need to write a new part to spread the message
@@ -166,6 +172,14 @@ class GamesConsumer(AsyncWebsocketConsumer):
                         'action': 'server_room_joined',
                         'room_id': room_id
                     }))
+                    
+                    # ///////////////////////////////////////////////////
+                    await Game.spread_msg ({
+                        'action': 'server_room_list_update',
+                        'room_list': Game.room_states
+                    })
+                    # ///////////////////////////////////////////////////
+                    
                 else:
                     await self.send(json.dumps({
                         'action': 'server_room_joined_denied',
@@ -222,6 +236,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
                     del Game.rooms[self.user_id]
                     # self.room_id = None
                     room['host_id'] = room['player_ids'][0]
+                    room['host_name'] = Game.connected_users_id[room['host_id']].user_name
                     await self.send(json.dumps({
                         'action': 'server_room_left_success'
                     }))
@@ -243,7 +258,14 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 # self.room_id = None
                 await self.send(json.dumps({
                     'action': 'server_room_left_success'
-                }))   
+                }))
+                
+        # ///////////////////////////////////////////////////
+        await Game.spread_msg ({
+            'action': 'server_room_list_update',
+            'room_list': Game.room_states
+        })
+        # ///////////////////////////////////////////////////
         
     async def get_room_list_by_id(self):
         try:
@@ -330,7 +352,12 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 # await self.send(json.dumps({
                 #     'action': 'server_game_start_success'
                 # }))
-                
+                # ///////////////////////////////////////////////////
+                await Game.spread_msg ({
+                    'action': 'server_room_list_update',
+                    'room_list': Game.room_states
+                })
+                # ///////////////////////////////////////////////////
                 await Game.spread_room_msg (room_id, {
                     'action': 'server_game_started_waiting',
                 })
