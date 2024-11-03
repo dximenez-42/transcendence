@@ -28,11 +28,13 @@ export class GameInfoHandler {
 		sendData('ping', { myName: gameInfo.user_name });
 	}
 
+	// for create button
 	static sendCreateRoom() {
 
 		sendData('client_create_room', {});
 	}
 
+	// for join button
 	static sendJoinRoom(hostName) {
 		
 		if (gameInfo.room_list.length === 0) {
@@ -47,30 +49,36 @@ export class GameInfoHandler {
 		sendData('client_join_room', { room_id: roomId });
 	}
 
+	// for leave button
 	static sendLeaveRoom() {
 		
 		sendData('client_leave_room', {});
 	}
 
+	// for start button
 	static sendStartGame() {
 		
 		sendData('client_start_room', {});
 	}
 
+	// no need to use theriticaly, just in case
 	static sendInfoRoom() {
 		
 		sendData('client_info_room', {});
 	}
 
+	// no need to use theriticaly, just in case
 	static sendGetRoomList() {
 		
 		sendData('client_get_rooms', {});
 	}
 
+	// for handle the info from server
     static infoHandler(newInfo) {
 		//console.log('Unknown info:', newInfo);
         switch (newInfo.action) {
 
+			// no need to modify, this is just used for the connection confirmation
 			case 'server_confirm_connection':
 				if (newInfo.user_id === gameInfo.user_id && newInfo.user_name === gameInfo.user_name) {
 
@@ -87,6 +95,7 @@ export class GameInfoHandler {
 					// console.error("Invalid user data from server.");
 				}
 				break;
+			// every time when the game is about to start, the server will send the game info to the client
 			case 'server_game_matched':
 				// if is reconnection , it has to jump to the page of the game
 				// //////////////////////////////////////
@@ -106,6 +115,7 @@ export class GameInfoHandler {
 				hideOverlay();
 				startGame();
 				break;
+			// when the room is created, the server will send the room id to the client
 			case 'server_room_created':
 				if ('room_id' in newInfo) {
 					gameInfo.room_id = newInfo.room_id;
@@ -114,31 +124,37 @@ export class GameInfoHandler {
 					console.error("Room creation failed.");
 				}
 				break;
+			// mybe we can add a alert to show the reason of the denied
 			case 'server_room_created_denied':
 				if ('error' in newInfo) {
 					console.error("Room creation denied by server. Reason: " + newInfo.error);
 				}
 				break;
+			// when the room is joined, the server will send the room id to the client
 			case 'server_room_joined':
 				if ('room_id' in newInfo) {
 					gameInfo.room_id = newInfo.room_id;
 					console.log("Room joined by server.");
 				}
 				break;
+			// mybe we can add a alert to show the reason of the denied
 			case 'server_room_joined_denied':
 				if ('error' in newInfo) {
 					console.error("Room join denied by server. Reason: " + newInfo.error);
 				}
 				break;
+			// no need to modify, unless we want to alert the user
 			case 'server_room_left_success':
 				gameInfo.room_id = '';
 				console.log("Room left successfully.");
 				break;
+			// mybe we can add a alert to show the reason of the denied
 			case 'server_room_left_error':
 				if ('error' in newInfo) {
 					console.error("Room leave failed. Reason: " + newInfo.error);
 				}
 				break;
+			// a response from the server for the request of the room info by client, tecnically we will not use this, will , just in case
 			case 'server_info_room':
 				if ('room_info' in newInfo) {
 					console.log("Room info received from server.");
@@ -146,11 +162,13 @@ export class GameInfoHandler {
 					// aqui se puede abordar la logica del room
 				}
 				break;
+			// will not use this, just in case
 			case 'server_info_room_error':
 				if ('error' in newInfo) {
 					console.error("Room info failed. Reason: " + newInfo.error);
 				}
 				break;
+			// a response from the server for the request of the room list by client, tecnically we will not use this 
 			case 'server_all_rooms':
 				if ('room_list' in newInfo) {
 					console.log("All rooms received from server.");
@@ -158,15 +176,18 @@ export class GameInfoHandler {
 					// aqui se puede abordar la logica de la lista de rooms
 				}
 				break;
+			// when the room game is started, all the players in the room will receive this message
 			case 'server_game_started_waiting':
 				console.log("Game started waiting for another player to join.");
 				showOverlay('Waiting for player to join');
 				break;
+			// when you are not the host but you want to start the game, the server will deny the request
 			case 'server_game_start_denied':
 				if ('error' in newInfo) {
 					console.error("Game start denied by server. Reason: " + newInfo.error);
 				}
 				break;
+			// every time when the room list is updated, the server will send the room list to the client
 			case 'server_room_list_update':
 				if ('room_list' in newInfo) {
 					
@@ -189,6 +210,7 @@ export class GameInfoHandler {
 					// aqui se puede abordar la logica de la lista de rooms
 				}
 				break;
+			// no need to modify this. this part is the game logic
 			case 'server_update_position':
 				console.log('server update position');
 				console.log(newInfo);
@@ -208,10 +230,13 @@ export class GameInfoHandler {
 
 				console.log('reset position');
 				break;
+			// when your game is over but there is also another player in the room, the server will send this message
 			case 'server_game_waiting_result':
 				console.log("Waiting for the game result.");
 				showOverlay('Waiting for the game result');
 				break;
+				
+			// when all the games in the room are over, the server will send the result to the client
 			case 'server_game_over':
 				
 				if ('result' in newInfo) {
