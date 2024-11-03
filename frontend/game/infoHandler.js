@@ -173,7 +173,7 @@ export class GameInfoHandler {
 					const simpleList = [];
 					gameInfo.room_list = newInfo.room_list;
 					// use above function to get the simple room list
-					// if (gameInfo.status === 'on') {
+					// if (gameInfo.status === 'off') {
 					// 	simpleList = getSimpleRoomList(newInfo.room_list);
 					//	here write the logic of showing the room list
 					// }
