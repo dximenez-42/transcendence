@@ -21,7 +21,7 @@ game_states = {} # game_id: {ball_x, ball_y, ball_speed_x, ball_speed_y, pad_1, 
 games = {} # user_id: game_id
 room_states = {} # room_id: {host_id, player_id1, player_id2...}
 rooms = {} # user_id: room_id
-# room_locks = {} # room_id: Lock
+room_locks = {} # room_id: Lock
 # connected_lock = Lock()
 
 
