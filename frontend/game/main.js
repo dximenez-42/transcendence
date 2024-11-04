@@ -83,7 +83,6 @@ export function renderGameOnline() {
     showOverlay();
     setGameType('online');
 	setGame('gameWindow', 'playerName', 'enamyName', 'playerScore', 'enamyScore')
-    GameInfoHandler.sendMatchRequest(false);
     //console.log('gameType:', getGameType());
     // if (gameInfo.socketConnection === true) // if the connection is already established then we can control the game
     //     startGame();
