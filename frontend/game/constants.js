@@ -33,7 +33,7 @@ export const   gameInfo = {
 	DOMEnamyNameID: '',
 	DOMPlayerScoreID: '',
 	DOMEnamyScoreID: '',
-	room_list: [],
+	room_list: {},
 	// playerScore: 0,
 	// enamyScore: 0,
 	// gameType: '',

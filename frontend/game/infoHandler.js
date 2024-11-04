@@ -4,7 +4,7 @@ import { gameInfo, PAD_LENGTH, TABLE_HEIGHT } from './constants.js';
 import { startGame, showOverlay, hideOverlay } from './main.js';
 import { padEdgeCorrect } from './edgeJudge.js';
 import { getRankingListByResults, getSimpleRoomList, getRoomIdByHost } from './utiles.js';
-import { renderRoomList } from '../components/online.js';
+import { refreshRoomList } from '../components/online.js';
 
 export class GameInfoHandler {
 
@@ -16,6 +16,11 @@ export class GameInfoHandler {
 
 	static sendMovePad(stepChanged) {
 
+		console.log('sendMovePad:', {
+			game_id: gameInfo.game_id,
+			user_name: gameInfo.user_name,
+			pad_y: stepChanged,
+		});
 		sendData('client_move_pad', { 
 			
 			game_id: gameInfo.game_id,
@@ -42,7 +47,7 @@ export class GameInfoHandler {
 			console.error('No room available.');
 			return;
 		}
-		roomId = getRoomIdByHost(gameInfo.room_list, hostName);
+		let roomId = getRoomIdByHost(gameInfo.room_list, hostName);
 		if (roomId === '') {
 			console.error('Room not found.');
 			return;
@@ -101,7 +106,9 @@ export class GameInfoHandler {
 				// if is reconnection , it has to jump to the page of the game
 				// //////////////////////////////////////
 				// write the logic here
-				// window.location.hash = 'game_online';
+				console.log('server_game_matched');
+				if (window.location.hash !== '#game_online')
+					window.location.hash = 'game_online';
 				// //////////////////////////////////////
 				gameInfo.gameOver = false;
 				gameInfo.opp_name = newInfo.opp_name;
@@ -129,6 +136,7 @@ export class GameInfoHandler {
 			case 'server_room_created_denied':
 				if ('error' in newInfo) {
 					console.error("Room creation denied by server. Reason: " + newInfo.error);
+					alert('Room creation denied by server. Reason: ' + newInfo.error);
 				}
 				break;
 			// when the room is joined, the server will send the room id to the client
@@ -142,6 +150,7 @@ export class GameInfoHandler {
 			case 'server_room_joined_denied':
 				if ('error' in newInfo) {
 					console.error("Room join denied by server. Reason: " + newInfo.error);
+					alert('Room join denied by server. Reason: ' + newInfo.error);
 				}
 				break;
 			// no need to modify, unless we want to alert the user
@@ -153,6 +162,7 @@ export class GameInfoHandler {
 			case 'server_room_left_error':
 				if ('error' in newInfo) {
 					console.error("Room leave failed. Reason: " + newInfo.error);
+					alert('Room leave failed. Reason: ' + newInfo.error);
 				}
 				break;
 			// a response from the server for the request of the room info by client, tecnically we will not use this, will , just in case
@@ -167,18 +177,13 @@ export class GameInfoHandler {
 			case 'server_info_room_error':
 				if ('error' in newInfo) {
 					console.error("Room info failed. Reason: " + newInfo.error);
-				}
-				break;
-			// a response from the server for the request of the room list by client, tecnically we will not use this 
-			case 'server_all_rooms':
-				if ('room_list' in newInfo) {
-					console.log("All rooms received from server.");
-					console.log(newInfo.room_list);
-					// aqui se puede abordar la logica de la lista de rooms
+					alert('Room info failed. Reason: ' + newInfo.error);
 				}
 				break;
 			// when the room game is started, all the players in the room will receive this message
 			case 'server_game_started_waiting':
+				if (window.location.hash !== '#game_online')
+					window.location.hash = 'game_online';
 				console.log("Game started waiting for another player to join.");
 				showOverlay('Waiting for player to join');
 				break;
@@ -186,6 +191,19 @@ export class GameInfoHandler {
 			case 'server_game_start_denied':
 				if ('error' in newInfo) {
 					console.error("Game start denied by server. Reason: " + newInfo.error);
+					alert('Game start denied by server. Reason: ' + newInfo.error);
+				}
+				break;
+			// a response from the server for the request of the room list by client, tecnically we will not use this 
+			case 'server_all_rooms':
+				if ('room_list' in newInfo) {
+					
+					gameInfo.room_list = newInfo.room_list;
+					if (gameInfo.status === 'off' && window.location.hash === '#online')
+						refreshRoomList();
+					console.log("Room list updated by server.");
+					console.log(newInfo);
+					console.log(newInfo.room_list);
 				}
 				break;
 			// every time when the room list is updated, the server will send the room list to the client
@@ -195,7 +213,7 @@ export class GameInfoHandler {
 					gameInfo.room_list = newInfo.room_list;
 					// const simpleList = getSimpleRoomList(newInfo.room_list);
 					if (gameInfo.status === 'off' && window.location.hash === '#online') {
-						renderRoomList();
+						refreshRoomList();
 					}
 					// use above function to get the simple room list
 					// if (gameInfo.status === 'off') {
@@ -210,6 +228,7 @@ export class GameInfoHandler {
 					// the first element is the host name, the second element is the number of players, the third element is the room state
 					// so you can refresh the room list by using the above function
 					console.log("Room list updated by server.");
+					console.log(newInfo);
 					console.log(newInfo.room_list);
 					// aqui se puede abordar la logica de la lista de rooms
 				}

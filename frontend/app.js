@@ -52,19 +52,19 @@ function router() {
     const userId = sessionStorage.getItem('auth_token');
     const hash = window.location.hash;
     
-    // function logout() {
-    //     sessionStorage.clear();
-    //     window.location.hash = '#login';
-    // }
-    // async function checkAuthentication() {
-    //     await getUser();
-    // }
+    function logout() {
+        sessionStorage.clear();
+        window.location.hash = '#login';
+    }
+    async function checkAuthentication() {
+        await getUser();
+    }
 
-    // checkAuthentication();
-    // if (!userId && hash !== '#login') {
-    //     window.location.hash = '#login';
-    //     return;
-    // }
+    checkAuthentication();
+    if (!userId && hash !== '#login') {
+        window.location.hash = '#login';
+        return;
+    }
 
     const routes = {
         '#home': { url: 'home.html', render: renderHome },
@@ -77,6 +77,7 @@ function router() {
         '#tournament_settings': { url: 'tournament_settings.html', render: () => console.log('Tournament page loaded') },
         //'#online': { url: 'game_online.html', render: renderGameOnline}, // add new route, modified by gao
         '#online': { url: 'game_rooms.html', render:renderRoomList}, // add new route, modified by gao
+        '#game_online': { url: 'game_online.html', render: renderGameOnline}, // add new route, modified by gao
     };
 
     const route = routes[hash];

@@ -44,7 +44,7 @@ export function openAxes() {
 
 // improved collision detection logic
 export function keyMovePad() {
-
+    
     if (gameType === 'online') {
 
         if (keyStates['w']) {

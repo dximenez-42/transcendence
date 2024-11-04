@@ -293,11 +293,14 @@ async def end_game(game_id):
 			# async with connected_lock:
 			if loser_id in connected_users_id :
 				loser = connected_users_id [loser_id]
-				await loser.send(json.dumps({
-				'action': 'server_game_waiting_result',
-				'winner': game_states[game_id]['winner'],
-				'msg': 'Waiting for the result of the tournament',
-				}))
+				try:
+					await loser.send(json.dumps({
+					'action': 'server_game_waiting_result',
+					'winner': game_states[game_id]['winner'],
+					'msg': 'Waiting for the result of the tournament',
+					}))
+				except Exception as e:
+					print(f"Error in end_game to loser: {e}")
 			# await self.send(json.dumps({
 			#     'action': 'server_game_over',
 			#     'winner': game_states[game_id]['winner'],

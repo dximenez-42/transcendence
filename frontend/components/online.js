@@ -762,24 +762,34 @@ export function renderLocal() {
 
 export function renderRoomList() {
 
+    GameInfoHandler.sendGetRoomList();
+    refreshRoomList();
+    
+}
+
+export function refreshRoomList() {
+
     const roomList = document.getElementById('room-list');
     roomList.innerHTML = '';
-    if (gameInfo.room_list.length === 0) {
+    if (Object.keys(gameInfo.room_list).length === 0) {
         roomList.innerHTML = '<p>No rooms available</p>';
+        addCreateRoomButton();
         return;
     } else {
+        let isInRoom = false;
         const simpleList = getSimpleRoomList(gameInfo.room_list);
         for (const room of simpleList) {
             const [host_name, numbers, room_state, room_id] = room;
+            if (gameInfo.user_name === host_name)
+                isInRoom = true;
             if (room_state !== "closed") {
                 addNewRoomUI(host_name, numbers, room_id);
             }
         }
-        if (gameInfo.room_id === null) {
+        if (gameInfo.room_id === null || !isInRoom) {
             addCreateRoomButton();
         }
     }
-    
 }
 
 function addCreateRoomButton() {
@@ -795,7 +805,7 @@ function addCreateRoomButton() {
     createRoomButton.addEventListener('click', function() {
         console.log('Create Room button clicked!');
 
-        GameInfoHandler.createRoom();
+        GameInfoHandler.sendCreateRoom();
     });
 
     createButtonContainer.appendChild(createRoomButton);
@@ -811,10 +821,10 @@ function addNewRoomUI(name, number, room_id) {
     let isInRoom = false;
     if (room_id === gameInfo.room_id) 
         isInRoom = true;
-    if (name === gameInfo.user_id) 
+    if (name === gameInfo.user_name && number >= 2) 
         isHost = true;
 
-    const roomList = document.getElementById('roomList');
+    const roomList = document.getElementById('room-list');
     const room = document.createElement('div');
     room.className = 'room';
 
@@ -836,7 +846,7 @@ function addNewRoomUI(name, number, room_id) {
         startButton.addEventListener('click', function() {
             console.log(`Room ${name}: Start button clicked!`);
 
-            GameInfoHandler.startGame();
+            GameInfoHandler.sendStartGame();
         });
 
         // 创建 "Leave" 按钮并添加事件

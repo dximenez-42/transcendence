@@ -74,7 +74,8 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 case 'ping':
                     await self.send(text_data=json.dumps({'action': 'pong',}))
                 case 'client_move_pad':
-                    self.handle_move_pad(text_data_json)
+                    print ('handle_move_pad:', text_data_json)
+                    await self.handle_move_pad(text_data_json)
                 case 'client_create_room':
                     await self.create_room()
                 case 'client_join_room':
@@ -93,13 +94,14 @@ class GamesConsumer(AsyncWebsocketConsumer):
             print(e)
     
     async def handle_move_pad(self, data_json):
+        print ('handle_move_pad called')
         if data_json['game_id'] in Game.game_states:
             game_state = Game.game_states[data_json['game_id']]
             newPosition = game_state['pad_' + data_json['user_name']] + data_json['pad_y']
-            if (newPosition + PAD_LENGTH / 2) > TABLE_HEIGHT / 2:
-                newPosition = TABLE_HEIGHT / 2 - PAD_LENGTH / 2
-            if (newPosition - PAD_LENGTH / 2) < -TABLE_HEIGHT / 2:
-                newPosition = -TABLE_HEIGHT / 2 + PAD_LENGTH / 2
+            if (newPosition + Game.PAD_LENGTH / 2) > Game.TABLE_HEIGHT / 2:
+                newPosition = Game.TABLE_HEIGHT / 2 - Game.PAD_LENGTH / 2
+            if (newPosition - Game.PAD_LENGTH / 2) < -Game.TABLE_HEIGHT / 2:
+                newPosition = -Game.TABLE_HEIGHT / 2 + Game.PAD_LENGTH / 2
             game_state['pad_' + data_json['user_name']] = newPosition
 
     async def create_room(self):

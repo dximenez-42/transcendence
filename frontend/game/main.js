@@ -79,11 +79,9 @@ function pauseTimer(intervalIdTimerRef) {
 export function renderGameOnline() {
 
 	hideNav();
-	
-    showOverlay();
     setGameType('online');
 	setGame('gameWindow', 'playerName', 'enamyName', 'playerScore', 'enamyScore')
-    //console.log('gameType:', getGameType());
+    console.log('gameType:', getGameType());
     // if (gameInfo.socketConnection === true) // if the connection is already established then we can control the game
     //     startGame();
 

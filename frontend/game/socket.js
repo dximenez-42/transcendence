@@ -41,7 +41,7 @@ export function createWebSocket() {
                     if (pongTimeout) clearTimeout(pongTimeout);
                     pongTimeout = setTimeout(() => {
                         console.log("No 'pong' message received in 4 seconds, closing WebSocket.");
-                        GameInfoHandler.sendGameOver();
+                        //GameInfoHandler.sendGameOver();
                         gameInfo.game_socket.close();
                     }, 6000);
                 } else {
@@ -75,8 +75,11 @@ export function createWebSocket() {
             //     console.log("Game is over, not attempting reconnection.");
             // }
             //----------------
-            if (gameInfo.status === 'on')
-                GameInfoHandler.notifyPauseGame();
+
+
+
+            // if (gameInfo.status === 'on')
+            //     GameInfoHandler.notifyPauseGame();
             stopHeartbeat();
             attemptReconnection();
 
@@ -115,7 +118,7 @@ function startHeartbeat() {
             if (pongTimeout) clearTimeout(pongTimeout);
             pongTimeout = setTimeout(() => {
 
-                GameInfoHandler.sendGameOver();
+                //GameInfoHandler.sendGameOver();
                 gameInfo.game_socket.close();
             }, 4000);
 

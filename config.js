@@ -1,8 +1,8 @@
 const config = {
     SECRET_KEY: 'django-insecure-h#t7m@i&=4wq85em)%)z8j7dlj*m)4@9tusb9ugfl58ntfjd)x',
     DJANGO_DEBUG: true, // Change to boolean
-    CLIENT_ID: 'u-s4t2ud-da24ef20df28e232477906fab1cef244486b986e4500de2e7823304ade8d7ca3',
-    CLIENT_SECRET: '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',
+    CLIENT_ID: 'u-s4t2ud-f22922ae1f5ec8fb7ff691ca5ddb9a1e758c6f4e446bb65df248559bfc08f037',
+    CLIENT_SECRET: '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',
     HOST: 'localhost',
     PORT: 8080,
     REDIRECT_URI: function() {
