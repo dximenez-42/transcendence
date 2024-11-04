@@ -1,6 +1,9 @@
 import { createGame, getGames, joinGame, leaveGame } from '../api/game.js'
 import { loadLanguage } from '../api/languages.js';
 import { createTournament, getTournaments, joinTournament, leaveTournament } from '../api/tournament.js';
+import { gameInfo } from '../game/constants.js';
+import { GameInfoHandler } from '../game/infoHandler.js';
+import { getSimpleRoomList } from '../game/utiles.js';
 
 
 // Tournament list functions
@@ -753,4 +756,126 @@ export function renderonline() {
 
 export function renderLocal() {
     // Implementation for local rendering
+}
+
+
+
+export function renderRoomList() {
+
+    const roomList = document.getElementById('room-list');
+    roomList.innerHTML = '';
+    if (gameInfo.room_list.length === 0) {
+        roomList.innerHTML = '<p>No rooms available</p>';
+        return;
+    } else {
+        const simpleList = getSimpleRoomList(gameInfo.room_list);
+        for (const room of simpleList) {
+            const [host_name, numbers, room_state, room_id] = room;
+            if (room_state !== "closed") {
+                addNewRoomUI(host_name, numbers, room_id);
+            }
+        }
+        if (gameInfo.room_id === null) {
+            addCreateRoomButton();
+        }
+    }
+    
+}
+
+function addCreateRoomButton() {
+    const roomList = document.getElementById('room-list');
+    
+    const createButtonContainer = document.createElement('div');
+    createButtonContainer.id = 'create-button';
+
+    const createRoomButton = document.createElement('button');
+    createRoomButton.id = 'create-room';
+    createRoomButton.textContent = 'Create Room';
+
+    createRoomButton.addEventListener('click', function() {
+        console.log('Create Room button clicked!');
+
+        GameInfoHandler.createRoom();
+    });
+
+    createButtonContainer.appendChild(createRoomButton);
+    
+    roomList.appendChild(createButtonContainer);
+}
+
+
+
+function addNewRoomUI(name, number, room_id) {
+
+    let isHost = false;
+    let isInRoom = false;
+    if (room_id === gameInfo.room_id) 
+        isInRoom = true;
+    if (name === gameInfo.user_id) 
+        isHost = true;
+
+    const roomList = document.getElementById('roomList');
+    const room = document.createElement('div');
+    room.className = 'room';
+
+    const roomName = document.createElement('div');
+    roomName.className = 'room-name';
+    roomName.textContent = name;
+
+    const roomPlayers = document.createElement('div');
+    roomPlayers.className = 'room-players';
+    roomPlayers.textContent = number;
+
+    const roomButton = document.createElement('div');
+    roomButton.className = 'room-button';
+
+    if (isHost) {
+        // 创建 "Start" 按钮并添加事件
+        const startButton = document.createElement('button');
+        startButton.textContent = 'Start';
+        startButton.addEventListener('click', function() {
+            console.log(`Room ${name}: Start button clicked!`);
+
+            GameInfoHandler.startGame();
+        });
+
+        // 创建 "Leave" 按钮并添加事件
+        const leaveButton = document.createElement('button');
+        leaveButton.textContent = 'Leave';
+        leaveButton.addEventListener('click', function() {
+            console.log(`Room ${name}: Leave button clicked!`);
+
+            GameInfoHandler.sendLeaveRoom();
+        });
+
+        roomButton.appendChild(startButton);
+        roomButton.appendChild(leaveButton);
+    } else if (!isInRoom) {
+        // 创建 "Join" 按钮并添加事件
+        const joinButton = document.createElement('button');
+        joinButton.textContent = 'Join';
+        joinButton.addEventListener('click', function() {
+            console.log(`Room ${name}: Join button clicked!`);
+            
+            GameInfoHandler.sendJoinRoom(name);
+        });
+
+        roomButton.appendChild(joinButton);
+    } else {
+
+        const joinButton = document.createElement('button');
+        joinButton.textContent = 'leave';
+        joinButton.addEventListener('click', function() {
+            console.log(`Room ${name}: leave button clicked!`);
+
+            GameInfoHandler.sendLeaveRoom();
+        });
+
+        roomButton.appendChild(joinButton);
+    }
+
+    room.appendChild(roomName);
+    room.appendChild(roomPlayers);
+    room.appendChild(roomButton);
+    roomList.appendChild(room);
 }

@@ -4,6 +4,7 @@ import { gameInfo, PAD_LENGTH, TABLE_HEIGHT } from './constants.js';
 import { startGame, showOverlay, hideOverlay } from './main.js';
 import { padEdgeCorrect } from './edgeJudge.js';
 import { getRankingListByResults, getSimpleRoomList, getRoomIdByHost } from './utiles.js';
+import { renderRoomList } from '../components/online.js';
 
 export class GameInfoHandler {
 
@@ -192,7 +193,10 @@ export class GameInfoHandler {
 				if ('room_list' in newInfo) {
 					
 					gameInfo.room_list = newInfo.room_list;
-					const simpleList = getSimpleRoomList(newInfo.room_list);
+					// const simpleList = getSimpleRoomList(newInfo.room_list);
+					if (gameInfo.status === 'off' && window.location.hash === '#online') {
+						renderRoomList();
+					}
 					// use above function to get the simple room list
 					// if (gameInfo.status === 'off') {
 					//	here write the logic of showing the room list using the simpleList
@@ -200,8 +204,8 @@ export class GameInfoHandler {
 					// }
 					// the format of simpleList will be like this
 					// [
-					// 	["test2", 1, "open"],
-					// 	["test1", 1, "open"]
+					// 	["test2", 1, "open", room_id],
+					// 	["test1", 1, "open", room_id]
 					// ]
 					// the first element is the host name, the second element is the number of players, the third element is the room state
 					// so you can refresh the room list by using the above function

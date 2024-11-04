@@ -31,8 +31,8 @@ export function getSimpleRoomList(roomList) {
 
     Object.values(roomList).forEach(room => {
 
-        const { host_name, numbers, room_state } = room;
-        simpleRoomList.push([host_name, numbers, room_state]);
+        const { host_name, numbers, room_state, room_id } = room;
+        simpleRoomList.push([host_name, numbers, room_state, room_id]);
     });
 
     return simpleRoomList;

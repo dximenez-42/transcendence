@@ -2,7 +2,7 @@ import { loadSelectedChatOnPageLoad } from './components/chat.js';
 //import { renderGame } from './game/main.js';  // modifyed by gao
 import { renderHome } from './components/home.js';
 import { renderLogin } from './components/login.js';
-import { renderonline, setMatchPoints } from './components/online.js';
+import { renderonline, setMatchPoints, renderRoomList } from './components/online.js';
 import { renderProfile } from './components/profile.js';
 import { getUser } from './api/users.js';
 
@@ -52,19 +52,19 @@ function router() {
     const userId = sessionStorage.getItem('auth_token');
     const hash = window.location.hash;
     
-    function logout() {
-        sessionStorage.clear();
-        window.location.hash = '#login';
-    }
-    async function checkAuthentication() {
-        await getUser();
-    }
+    // function logout() {
+    //     sessionStorage.clear();
+    //     window.location.hash = '#login';
+    // }
+    // async function checkAuthentication() {
+    //     await getUser();
+    // }
 
-    checkAuthentication();
-    if (!userId && hash !== '#login') {
-        window.location.hash = '#login';
-        return;
-    }
+    // checkAuthentication();
+    // if (!userId && hash !== '#login') {
+    //     window.location.hash = '#login';
+    //     return;
+    // }
 
     const routes = {
         '#home': { url: 'home.html', render: renderHome },
@@ -75,7 +75,8 @@ function router() {
         //'#online': { url: 'online.html', render: renderonline}, // commented by gao for testing
         '#create_game': { url: 'create_game.html', render: setMatchPoints},
         '#tournament_settings': { url: 'tournament_settings.html', render: () => console.log('Tournament page loaded') },
-        '#online': { url: 'game_online.html', render: renderGameOnline}, // add new route, modified by gao
+        //'#online': { url: 'game_online.html', render: renderGameOnline}, // add new route, modified by gao
+        '#online': { url: 'game_rooms.html', render:renderRoomList}, // add new route, modified by gao
     };
 
     const route = routes[hash];
