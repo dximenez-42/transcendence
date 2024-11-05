@@ -11,7 +11,7 @@ let isReconnecting = false;
 const MAX_MISSED_PONGS = 3;
 // ----------------------------
 
-export function createWebSocket() {
+export async function createWebSocket() {
 
     if (!gameInfo.game_socket || gameInfo.game_socket.readyState === WebSocket.CLOSED) {
 
@@ -137,7 +137,7 @@ function stopHeartbeat() {
     }
 }
 
-function attemptReconnection() {
+async function attemptReconnection() {
 
     // if (reconnectTimes >= 3) {
 
@@ -175,11 +175,15 @@ export function closeWebSocket() {
     }
 }
 
-export function sendData(action, data) {
+export async function sendData(action, data) {
 
     const message = { action, ...data };
     if (gameInfo.game_socket && gameInfo.game_socket.readyState === WebSocket.OPEN) {
-        gameInfo.game_socket.send(JSON.stringify(message));
+        try {
+            gameInfo.game_socket.send(JSON.stringify(message));
+        } catch (error) {
+            console.error("Failed to send message to WebSocket:", error);
+        }
     } else {
         console.error("WebSocket is not open.");
         console.log('gameInfo:', gameInfo);
