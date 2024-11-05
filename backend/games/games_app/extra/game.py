@@ -312,17 +312,17 @@ async def end_game(game_id):
 			if game_id in game_states:
 				del game_states[game_id]
 			
-			if winner_id in connected_users_id :
-				winner = connected_users_id [winner_id]
-				if winner_id in games:
-					del games[winner_id]
-				winner.game_id = None
+			# if winner_id in connected_users_id :
+			# 	winner = connected_users_id [winner_id]
+			if winner_id in games:
+				del games[winner_id]
+				# winner.game_id = None
 				# winner.opp_id = None
 				# winner.opp_name = None
-			if loser_id in connected_users_id :
-				if loser_id in games:
-					del games[loser_id]
-				loser.game_id = None
+			# if loser_id in connected_users_id :
+			if loser_id in games:
+				del games[loser_id]
+				# loser.game_id = None
 				# loser.opp_id = None
 				# loser.opp_name = None
 	except Exception as e:

@@ -398,11 +398,14 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 # async with Game.connected_lock:
                 for player_id in room['player_ids']:
                     if player_id in Game.connected_users_id :
-                        await Game.connected_users_id [player_id].send(json.dumps({
-                            'action': 'server_game_over',
-                            'result': results,
-                            'msg': 'Tournament Complete'
-                        }))
+                        try:
+                            await Game.connected_users_id [player_id].send(json.dumps({
+                                'action': 'server_game_over',
+                                'result': results,
+                                'msg': 'Tournament Complete'
+                            }))
+                        except Exception as e:
+                            print("start_room_game send game_over fault: ", e)
 
                 # Reset room state
                 # room['room_state'] = 'open'

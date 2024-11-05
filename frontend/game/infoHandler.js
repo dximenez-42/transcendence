@@ -110,18 +110,21 @@ export class GameInfoHandler {
 				if (window.location.hash !== '#game_online')
 					window.location.hash = 'game_online';
 				// //////////////////////////////////////
-				gameInfo.gameOver = false;
-				gameInfo.opp_name = newInfo.opp_name;
-				gameInfo.opp_id = newInfo.opp_id;
-				gameInfo.game_id = newInfo.game_id;
-				document.getElementById('enamyName').innerHTML = newInfo.opp_name;
-				document.getElementById('playerName').innerHTML = gameInfo.user_name;
-				gameInfo.playerName = gameInfo.user_name;
-				gameInfo.enamyName = gameInfo.opp_name;
-				gameInfo.status = 'on';
+					
 				// console.log("Game matched by server.");
 				hideOverlay();
-				startGame();
+				if (gameInfo.gameOver === true)
+					gameInfo.gameOver = false;
+					gameInfo.opp_name = newInfo.opp_name;
+					gameInfo.opp_id = newInfo.opp_id;
+					gameInfo.game_id = newInfo.game_id;
+					document.getElementById('enamyName').innerHTML = newInfo.opp_name;
+					document.getElementById('playerName').innerHTML = gameInfo.user_name;
+					gameInfo.playerName = gameInfo.user_name;
+					gameInfo.enamyName = gameInfo.opp_name;
+					gameInfo.status = 'on';
+					startGame();
+					console.log('game started');
 				break;
 			// when the room is created, the server will send the room id to the client
 			case 'server_room_created':
@@ -261,7 +264,7 @@ export class GameInfoHandler {
 				
 			// when all the games in the room are over, the server will send the result to the client
 			case 'server_game_over':
-				
+				console.log('server_game_over');
 				if ('result' in newInfo) {
 					gameInfo.result = getRankingListByResults(newInfo.result);
 					//////////////////////////////////////
@@ -280,13 +283,14 @@ export class GameInfoHandler {
 					console.log(gameInfo.result);
 				}
 				alert('Game Over'); // this is not that necessary, can be removed
-				gameInfo.gameOver = true;
-				gameInfo.opp_id = '';
-				gameInfo.opp_name = '';
-				gameInfo.winner = '';
-				gameInfo.game_id = '';
-				gameInfo.status = 'off';
-				startGame();
+				if (gameInfo.gameOver === false)
+					gameInfo.gameOver = true;
+					gameInfo.opp_id = '';
+					gameInfo.opp_name = '';
+					gameInfo.winner = '';
+					gameInfo.game_id = '';
+					gameInfo.status = 'off';
+					startGame();
 				window.location.hash = 'home';
 				break;
 
