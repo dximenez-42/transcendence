@@ -124,7 +124,7 @@ export class GameInfoHandler {
 					gameInfo.enamyName = gameInfo.opp_name;
 					gameInfo.status = 'on';
 					startGame();
-					console.log('game started');
+					console.log('game started, ====================== start_pause_game called ======================');
 				break;
 			// when the room is created, the server will send the room id to the client
 			case 'server_room_created':
@@ -291,6 +291,7 @@ export class GameInfoHandler {
 					gameInfo.game_id = '';
 					gameInfo.status = 'off';
 					startGame();
+					console.log('====================== game over, start_pause_game called ======================');
 				window.location.hash = 'home';
 				break;
 

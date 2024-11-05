@@ -68,13 +68,13 @@ class GamesConsumer(AsyncWebsocketConsumer):
             text_data_json = json.loads(text_data)
             if 'action' not in text_data_json:
                 return
-                  
+            print ('test_data_json:', text_data_json) 
             match text_data_json['action']:
                 
                 case 'ping':
                     await self.send(text_data=json.dumps({'action': 'pong',}))
                 case 'client_move_pad':
-                    print ('handle_move_pad:', text_data_json)
+                    print ('handle_move_pad:', text_data_json['user_name'])
                     await self.handle_move_pad(text_data_json)
                 case 'client_create_room':
                     await self.create_room()
@@ -90,6 +90,8 @@ class GamesConsumer(AsyncWebsocketConsumer):
                     await self.get_all_rooms()
                 # case 'test_game_list':
                 #     await self.test_game_list()
+        except json.JSONDecodeError:
+            print("JSONDecodeError")
         except Exception as e:
             print(e)
     
@@ -435,4 +437,3 @@ class GamesConsumer(AsyncWebsocketConsumer):
     #         }))
     #     except Exception as e:
     #         print("test_game_list error: ", e)
-        

@@ -7,6 +7,7 @@ let pingInterval = null;
 let pongTimeout = null;
 //let reconnectTimes = 0;
 let missedPings = 0;
+let isReconnecting = false;
 const MAX_MISSED_PONGS = 3;
 // ----------------------------
 
@@ -16,8 +17,6 @@ export function createWebSocket() {
 
         gameInfo.game_socket = new WebSocket('ws://' + window.location.host + '/ws/games/' + gameInfo.user_name + '/' + gameInfo.user_id);
 
-        // console.log ('user_name:', gameInfo.user_name);
-        // console.log ('user_id:', gameInfo.user_id);
         // when the connection is established
         gameInfo.game_socket.onopen = function(event) {
 
@@ -38,12 +37,12 @@ export function createWebSocket() {
                 if (data['action'] === 'pong') {
                     // console.log("Pong received from server.");
                     missedPings = 0;
-                    if (pongTimeout) clearTimeout(pongTimeout);
-                    pongTimeout = setTimeout(() => {
-                        console.log("No 'pong' message received in 4 seconds, closing WebSocket.");
-                        //GameInfoHandler.sendGameOver();
-                        gameInfo.game_socket.close();
-                    }, 6000);
+                    // if (pongTimeout) clearTimeout(pongTimeout);
+                    // pongTimeout = setTimeout(() => {
+                    //     console.log("No 'pong' message received in 7 seconds, closing WebSocket.");
+                    //     //GameInfoHandler.sendGameOver();
+                    //     gameInfo.game_socket.close();
+                    // }, 7000);
                 } else {
                 ///////////////////////////////////////////
                     GameInfoHandler.infoHandler (data);
@@ -109,22 +108,18 @@ function startHeartbeat() {
         if (missedPings >= MAX_MISSED_PONGS) {
 
             console.log("Closing WebSocket due to missed pongs.");
-            GameInfoHandler.sendGameOver();
+            //GameInfoHandler.sendGameOver();
             gameInfo.game_socket.close();
+            stopHeartbeat();
         } else {
 
             GameInfoHandler.sendPing();
             //console.log("Ping sent to server.");
-            if (pongTimeout) clearTimeout(pongTimeout);
-            pongTimeout = setTimeout(() => {
-
-                //GameInfoHandler.sendGameOver();
-                gameInfo.game_socket.close();
-            }, 4000);
-
             missedPings++;
         }
-   }, 5000); // send a ping every 5 seconds
+        
+    }, 5000); // send a ping every 5 seconds
+
 }
 
 function stopHeartbeat() {
@@ -133,6 +128,12 @@ function stopHeartbeat() {
 
         clearInterval(pingInterval);
         pingInterval = null;
+    }
+
+    if (pongTimeout) {
+
+        clearTimeout(pongTimeout);
+        pongTimeout = null;
     }
 }
 
@@ -145,12 +146,15 @@ function attemptReconnection() {
     //     window.location.href = "#vs_settings";
     //     window.location.reload();
     // }
+    if (isReconnecting) return;
+    isReconnecting = true;
 
     setTimeout(() => {
 
         //reconnectTimes ++;
         console.log("Attempting to reconnect WebSocket...");
         createWebSocket();
+        isReconnecting = false;
     }, 3000);
 }
 

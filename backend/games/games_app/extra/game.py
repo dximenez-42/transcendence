@@ -126,7 +126,7 @@ async def start_ball_movement(game_id):
 				if pad_bottom - radiusBuffer <= new_ball_y <= pad_top + radiusBuffer:
 					collide_point = new_ball_y - game_state['pad_' + host_name]
 					normalized_collide_point = collide_point / (PAD_LENGTH / 2)
-					angle = normalized_collide_point * (math.pi / 4)
+					angle = normalized_collide_point * (math.pi / 2.5)
 					speed = math.sqrt(ball_speed_x**2 + ball_speed_y**2) + 0.1
 					game_state['ball_speed_x'] = abs(speed * math.cos(angle))
 					game_state['ball_speed_y'] = speed * math.sin(angle)
@@ -143,7 +143,7 @@ async def start_ball_movement(game_id):
 				if pad_bottom - radiusBuffer <= new_ball_y <= pad_top + radiusBuffer:
 					collide_point = new_ball_y - game_state['pad_' + oppo_name]
 					normalized_collide_point = collide_point / (PAD_LENGTH / 2)
-					angle = normalized_collide_point * (math.pi / 4)
+					angle = normalized_collide_point * (math.pi / 2.5)
 					speed = math.sqrt(ball_speed_x**2 + ball_speed_y**2) + 0.1
 					game_state['ball_speed_x'] = -abs(speed * math.cos(angle))
 					game_state['ball_speed_y'] = speed * math.sin(angle)
@@ -325,6 +325,7 @@ async def end_game(game_id):
 				# loser.game_id = None
 				# loser.opp_id = None
 				# loser.opp_name = None
+			print('game ended connected_users_id:  ', connected_users_id)
 	except Exception as e:
 		print(f"Error in end_game: {e}")
 	
