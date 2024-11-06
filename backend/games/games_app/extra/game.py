@@ -403,5 +403,15 @@ async def rejoin_game_set(ws): # in this func need to consider more situation li
 		#     'pad_' + ws.user_name: game_state['pad_' + ws.user_name],
 		#     'pad_' + opp_name: game_state['pad_' + opp_name]
 		# }))
-
+  
+async def handle_move_pad(data_json):
+        if data_json['game_id'] in game_states:
+            print ('handle_move_pad called successfully')
+            game_state = game_states[data_json['game_id']]
+            newPosition = game_state['pad_' + data_json['user_name']] + data_json['pad_y']
+            if (newPosition + PAD_LENGTH / 2) > TABLE_HEIGHT / 2:
+                newPosition = TABLE_HEIGHT / 2 - PAD_LENGTH / 2
+            if (newPosition - PAD_LENGTH / 2) < -TABLE_HEIGHT / 2:
+                newPosition = -TABLE_HEIGHT / 2 + PAD_LENGTH / 2
+            game_state['pad_' + data_json['user_name']] = newPosition
 			
