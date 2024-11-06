@@ -16,7 +16,7 @@ export async function createWebSocket() {
     if (!gameInfo.game_socket || gameInfo.game_socket.readyState === WebSocket.CLOSED) {
 
         gameInfo.game_socket = new WebSocket('ws://' + window.location.host + '/ws/games/' + gameInfo.user_name + '/' + gameInfo.user_id);
-
+        
         // when the connection is established
         gameInfo.game_socket.onopen = function(event) {
 
@@ -27,25 +27,16 @@ export async function createWebSocket() {
         };
 
         // when the client receives a message from the server
-        gameInfo.game_socket.onmessage = function(event) {
+        gameInfo.game_socket.onmessage = async function(event) {
             try {
                 const data = JSON.parse(event.data);
                 // console.log("Message from server:", data);
                 
-                ///////////////////////////////////////////
-                // add ping pong mecanism
                 if (data['action'] === 'pong') {
                     // console.log("Pong received from server.");
                     missedPings = 0;
-                    // if (pongTimeout) clearTimeout(pongTimeout);
-                    // pongTimeout = setTimeout(() => {
-                    //     console.log("No 'pong' message received in 7 seconds, closing WebSocket.");
-                    //     //GameInfoHandler.sendGameOver();
-                    //     gameInfo.game_socket.close();
-                    // }, 7000);
                 } else {
-                ///////////////////////////////////////////
-                    GameInfoHandler.infoHandler (data);
+                    await GameInfoHandler.infoHandler (data);
                 }
                 // ----------------
             } catch (error) {
@@ -63,31 +54,8 @@ export async function createWebSocket() {
 
             console.log('Client WebSocket connection closed:', event);
             gameInfo.socketConnection = false;
-            // add ping pong mecanism
-            // if (gameInfo.gameOver == false) {
-
-            //     GameInfoHandler.notifyPauseGame();
-            //     stopHeartbeat();
-            //     attemptReconnection();
-            // } else {
-                
-            //     console.log("Game is over, not attempting reconnection.");
-            // }
-            //----------------
-
-
-
-            // if (gameInfo.status === 'on')
-            //     GameInfoHandler.notifyPauseGame();
             stopHeartbeat();
             attemptReconnection();
-
-            //socket = null;
-
-            // set a retry mechanism
-            //setTimeout(() => {
-            //    createWebSocket(onMessageCallback);
-            //}, 3000); // try to reconnect every 3 seconds
         };
 
         // handle WebSocket errors
@@ -160,19 +128,17 @@ async function attemptReconnection() {
 
 export function sendInfoWS(wsInfo) {
 
-    if (gameInfo.game_socket && gameInfo.game_socket.readyState === WebSocket.OPEN) {
+    if (gameInfo.game_socket && gameInfo.game_socket.readyState === WebSocket.OPEN)
         gameInfo.game_socket.send(wsInfo);
-    } else {
+    else
         console.error("Client WebSocket is not open.");
-    }
 }
 
 export function closeWebSocket() {
 
-    if (gameInfo.game_socket) {
-
+    if (gameInfo.game_socket)
         gameInfo.game_socket.close();
-    }
+
 }
 
 export async function sendData(action, data) {
@@ -180,7 +146,8 @@ export async function sendData(action, data) {
     const message = { action, ...data };
     if (gameInfo.game_socket && gameInfo.game_socket.readyState === WebSocket.OPEN) {
         try {
-            gameInfo.game_socket.send(JSON.stringify(message));
+            await gameInfo.game_socket.send(JSON.stringify(message));
+            console.log("Message sent to WebSocket:", message);
         } catch (error) {
             console.error("Failed to send message to WebSocket:", error);
         }

@@ -1,4 +1,4 @@
-import { keyMovePad, setGameType, getGameType, setDomPlayerScore, setDomEnamyScore, setDomCanvas} from './pong.js';
+import { keyMovePad, setGameType, getGameType, setPlayerScore, setEnamyScore, setDomCanvas} from './pong.js';
 import { FPS, GAME_TIME, gameInfo} from './constants.js'; // modifyed by gao
 import { GameInfoHandler } from './infoHandler.js';
 import { hideNav, showNav } from '../components/home.js';
@@ -7,15 +7,17 @@ let timer = GAME_TIME;
 // ------------- GAME SETTINGS ----------------
 
 export function showOverlay(content) {
-    if (content) {
-        document.getElementById('overlay-content').innerHTML = content;
-    }
-    document.getElementById('overlay').style.display = 'flex';
+    // if (content) {
+    //     document.getElementById('overlay-content').innerHTML = content;
+    // }
+    // document.getElementById('overlay').style.display = 'flex';
+    return;
 }
 
 
 export function hideOverlay() {
-    document.getElementById('overlay').style.display = 'none';
+    // document.getElementById('overlay').style.display = 'none';
+    return;
 }
 
 export function selectMode() {
@@ -38,13 +40,14 @@ export function selectMode() {
     }
 }
 
-// ----------------------------------------
-
-export let startGame = createGameController();  // this function will be called to start or pause the game, for online mode, it will start render or stop render the game
-                                                // only local game it will caculate the game logic and render the game, for online mode, it will only render the game
-                                                // when this function is called secend time, it will pause the game
-                                                // for local mode, it will pause the game and stop the game logic
-                                                // for online mode, it will only stop the game render
+//  --------------------------------------------------------------------------------------------------------------------------
+// |this function will be called to start or pause the game, for online mode, it will start render or stop render the game    |
+// |only local game it will caculate the game logic and render the game, for online mode, it will only render the game        |
+// |when this function is called secend time, it will pause the game                                                          |   
+// |for local mode, it will pause the game and stop the game logic                                                            |
+// |for online mode, it will only stop the game render                                                                        |
+//  --------------------------------------------------------------------------------------------------------------------------
+export let startGame = createGameController();  
 
 
 function startTimer(intervalIdTimerRef) {
@@ -113,26 +116,25 @@ export function renderGame(){  // render_local_game
 
 export function setGame(HTMLcanvasID, HTMLplayerNameID, HTMLenamyNameID, HTMLplayerScoreID, HTMLenamyScoreID) {
 
-	setDomEnamyScore(HTMLenamyScoreID);
-	setDomPlayerScore(HTMLplayerScoreID);
-	setDomCanvas(HTMLcanvasID);
     gameInfo.DOMPlayerNameID = HTMLplayerNameID;
     gameInfo.DOMEnamyNameID = HTMLenamyNameID;
     gameInfo.DOMEnamyScoreID = HTMLenamyScoreID;
     gameInfo.DOMPlayerScoreID = HTMLplayerScoreID;
-    
-    let cur_gameInfoHandler = new GameInfoHandler (HTMLplayerNameID, HTMLenamyNameID);
-	//console.log(getGameType);
+    gameInfo.DOMPlayerNameElement = document.getElementById(HTMLplayerNameID);
+    gameInfo.DOMEnamyNameElement = document.getElementById(HTMLenamyNameID);
+    gameInfo.DOMPlayerScoreElement = document.getElementById(HTMLplayerScoreID);
+    gameInfo.DOMEnamyScoreElement = document.getElementById(HTMLenamyScoreID);
+    setEnamyScore();
+	setPlayerScore();
+	setDomCanvas(HTMLcanvasID);
 
-    const elementPlayerName = document.getElementById(HTMLplayerNameID);
-    const elementEnamyName = document.getElementById(HTMLenamyNameID);
     if (gameInfo.playerName === '' || gameInfo.enamyName === '') {
-        elementEnamyName.innerHTML = 'Player 2';
-        elementPlayerName.innerHTML = 'Player 1';
+        gameInfo.DOMEnamyNameElement.innerHTML = 'Player 2';
+        gameInfo.DOMPlayerNameElement.innerHTML = 'Player 1';
     }else {
 
-        elementEnamyName.innerHTML = gameInfo.enamyName;
-        elementPlayerName.innerHTML = gameInfo.playerName;
+        gameInfo.DOMEnamyNameElement.innerHTML  = gameInfo.enamyName;
+        gameInfo.DOMPlayerNameElement.innerHTML = gameInfo.playerName;
     }
 
 	if (getGameType() === 'local') {
@@ -144,7 +146,7 @@ export function setGame(HTMLcanvasID, HTMLplayerNameID, HTMLenamyNameID, HTMLpla
 		// createWebSocket(cur_gameInfoHandler);
 	} else {
 		console.error('Invalid game type.');
-		window.location.href = "#vs_settings";
+		window.location.hash = "#vs_settings";
 	}
 }
 

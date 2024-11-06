@@ -54,6 +54,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
                                                                # async tasks, it may have resourse risk whitch may cause that 
                                                                # when host wanna restart a game in new room, the user is not in the
                                                                # connected_users_id. So this part will be realized in `connect` func
+            print ('user disconnect ! == > ', self.user_name)
             if self.user_id in Game.rooms:
                 room_id = Game.rooms[self.user_id]
                 if room_id in Game.room_states:
@@ -75,7 +76,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
                     await self.send(text_data=json.dumps({'action': 'pong',}))
                 case 'client_move_pad':
                     print ('handle_move_pad:', text_data_json['user_name'])
-                    await self.handle_move_pad(text_data_json)
+                    await self.handle_move_pad(text_data_json) # 这个改成不需要self 的函数
                 case 'client_create_room':
                     await self.create_room()
                 case 'client_join_room':
@@ -96,8 +97,8 @@ class GamesConsumer(AsyncWebsocketConsumer):
             print(e)
     
     async def handle_move_pad(self, data_json):
-        print ('handle_move_pad called')
         if data_json['game_id'] in Game.game_states:
+            print ('handle_move_pad called successfully')
             game_state = Game.game_states[data_json['game_id']]
             newPosition = game_state['pad_' + data_json['user_name']] + data_json['pad_y']
             if (newPosition + Game.PAD_LENGTH / 2) > Game.TABLE_HEIGHT / 2:

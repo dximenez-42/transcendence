@@ -10,14 +10,11 @@ let padYPositionPlayer = 0;
 let padYPositionEnamy = 0;
 let ballDirectionX = 0;
 let ballDirectionY = 0;
-let domPlayerScore;
-let domEnamyScore;
 let enamyScore;
 let playerScore;
 let ballSpeedX = getBallSpeed();
 let ballSpeedY = getBallSpeed();
 let gameType = '';
-let Id = '';
 let axesHelper;
 let renderer;
 let scene;
@@ -94,7 +91,7 @@ export function keyMovePad() {
             } else {
 
                 resetBall();
-                domEnamyScore.innerHTML = ++enamyScore;
+                gameInfo.DOMEnamyScoreElement.innerHTML = ++enamyScore;
             }
         }
 
@@ -111,13 +108,13 @@ export function keyMovePad() {
             } else {
 
                 resetBall();
-                domPlayerScore.innerHTML = ++playerScore;
+                gameInfo.DOMPlayerScoreElement.innerHTML = ++playerScore;
             }
         }
 
         if (ifGameOver(playerScore, enamyScore, GameInfoHandler.sendGameOver)) {
 
-            setTimeout(() => window.location.reload(), 0);
+            // setTimeout(() => window.location.reload(), 0); // do not need to reload the page
             return;
         }
 
@@ -134,21 +131,6 @@ export function keyMovePad() {
     }
     
     renderer.render(scene, camera);
-}
-
-export function getBallDirectionX() {
-    
-    return ballDirectionX;
-}
-
-export function getBallDirectionY() {
-        
-    return ballDirectionY;
-}
-
-export function getPadPlayerPositionY() {
-
-    return padYPositionPlayer;
 }
 
 export function resetPositionBall(newPositionX, newPositionY) {
@@ -197,26 +179,14 @@ export function getGameType() {
     return gameType;
 }
 
-export function setPlayerId(id) {
+export function setPlayerScore() {
 
-    Id = id;
+    playerScore = parseInt(gameInfo.DOMPlayerScoreElement.innerHTML);
 }
 
-export function getPlayerId() {
+export function setEnamyScore() {
 
-    return Id;
-}
-
-export function setDomPlayerScore(id) {
-
-    domPlayerScore = document.getElementById(id);
-    playerScore = parseInt(domPlayerScore.innerHTML);
-}
-
-export function setDomEnamyScore(id) {
-
-    domEnamyScore = document.getElementById(id);
-    enamyScore = parseInt(domEnamyScore.innerHTML);
+    enamyScore = parseInt(gameInfo.DOMEnamyScoreElement.innerHTML);
 }
 
 export function setDomCanvas(id) {
