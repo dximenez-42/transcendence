@@ -343,7 +343,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 'room_list': Game.room_states
             })
             # ///////////////////////////////////////////////////
-            await Game.start_room(room_id)
+            asyncio.create_task(Game.start_room(room_id))
         except Exception as e:
             print("start_room_game error: ", e)
     
