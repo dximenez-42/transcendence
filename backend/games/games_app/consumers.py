@@ -20,10 +20,6 @@ class GamesConsumer(AsyncWebsocketConsumer):
             
             self.user_name = self.scope['url_route']['kwargs']['user_name']  # user_name
             self.user_id = self.scope['url_route']['kwargs']['user_id']  # user_id (token)
-            # self.room_id = None
-            # self.opp_name = None
-            # self.opp_id = None
-            # self.game_id = None
 
             await self.accept()
             
@@ -351,12 +347,3 @@ class GamesConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             print("start_room_game error: ", e)
     
-    # async def test_game_list(self):
-    #     try:
-    #         await self.send(json.dumps({
-    #             'action': 'server_game_list',
-    #             'game_list': Game.game_states,
-    #             'games': Game.games
-    #         }))
-    #     except Exception as e:
-    #         print("test_game_list error: ", e)
