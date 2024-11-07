@@ -313,9 +313,7 @@ async def end_game(game_id):
 				loser_id = game_states[game_id]['user1_id']
 			
 			room_id = game_states[game_id]['room_id']
-			# if room_id not in room_locks:
-			# 	room_locks[room_id] = Lock()
-			# async with room_locks[room_id]:
+			
 			if room_id in room_states:
 				room = room_states[room_id]
 				room['result'].append({          
@@ -327,20 +325,7 @@ async def end_game(game_id):
 				room['game_times'] -= 1
 				if room['game_times'] != 0:
 					room['game_queue'].append(winner_id)
-			#     if room['game_times'] == 0:
-			#         room['room_state'] = 'open'
-			#         room['game_queue'] = room['player_ids'][:]
-			#         room['numbers'] = len(room['player_ids'])
-			#         room['result'] = []
-			#         for player_id in room['player_ids']:
-			#             await connected_users_id [player_id].send(json.dumps({
-			#                 'action': 'server_game_over',
-			#                 'winner': game_states[game_id]['winner'],
-			#                 'result': room['result'],
-			#             }))    
 			
-			# # del game_states[game_id]
-			# async with connected_lock:
 			if loser_id in connected_users_id :
 				loser = connected_users_id [loser_id]
 				try:
@@ -351,30 +336,14 @@ async def end_game(game_id):
 					}))
 				except Exception as e:
 					print(f"Error in end_game to loser: {e}")
-			# await self.send(json.dumps({
-			#     'action': 'server_game_over',
-			#     'winner': game_states[game_id]['winner'],
-			# }))
-			# await connected_users_id [self.opp_id].send(json.dumps({
-			#     'action': 'server_game_over',
-			#     'winner': game_states[game_id]['winner'],
-			# }))
+     
 			if game_id in game_states:
 				del game_states[game_id]
 			
-			# if winner_id in connected_users_id :
-			# 	winner = connected_users_id [winner_id]
 			if winner_id in games:
 				del games[winner_id]
-				# winner.game_id = None
-				# winner.opp_id = None
-				# winner.opp_name = None
-			# if loser_id in connected_users_id :
 			if loser_id in games:
 				del games[loser_id]
-				# loser.game_id = None
-				# loser.opp_id = None
-				# loser.opp_name = None
 			print('game ended connected_users_id:  ', connected_users_id)
 	except Exception as e:
 		print(f"Error in end_game: {e}")
