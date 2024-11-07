@@ -337,7 +337,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 # await self.send(json.dumps({
                 #     'action': 'server_game_start_success'
                 # }))
-                # ///////////////////////////////////////////////////
+            # ///////////////////////////////////////////////////
             await Game.spread_msg ({
                 'action': 'server_room_list_update',
                 'room_list': Game.room_states
