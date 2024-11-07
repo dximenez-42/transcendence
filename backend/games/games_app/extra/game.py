@@ -24,9 +24,60 @@ rooms = {} # user_id: room_id
 room_locks = {} # room_id: Lock
 # connected_lock = Lock()
 
+async def start_room(room_id):
+    
+	await spread_room_msg (room_id, {
+		'action': 'server_game_started_waiting',
+	})
+
+	room = room_states[room_id]
+	# Start games in parallel
+	while True:
+		game_tasks = []
+		print('==================start match games circle start==================')
+		await asyncio.sleep(3)
+		while len(room['game_queue']) >= 2:
+			
+			# print ('inicio of the circle => current game queue:', room['game_queue'])
+			player1_id = room['game_queue'].pop(0)
+			player2_id = room['game_queue'].pop(0)
+			game_task = asyncio.create_task(start_game_1v1(player1_id, player2_id))
+			game_tasks.append(game_task)
+			# print ('end of the circle => current game queue:', room['game_queue'])
+			
+		print("wait the target to finish")
+		# Wait for all games to complete
+		if game_tasks:
+			await asyncio.gather(*game_tasks)
+		
+		print('start match games circle end ready to check if continue the circle') 
+		if len(room['game_queue']) == 0:
+			print ('room state:', room['room_state'])
+			print ('game state:', room['game_queue'])
+			print ('==================no more games to play, end circle==================')
+			game_tasks = []
+			break
+		
+	# print ('start_room_game_middle: <<<<<<<<', connected_users_id, '>>>>>>>>')
+	# Notify tournament completion
+	results = room['result']
+	# async with Game.connected_lock:
+	await spread_room_msg(room_id, {
+		'action': 'server_game_over',
+		'result': results,
+	})
+	for user_id in room['player_ids']:
+		if user_id in connected_users_id :
+			cur_user = connected_users_id[user_id]
+			del rooms[user_id]
+
+	del room_states[room_id]   # need to see if need to delete the room
+									# when i commit this line, the code works fine
+									# theritically, the room should be deleted after the game is over
+	print ('start_room_game_end: <<<<<<<<', connected_users_id, '>>>>>>>>')
 
 
-async def start_game(player1_id, player2_id):
+async def start_game_1v1(player1_id, player2_id):
 	try:
 		# async with connected_lock:
 		if player1_id not in connected_users_id  or player2_id not in connected_users_id :
@@ -37,37 +88,36 @@ async def start_game(player1_id, player2_id):
 			print(f"{player1_id} or {player2_id} not in rooms")
 			print(rooms)
 			return
-			
-		player1 = connected_users_id [player1_id]
-		player2 = connected_users_id [player2_id]
 
 		game_id = generate_unique_id()
 		games[player1_id] = game_id
 		games[player2_id] = game_id
 		room_id = rooms[player1_id]
-		
-		# player1.game_id = game_id
-		# player2.game_id = game_id
-		# player1.opp_id = player2_id
-		# player2.opp_id = player1_id
-		# player1.opp_name = player2.user_name
-		# player2.opp_name = player1.user_name
 
+		player1 = connected_users_id [player1_id]
+		player2 = connected_users_id [player2_id]
+  
 		# Send match information to both players
 		if player1_id in connected_users_id :
-			await player1.send(text_data=json.dumps({
-				'action': 'server_game_matched',
-				'opp_name': player2.user_name,
-				'opp_id': player2.user_id,
-				'game_id': game_id,
-			}))
+			try:
+				await player1.send(text_data=json.dumps({
+					'action': 'server_game_matched',
+					'opp_name': player2.user_name,
+					'opp_id': player2.user_id,
+					'game_id': game_id,
+				}))
+			except Exception as e:
+				print(f"Error in start_game to player1: {e}")
 		if player2_id in connected_users_id :
-			await player2.send(text_data=json.dumps({
-				'action': 'server_game_matched',
-				'opp_name': player1.user_name,
-				'opp_id': player1.user_id,
-				'game_id': game_id,
-			}))
+			try:
+				await player2.send(text_data=json.dumps({
+					'action': 'server_game_matched',
+					'opp_name': player1.user_name,
+					'opp_id': player1.user_id,
+					'game_id': game_id,
+				}))
+			except Exception as e:
+				print(f"Error in start_game to player2: {e}")
 
 		# Initialize game state
 		game_states[game_id] = {

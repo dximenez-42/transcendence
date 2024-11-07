@@ -309,112 +309,45 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 return
                 
             room_id = Game.rooms[self.user_id]
-            async with Game.room_locks[room_id]:
             
-            # if room_id not in Game.room_locks:
-            #     Game.room_locks[room_id] = Lock()
-                
-            # async with Game.room_locks[room_id]:
-                if room_id not in Game.room_states:
-                    await self.send(json.dumps({
-                        'action': 'server_game_start_denied',
-                        'error': 'Room not exist'
-                    }))
-                    return
+            if room_id not in Game.room_states:
+                await self.send(json.dumps({
+                    'action': 'server_game_start_denied',
+                    'error': 'Room not exist'
+                }))
+                return
 
-                room = Game.room_states[room_id]
+            room = Game.room_states[room_id]
+            
+            if room['host_id'] != self.user_id:
+                await self.send(json.dumps({
+                    'action': 'server_game_start_denied',
+                    'error': 'User is not the host'
+                }))
+                return
                 
-                if room['host_id'] != self.user_id:
-                    await self.send(json.dumps({
-                        'action': 'server_game_start_denied',
-                        'error': 'User is not the host'
-                    }))
-                    return
-                    
-                if room['numbers'] < 2:
-                    await self.send(json.dumps({
-                        'action': 'server_game_start_denied',
-                        'error': 'Not enough players'
-                    }))
-                    return
-
+            if room['numbers'] < 2:
+                await self.send(json.dumps({
+                    'action': 'server_game_start_denied',
+                    'error': 'Not enough players'
+                }))
+                return
+            async with Game.room_locks[room_id]:
                 # Initialize tournament
                 room['room_state'] = 'closed'
                 room['game_queue'] = room['player_ids'][:]
                 room['game_times'] = len(room['player_ids']) - 1
-                
+            
                 # await self.send(json.dumps({
                 #     'action': 'server_game_start_success'
                 # }))
                 # ///////////////////////////////////////////////////
-                await Game.spread_msg ({
-                    'action': 'server_room_list_update',
-                    'room_list': Game.room_states
-                })
-                # ///////////////////////////////////////////////////
-            await Game.spread_room_msg (room_id, {
-                'action': 'server_game_started_waiting',
+            await Game.spread_msg ({
+                'action': 'server_room_list_update',
+                'room_list': Game.room_states
             })
-            
-            # Start games in parallel
-            while True:
-                game_tasks = []
-                print('==================start match games circle start==================')
-                await asyncio.sleep(3)
-                while len(room['game_queue']) >= 2:
-                    
-                    print ('inicio of the circle => current game queue:', room['game_queue'])
-                    player1_id = room['game_queue'].pop(0)
-                    player2_id = room['game_queue'].pop(0)
-                    game_task = asyncio.create_task(Game.start_game(player1_id, player2_id))
-                    game_tasks.append(game_task)
-                    print ('end of the circle => current game queue:', room['game_queue'])
-                    
-                print("wait the target to finish")
-                # Wait for all games to complete
-                if game_tasks:
-                    await asyncio.gather(*game_tasks)
-                    # await asyncio.sleep(3)
-                
-                print('start match games circle end ready to check if continue the circle') 
-                if len(room['game_queue']) == 0:
-                    print ('room state:', room['room_state'])
-                    print ('game state:', room['game_queue'])
-                    print ('==================no more games to play, end circle==================')
-                    game_tasks = []
-                    break
-                
-            print ('start_room_game_middle: <<<<<<<<', Game.connected_users_id, '>>>>>>>>')
-            # Notify tournament completion
-            results = room['result']
-            # async with Game.connected_lock:
-            for player_id in room['player_ids']:
-                if player_id in Game.connected_users_id :
-                    try:
-                        await Game.connected_users_id [player_id].send(json.dumps({
-                            'action': 'server_game_over',
-                            'result': results,
-                            'msg': 'Tournament Complete'
-                        }))
-                    except Exception as e:
-                        print("start_room_game send game_over fault: ", e)
-
-            # Reset room state
-            # room['room_state'] = 'open'
-            # room['game_queue'] = []
-            # room['game_times'] = 0
-            # room['result'] = []
-            # async with Game.connected_lock:
-            for user_id in room['player_ids']:
-                if user_id in Game.connected_users_id :
-                    cur_user = Game.connected_users_id[user_id]
-                    # cur_user.room_id = None
-                    del Game.rooms[user_id]
-
-            del Game.room_states[room_id]    # need to see if need to delete the room
-                                            # when i commit this line, the code works fine
-                                            # theritically, the room should be deleted after the game is over
-            print ('start_room_game_end: <<<<<<<<', Game.connected_users_id, '>>>>>>>>')
+            # ///////////////////////////////////////////////////
+            await Game.start_room(room_id)
         except Exception as e:
             print("start_room_game error: ", e)
     
