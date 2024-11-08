@@ -565,13 +565,13 @@ justify-content: end;
 
 /* Estilos para el área de room */
 
-.room-header {
+.room-header, .rank-header {
 
     padding: 10px;
     border-bottom: 1px solid #ccc;
 }
 
-#room-list {
+#room-list, #rank-list {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -585,7 +585,7 @@ justify-content: end;
     transform: translate(-50%, -50%); /* 偏移自身宽高的一半，确保完美居中 */
 }
 
-.room {
+.room, .rank {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -619,7 +619,7 @@ justify-content: end;
     color:#ffffff;
 }
 
-#create-room {
+#create-room, #back-home {
     position: absolute;
     bottom: 20px;
     left: 50%;

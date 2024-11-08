@@ -189,7 +189,7 @@ export class GameInfoHandler {
 				if (window.location.hash !== '#game_online')
 					window.location.hash = 'game_online';
 				console.log("Game started waiting for another player to join.");
-				// showOverlay('Waiting for player to join');
+				showOverlay('Waiting');
 				break;
 			// when you are not the host but you want to start the game, the server will deny the request
 			case 'server_game_start_denied':
@@ -260,7 +260,7 @@ export class GameInfoHandler {
 			// when your game is over but there is also another player in the room, the server will send this message
 			case 'server_game_waiting_result':
 				console.log("Waiting for the game result.");
-				// showOverlay('Waiting for the game result');
+				showOverlay('Waiting for all games result in the room');
 				break;
 				
 			// when all the games in the room are over, the server will send the result to the client
@@ -268,6 +268,7 @@ export class GameInfoHandler {
 				console.log('server_game_over');
 				if ('result' in newInfo) {
 					gameInfo.result = getRankingListByResults(newInfo.result);
+					
 					//////////////////////////////////////
 					// the format will be like this
 					// [
@@ -283,7 +284,8 @@ export class GameInfoHandler {
 					console.log("Game over by server.");
 					console.log(gameInfo.result);
 				}
-				alert('Game Over'); // this is not that necessary, can be removed
+				//alert('Game Over'); // this is not that necessary, can be removed
+				window.location.hash = 'game_rank';
 				if (gameInfo.gameOver === false)
 					gameInfo.gameOver = true;
 					gameInfo.opp_id = '';
@@ -293,7 +295,7 @@ export class GameInfoHandler {
 					gameInfo.status = 'off';
 					startGame();
 					console.log('====================== game over, start_pause_game called ======================');
-				window.location.hash = 'home';
+				//window.location.hash = 'home';
 				break;
 
             default:

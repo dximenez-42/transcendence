@@ -889,3 +889,58 @@ function addNewRoomUI(name, number, room_id) {
     room.appendChild(roomButton);
     roomList.appendChild(room);
 }
+
+export function renderRankList() {
+
+    let rankList = gameInfo.result;
+    const rankListDiv = document.getElementById('rank-list');
+    rankListDiv.innerHTML = '';
+    if (Object.keys(rankList).length === 0) {
+        rankListDiv.innerHTML = '<p>No ranks available</p>';
+        return;
+    }
+    for (const [name, score] of Object.entries(rankList)) {
+        addNewRankUI(name, score);
+    }
+    addBackButton();
+}
+
+function addNewRankUI(name, score) {
+
+    const rankList = document.getElementById('rank-list');
+    const rank = document.createElement('div');
+    rank.className = 'rank';
+
+    const rankName = document.createElement('div');
+    rankName.className = 'rank-name';
+    rankName.textContent = name;
+
+    const rankScore = document.createElement('div');
+    rankScore.className = 'rank-score';
+    rankScore.textContent = score;
+
+    rank.appendChild(rankName);
+    rank.appendChild(rankScore);
+    rankList.appendChild(rank);
+}
+
+function addBackButton() {
+
+    const rankList = document.getElementById('rank-list');
+    
+    const createButtonContainer = document.createElement('div');
+    createButtonContainer.id = 'back-button';
+
+    const createBackButton = document.createElement('button');
+    createBackButton.id = 'back-home';
+    createBackButton.textContent = 'Back Home';
+
+    createBackButton.addEventListener('click', function() {
+        
+        window.location.hash = '#home';
+    });
+
+    createButtonContainer.appendChild(createBackButton);
+    
+    rankList.appendChild(createButtonContainer);
+}

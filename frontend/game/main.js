@@ -7,16 +7,22 @@ let timer = GAME_TIME;
 // ------------- GAME SETTINGS ----------------
 
 export function showOverlay(content) {
-    // if (content) {
-    //     document.getElementById('overlay-content').innerHTML = content;
-    // }
-    // document.getElementById('overlay').style.display = 'flex';
+
+    if (window.location.hash === '#game_online') {
+        if (content) {
+            document.getElementById('overlay-content').textContent = content;
+        }
+        document.getElementById('overlay').style.display = 'flex';
+    }
     return;
 }
 
 
 export function hideOverlay() {
-    // document.getElementById('overlay').style.display = 'none';
+    
+    if (window.location.hash === '#game_online') {
+        document.getElementById('overlay').style.display = 'none';
+    }
     return;
 }
 
@@ -85,9 +91,9 @@ export function renderGameOnline() {
     setGameType('online');
 	setGame('gameWindow', 'playerName', 'enamyName', 'playerScore', 'enamyScore')
     console.log('gameType:', getGameType());
+    showOverlay('Waiting for starting the game');
     // if (gameInfo.socketConnection === true) // if the connection is already established then we can control the game
     //     startGame();
-
 }
 
 

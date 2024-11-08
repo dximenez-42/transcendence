@@ -2,7 +2,7 @@ import { loadSelectedChatOnPageLoad } from './components/chat.js';
 //import { renderGame } from './game/main.js';  // modifyed by gao
 import { renderHome } from './components/home.js';
 import { renderLogin } from './components/login.js';
-import { renderonline, setMatchPoints, renderRoomList } from './components/online.js';
+import { renderonline, setMatchPoints, renderRoomList, renderRankList } from './components/online.js';
 import { renderProfile } from './components/profile.js';
 import { getUser } from './api/users.js';
 
@@ -78,6 +78,7 @@ function router() {
         //'#online': { url: 'game_online.html', render: renderGameOnline}, // add new route, modified by gao
         '#online': { url: 'game_rooms.html', render:renderRoomList}, // add new route, modified by gao
         '#game_online': { url: 'game_online.html', render: renderGameOnline}, // add new route, modified by gao
+        '#game_rank': { url: 'game_ranking.html', render: renderRankList },
     };
 
     const route = routes[hash];
