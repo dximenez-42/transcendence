@@ -244,18 +244,17 @@ export class GameInfoHandler {
 				// console.log(newInfo);
 				// resetPositionBall(newInfo.ball_x, newInfo.ball_y);
 				// resetPositionPadEnamy(padEdgeCorrect(newInfo.pad_y, PAD_LENGTH, TABLE_HEIGHT));
+				if (gameInfo.status === 'on') {
+					resetPositionBall(newInfo.ball_x, newInfo.ball_y);
+					resetPositionPadEnamy(padEdgeCorrect(-newInfo['pad_' + gameInfo.opp_name], PAD_LENGTH, TABLE_HEIGHT));
+					resetPositionPadPlayer(padEdgeCorrect(newInfo['pad_' + gameInfo.playerName], PAD_LENGTH, TABLE_HEIGHT));
 
-				resetPositionBall(newInfo.ball_x, newInfo.ball_y);
-				resetPositionPadEnamy(padEdgeCorrect(-newInfo['pad_' + gameInfo.opp_name], PAD_LENGTH, TABLE_HEIGHT));
-				resetPositionPadPlayer(padEdgeCorrect(newInfo['pad_' + gameInfo.playerName], PAD_LENGTH, TABLE_HEIGHT));
 
-
-				// console.log('pad_play:', newInfo['pad_' + gameInfo.playerName]);
-				// console.log('pad_oppo:', -newInfo['pad_' + gameInfo.opp_name]);
-				gameInfo.DOMPlayerScoreElement.innerHTML = newInfo['score_' + gameInfo.playerName];
-				gameInfo.DOMEnamyScoreElement.innerHTML = newInfo['score_' + gameInfo.opp_name];
-				
-
+					// console.log('pad_play:', newInfo['pad_' + gameInfo.playerName]);
+					// console.log('pad_oppo:', -newInfo['pad_' + gameInfo.opp_name]);
+					gameInfo.DOMPlayerScoreElement.innerHTML = newInfo['score_' + gameInfo.playerName];
+					gameInfo.DOMEnamyScoreElement.innerHTML = newInfo['score_' + gameInfo.opp_name];
+				}
 				// console.log('reset position');
 				break;
 			// when your game is over but there is also another player in the room, the server will send this message

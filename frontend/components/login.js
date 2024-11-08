@@ -29,11 +29,11 @@ window.onload = async function() {
         sessionStorage.setItem('email', user.email);
         sessionStorage.setItem('name', user.name);
 
-        //////////////////////////////////////// // add new code modifyed by gao
-        gameInfo.user_name = user.username;
-        gameInfo.user_id = code;
-        createWebSocket();
-        ////////////////////////////////////////
+        // //////////////////////////////////////// // add new code modifyed by gao
+        // gameInfo.user_name = user.username;
+        // gameInfo.user_id = code;
+        // createWebSocket();
+        // ////////////////////////////////////////
 
         window.location.hash = 'home';
     }

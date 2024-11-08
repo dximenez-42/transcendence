@@ -8,6 +8,8 @@ import { getUser } from './api/users.js';
 
 //////////////////////////////////////// // add new imports
 import { renderGame, renderGameOnline, selectMode } from './game/main.js';
+import { createWebSocket } from './game/socket.js';
+import { gameInfo } from './game/constants.js';
 ////////////////////////////////////////
 
 // Load and render content based on URL
@@ -65,6 +67,12 @@ function router() {
         window.location.hash = '#login';
         return;
     }
+
+    //////////////////////////////////////// // add new code modifyed by gao
+    gameInfo.user_name = sessionStorage.getItem('username');
+    gameInfo.user_id = sessionStorage.getItem('auth_token');
+    createWebSocket();
+    ////////////////////////////////////////
 
     const routes = {
         '#home': { url: 'home.html', render: renderHome },
