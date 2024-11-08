@@ -776,19 +776,43 @@ export function refreshRoomList() {
         addCreateRoomButton();
         return;
     } else {
+        let isRoomHost = false;
         let isInRoom = false;
         const simpleList = getSimpleRoomList(gameInfo.room_list);
         for (const room of simpleList) {
             const [host_name, numbers, room_state, room_id] = room;
             if (gameInfo.user_name === host_name)
-                isInRoom = true;
+                isRoomHost = true;
             if (room_state !== "closed") {
                 addNewRoomUI(host_name, numbers, room_id);
             }
         }
-        if (gameInfo.room_id === null || !isInRoom) {
-            addCreateRoomButton();
+        for (const room in gameInfo.room_list) {
+            const player_ids = gameInfo.room_list[room].player_ids;
+            for (const player_id of player_ids) {
+                if (player_id === gameInfo.user_id) {
+                    isInRoom = true;
+                    break;
+                }
+            }
         }
+
+        // if (isInRoom)
+        //     console.log('You are in a room');
+        // else
+        //     console.log('You are not in a room');
+
+        // if (isRoomHost)
+        //     console.log('You are a room host');
+        // else
+        //     console.log('You are not a room host');
+
+        if (gameInfo.room_id === '' && !isRoomHost && !isInRoom) //{
+            addCreateRoomButton();
+        //     console.log('Create Room button added');
+        // } else {
+        //     console.log('Create Room button not added');
+        // }
     }
 }
 

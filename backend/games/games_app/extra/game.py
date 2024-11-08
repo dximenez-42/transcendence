@@ -420,12 +420,28 @@ async def rejoin_game_set(ws): # in this func need to consider more situation li
 					# ws.opp_name = opp_name
 					
 					# await asyncio.sleep(2)
+				try:
 					await ws.send(json.dumps({
 						'action': 'server_game_matched',
 						'opp_name': opp_name,
 						'opp_id': opp_id,
 						'game_id': game_id,
 					}))
+				except Exception as e:
+					print(f"Error in rejoin_game_set to player: {e}")
+		elif ws.user_id in rooms:
+			room_id = rooms[ws.user_id]
+			if room_id in room_states:
+				room = room_states[room_id]
+				try:
+					await ws.send(json.dumps({
+						'action': 'server_game_waiting_result',
+						'msg': 'Waiting for the result of the tournament',
+					}))
+				except Exception as e:
+					print(f"Error in rejoin_game_set to player: {e}")
+		else:
+			return
 	except Exception as e:
 		print(f"Error in rejoin_game_set: {e}")
   
