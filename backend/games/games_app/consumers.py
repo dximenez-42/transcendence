@@ -30,7 +30,7 @@ class GamesConsumer(AsyncWebsocketConsumer):
             if self.user_id in Game.connected_users_id :
                 del Game.connected_users_id [self.user_id]
             Game.connected_users_id [self.user_id] = self
-            print ('== > connected_users_id:', Game.connected_users_id)
+            print ('=============== > connected_user:', self.user_name)
             await Game.rejoin_game_set(self)
             
             await self.send(text_data=json.dumps({

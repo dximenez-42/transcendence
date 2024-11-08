@@ -98,7 +98,9 @@ export class GameInfoHandler {
 					sendData('client_init_info', {
 						confirmed: false,
 					});
-					console.error("Confirmation failed by client.");
+					console.warn('Confirmation failed by client.');
+
+					// console.error("Confirmation failed by client.");
 					// gameInfo.game_socket.close(); 
 					// no need to close the connection, just in case
 					// console.error("Invalid user data from server.");

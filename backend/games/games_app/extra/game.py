@@ -415,6 +415,7 @@ async def rejoin_game_set(ws): # in this func need to consider more situation li
 					# ws.opp_id = opp_id
 					# ws.opp_name = opp_name
 					
+					# await asyncio.sleep(2)
 					await ws.send(json.dumps({
 						'action': 'server_game_matched',
 						'opp_name': opp_name,

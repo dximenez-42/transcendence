@@ -9,12 +9,25 @@ let pongTimeout = null;
 let missedPings = 0;
 let isReconnecting = false;
 const MAX_MISSED_PONGS = 3;
+let retryCount = 0;
 // ----------------------------
 
 export async function createWebSocket() {
 
+    if (!gameInfo.user_name || !gameInfo.user_id) {
+        if (retryCount < 3) {
+            console.log("Retrying WebSocket creation due to missing user_name...");
+            retryCount++;
+            setTimeout(createWebSocket, 100);
+            return;
+        }
+        console.error("Failed to create WebSocket after 3 retries. Missing user_name.");
+        return;
+    }
+    
     if (!gameInfo.game_socket || gameInfo.game_socket.readyState === WebSocket.CLOSED) {
 
+        console.log("Creating WebSocket connection: ", 'ws://' + window.location.host + '/ws/games/' + gameInfo.user_name + '/' + gameInfo.user_id);
         gameInfo.game_socket = new WebSocket('ws://' + window.location.host + '/ws/games/' + gameInfo.user_name + '/' + gameInfo.user_id);
         
         // when the connection is established
