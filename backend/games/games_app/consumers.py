@@ -31,8 +31,8 @@ class GamesConsumer(AsyncWebsocketConsumer):
                 del Game.connected_users_id [self.user_id]
             Game.connected_users_id [self.user_id] = self
             print ('=============== > connected_user:', self.user_name)
-            await Game.rejoin_game_set(self)
-            
+            # await Game.rejoin_game_set(self)
+            asyncio.create_task(Game.rejoin_game_set(self))
             await self.send(text_data=json.dumps({
                 'action': 'server_confirm_connection',
                 'user_name': self.user_name,
