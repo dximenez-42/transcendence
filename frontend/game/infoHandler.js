@@ -91,13 +91,15 @@ export class GameInfoHandler {
 					sendData('client_init_info', { 		
 						confirmed: true,
 					});
+					console.log('Confirmation success by client.');
 					// console.log("Connection confirmed by server.\nMessage send successfully.");
 				} else {
 
 					sendData('client_init_info', {
 						confirmed: false,
 					});
-					gameInfo.game_socket.close(); 
+					console.error("Confirmation failed by client.");
+					// gameInfo.game_socket.close(); 
 					// no need to close the connection, just in case
 					// console.error("Invalid user data from server.");
 				}
@@ -127,6 +129,7 @@ export class GameInfoHandler {
 					console.log('game started, ====================== start game ======================');
 					start_pause_game();
 				}
+				console.log('>>>>>>>>>>>>> End of server_game_matched <<<<<<<<<<<');
 				break;
 			// when the room is created, the server will send the room id to the client
 			case 'server_room_created':

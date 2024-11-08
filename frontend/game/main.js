@@ -9,10 +9,19 @@ let timer = GAME_TIME;
 export function showOverlay(content) {
 
     if (window.location.hash === '#game_online') {
+        const contentUI = document.getElementById('overlay-content');
+        const overlay = document.getElementById('overlay');
         if (content) {
-            document.getElementById('overlay-content').textContent = content;
+            if (contentUI)
+                contentUI.textContent = content;
+            else
+                console.warn('Overlay content element not found. Skipping showOverlay.');
         }
-        document.getElementById('overlay').style.display = 'flex';
+        if (overlay)
+            overlay.style.display = 'flex';
+        else
+            console.warn('Overlay element not found. Skipping showOverlay.');
+        
     }
     return;
 }
@@ -21,9 +30,12 @@ export function showOverlay(content) {
 export function hideOverlay() {
     
     if (window.location.hash === '#game_online') {
-        document.getElementById('overlay').style.display = 'none';
+        const overlay = document.getElementById('overlay');
+        if (overlay)
+            overlay.style.display = 'none';
+        else
+            console.warn('Overlay element not found. Skipping hideOverlay.');
     }
-    return;
 }
 
 export function selectMode() {
