@@ -68,12 +68,6 @@ function router() {
         return;
     }
 
-    //////////////////////////////////////// // add new code modifyed by gao
-    gameInfo.user_name = sessionStorage.getItem('username');
-    gameInfo.user_id = sessionStorage.getItem('auth_token');
-    createWebSocket();
-    ////////////////////////////////////////
-
     const routes = {
         '#home': { url: 'home.html', render: renderHome },
         '#chat': { url: 'chat.html', render: loadSelectedChatOnPageLoad },
@@ -98,6 +92,12 @@ function router() {
             loadContent('404.html', () => {});
         }
     }, 200);
+
+    //////////////////////////////////////// // add new code modifyed by gao
+    gameInfo.user_name = sessionStorage.getItem('username');
+    gameInfo.user_id = sessionStorage.getItem('auth_token');
+    createWebSocket();
+    ////////////////////////////////////////
 }
 
 window.addEventListener('hashchange', router);
