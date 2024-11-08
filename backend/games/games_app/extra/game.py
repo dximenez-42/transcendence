@@ -416,12 +416,13 @@ async def rejoin_game_set(ws): # in this func need to consider more situation li
 					# ws.opp_name = opp_name
 					
 					# await asyncio.sleep(2)
-					await ws.send(json.dumps({
-						'action': 'server_game_matched',
-						'opp_name': opp_name,
-						'opp_id': opp_id,
-						'game_id': game_id,
-					}))
+					# await ws.send(json.dumps({
+					# 	'action': 'server_game_matched',
+					# 	'opp_name': opp_name,
+					# 	'opp_id': opp_id,
+					# 	'game_id': game_id,
+					# }))
+					asyncio.create_task(send_matched_message(ws, opp_name, opp_id, game_id))
 	except Exception as e:
 		print(f"Error in rejoin_game_set: {e}")
 	
@@ -434,6 +435,20 @@ async def rejoin_game_set(ws): # in this func need to consider more situation li
 		#     'pad_' + ws.user_name: game_state['pad_' + ws.user_name],
 		#     'pad_' + opp_name: game_state['pad_' + opp_name]
 		# }))
+async def send_matched_message(ws, opp_name, opp_id, game_id):
+    try:
+        # 延迟 1 秒后发送消息
+        await asyncio.sleep(1)
+        await ws.send(json.dumps({
+            'action': 'server_game_matched',
+            'opp_name': opp_name,
+            'opp_id': opp_id,
+            'game_id': game_id,
+        }))
+        print("Delayed server_game_matched message sent.")
+        
+    except Exception as e:
+        print(f"Error in send_matched_message: {e}")
   
 async def handle_move_pad(data_json):
         if data_json['game_id'] in game_states:
