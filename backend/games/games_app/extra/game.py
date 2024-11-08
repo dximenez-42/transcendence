@@ -83,7 +83,7 @@ async def start_game_1v1(player1_id, player2_id):
 		if player1_id not in connected_users_id  or player2_id not in connected_users_id :
 			print(f"{player1_id} or {player2_id} not in connected_users_id")
 			print(connected_users_id)
-			return
+			return # no need to return, just continue the game, when we need to delete it, then delete it
 		if player1_id not in rooms or player2_id not in rooms:
 			print(f"{player1_id} or {player2_id} not in rooms")
 			print(rooms)
