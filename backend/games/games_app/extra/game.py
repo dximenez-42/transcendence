@@ -176,7 +176,8 @@ async def start_ball_movement(game_id):
 				if pad_bottom - radiusBuffer <= new_ball_y <= pad_top + radiusBuffer:
 					collide_point = new_ball_y - game_state['pad_' + host_name]
 					normalized_collide_point = collide_point / (PAD_LENGTH / 2)
-					angle = normalized_collide_point * (math.pi / 2.5)
+					# angle = normalized_collide_point * (math.pi / 2.5)
+					angle = math.pi / 3
 					speed = math.sqrt(ball_speed_x**2 + ball_speed_y**2) + 0.1
 					game_state['ball_speed_x'] = abs(speed * math.cos(angle))
 					game_state['ball_speed_y'] = speed * math.sin(angle)
@@ -193,7 +194,8 @@ async def start_ball_movement(game_id):
 				if pad_bottom - radiusBuffer <= new_ball_y <= pad_top + radiusBuffer:
 					collide_point = new_ball_y - game_state['pad_' + oppo_name]
 					normalized_collide_point = collide_point / (PAD_LENGTH / 2)
-					angle = normalized_collide_point * (math.pi / 2.5)
+					# angle = normalized_collide_point * (math.pi / 2.5)
+					angle = math.pi / 3
 					speed = math.sqrt(ball_speed_x**2 + ball_speed_y**2) + 0.1
 					game_state['ball_speed_x'] = -abs(speed * math.cos(angle))
 					game_state['ball_speed_y'] = speed * math.sin(angle)
@@ -426,16 +428,6 @@ async def rejoin_game_set(ws): # in this func need to consider more situation li
 					}))
 	except Exception as e:
 		print(f"Error in rejoin_game_set: {e}")
-	
-		# await ws.send(json.dumps({
-		#     'action': 'server_update_position',
-		#     'ball_x': game_state['ball_x'],
-		#     'ball_y': game_state['ball_y'],
-		#     'score_' + ws.user_name: game_state['score_' + ws.user_name],
-		#     'score_' + opp_name: game_state['score_' + opp_name],
-		#     'pad_' + ws.user_name: game_state['pad_' + ws.user_name],
-		#     'pad_' + opp_name: game_state['pad_' + opp_name]
-		# }))
   
 async def handle_move_pad(data_json):
         if data_json['game_id'] in game_states:
