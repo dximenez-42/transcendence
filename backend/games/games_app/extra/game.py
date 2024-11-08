@@ -337,6 +337,17 @@ async def end_game(game_id):
 				except Exception as e:
 					print(f"Error in end_game to loser: {e}")
      
+			if winner_id in connected_users_id :
+				winner = connected_users_id [winner_id]
+				try:
+					await winner.send(json.dumps({
+					'action': 'server_game_seek_battle',
+					'winner': game_states[game_id]['winner'],
+					'msg': 'You are the winner of this game',
+					}))
+				except Exception as e:
+					print(f"Error in end_game to winner: {e}")
+     
 			if game_id in game_states:
 				del game_states[game_id]
 			

@@ -53,7 +53,7 @@ export function selectMode() {
 // |for local mode, it will pause the game and stop the game logic                                                            |
 // |for online mode, it will only stop the game render                                                                        |
 //  --------------------------------------------------------------------------------------------------------------------------
-export let startGame = createGameController();  
+export let start_pause_game = createGameController();  
 
 
 function startTimer(intervalIdTimerRef) {
@@ -93,7 +93,7 @@ export function renderGameOnline() {
     console.log('gameType:', getGameType());
     showOverlay('Waiting for starting the game');
     // if (gameInfo.socketConnection === true) // if the connection is already established then we can control the game
-    //     startGame();
+    //     start_pause_game();
 }
 
 
@@ -110,7 +110,7 @@ export function renderGame(){  // render_local_game
 				alert('Please select a game type first.');
 				return;
 			} else {
-				startGame();
+				start_pause_game();
 				//startTimer(150);
 			}
 		});
@@ -164,7 +164,7 @@ function createGameController() {
     let ballState = false;
     let intervalIdTimerRef = { current: null };
 
-    return function startGame() {
+    return function start_pause_game() {
 
 		if (getGameType() === '') {
             alert('Please select a game type first.');

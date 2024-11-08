@@ -1,7 +1,7 @@
 import { sendData } from './socket.js';
 import { resetPositionPadEnamy, resetPositionBall, resetPositionPadPlayer } from './pong.js';
 import { gameInfo, PAD_LENGTH, TABLE_HEIGHT } from './constants.js';
-import { startGame, showOverlay, hideOverlay } from './main.js';
+import { start_pause_game, showOverlay, hideOverlay } from './main.js';
 import { padEdgeCorrect } from './edgeJudge.js';
 import { getRankingListByResults, getSimpleRoomList, getRoomIdByHost } from './utiles.js';
 import { refreshRoomList } from '../components/online.js';
@@ -97,7 +97,8 @@ export class GameInfoHandler {
 					sendData('client_init_info', {
 						confirmed: false,
 					});
-					gameInfo.game_socket.close();
+					gameInfo.game_socket.close(); 
+					// no need to close the connection, just in case
 					// console.error("Invalid user data from server.");
 				}
 				break;
@@ -113,7 +114,7 @@ export class GameInfoHandler {
 					
 				// console.log("Game matched by server.");
 				hideOverlay();
-				if (gameInfo.gameOver === true)
+				if (gameInfo.status === 'off'){
 					gameInfo.gameOver = false;
 					gameInfo.opp_name = newInfo.opp_name;
 					gameInfo.opp_id = newInfo.opp_id;
@@ -122,10 +123,10 @@ export class GameInfoHandler {
 					gameInfo.DOMPlayerNameElement.innerHTML = gameInfo.user_name;
 					gameInfo.playerName = gameInfo.user_name;
 					gameInfo.enamyName = gameInfo.opp_name;
-					
 					gameInfo.status = 'on';
-					startGame();
-					console.log('game started, ====================== start_pause_game called ======================');
+					console.log('game started, ====================== start game ======================');
+					start_pause_game();
+				}
 				break;
 			// when the room is created, the server will send the room id to the client
 			case 'server_room_created':
@@ -261,6 +262,31 @@ export class GameInfoHandler {
 			case 'server_game_waiting_result':
 				console.log("Waiting for the game result.");
 				showOverlay('Waiting for all games result in the room');
+				
+				if (gameInfo.status === 'on'){
+					gameInfo.gameOver = true;
+					gameInfo.opp_id = '';
+					gameInfo.opp_name = '';
+					gameInfo.winner = '';
+					gameInfo.game_id = '';
+					gameInfo.status = 'off';
+					start_pause_game();
+					console.log('====================== pause game ======================');
+				} 
+				break;
+			case 'server_game_seek_battle':
+				console.log("Seeking for a battle.");
+				showOverlay('Seeking next battle if there is one o waiting result');
+				if (gameInfo.status === 'on'){
+					gameInfo.gameOver = true;
+					gameInfo.opp_id = '';
+					gameInfo.opp_name = '';
+					gameInfo.winner = '';
+					gameInfo.game_id = '';
+					gameInfo.status = 'off';
+					start_pause_game();
+					console.log('====================== pause game ======================');
+				}
 				break;
 				
 			// when all the games in the room are over, the server will send the result to the client
@@ -286,20 +312,19 @@ export class GameInfoHandler {
 				}
 				//alert('Game Over'); // this is not that necessary, can be removed
 				window.location.hash = 'game_rank';
-				if (gameInfo.gameOver === false)
+				if (gameInfo.status === 'on'){
 					gameInfo.gameOver = true;
 					gameInfo.opp_id = '';
 					gameInfo.opp_name = '';
 					gameInfo.winner = '';
 					gameInfo.game_id = '';
 					gameInfo.status = 'off';
-					startGame();
-					console.log('====================== game over, start_pause_game called ======================');
+					start_pause_game();
+					console.log('====================== pause game ======================');
+				}
 				//window.location.hash = 'home';
 				break;
-
-            default:
-				
+			default:
                 console.log('Unknown info:', newInfo);
 				break;
         }
