@@ -89,6 +89,8 @@ class ChatConsumer(WebsocketConsumer):
                     chat = Chat.objects.get(room_id=self.id)  # Fetch the chat by room_id
                     user = User.objects.get(id=self.user_id)  # Fetch the user by user_id
 
+                    print('Message sent by:', user.username, '\nto chat:', chat.room_id, '\ncontent_type:', text_data_json['content_type'], '\ncontent:', text_data_json['content'])
+
                     Message.objects.create(
                         sender=user,
                         chat=chat,

@@ -156,24 +156,26 @@ export async function renderChat(user) {
         room_id = chat.chat.room_id;
     }   
 
-    if (room_id != "null") {
-        userName = user.name || sessionStorage.getItem('selectedUserName');
-        currentSocket = startSocket(room_id);
-        sessionStorage.setItem('selectedChatRoom', room_id);
-        sessionStorage.setItem('selectedUserId', id);
-        if (userName) sessionStorage.setItem('selectedUserName', userName);
-        sessionStorage.setItem('selectedUserIsBlocked', user.is_blocked);
-        sessionStorage.setItem('selectedUserImBlocked', user.im_blocked);
-    }
+    //TODO: Revisar si es necesario
+
+    // if (room_id != "null") {
+    //     userName = user.name || sessionStorage.getItem('selectedUserName');
+    //     currentSocket = startSocket(room_id);
+    //     sessionStorage.setItem('selectedChatRoom', room_id);
+    //     sessionStorage.setItem('selectedUserId', id);
+    //     if (userName) sessionStorage.setItem('selectedUserName', userName);
+    //     sessionStorage.setItem('selectedUserIsBlocked', user.is_blocked);
+    //     sessionStorage.setItem('selectedUserImBlocked', user.im_blocked);
+    // }
 }
 
 export async function loadSelectedChatOnPageLoad() {
-    const selectedRoom = sessionStorage.getItem('selectedChatRoom');
-    const selectedUserId = sessionStorage.getItem('selectedUserId');
+    // const selectedRoom = sessionStorage.getItem('selectedChatRoom');
+    // const selectedUserId = sessionStorage.getItem('selectedUserId');
 
-    if (selectedRoom && selectedUserId) {
-        await renderChat({ room_id: selectedRoom, id: selectedUserId });
-    }
+    // if (selectedRoom && selectedUserId) {
+    //     await renderChat({ room_id: selectedRoom, id: selectedUserId });
+    // }
     await renderChat();
 }
 
@@ -182,7 +184,7 @@ function startSocket(room_id) {
     const url = `ws://${window.location.host}/ws/chat/${room_id}/${userId}`;
     console.log(url);
     const chatSocket = new WebSocket(url);
-    chatSocket.onopen = () => console.log('WebSocket connection established');
+    chatSocket.onopen = () => console.log('WebSocket connection established to: ', url);
     chatSocket.onerror = (error) => console.error('WebSocket Error: ', error);
     chatSocket.onmessage = handleWebSocketMessage;
     chatSocket.onclose = () => console.log('WebSocket close');
