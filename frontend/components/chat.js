@@ -8,7 +8,6 @@ const createUserListItem = (user, currentSocket) => {
     const li = document.createElement('li');
     li.style.display = 'flex';
     li.style.justifyContent = 'space-between';
-    console.log(user);
     const userInfo = document.createElement('div');
     userInfo.innerHTML = `
         <h5>${user.username}</h5>
@@ -20,26 +19,30 @@ const createUserListItem = (user, currentSocket) => {
     lockIcon.textContent = user.is_blocked ? '🔒' : '🔓';
 
     lockIcon.addEventListener('click', async () => {
+        const messageType = user.is_blocked ? 'block' : 'unblock';
+        console.log("Message type: ", messageType);
+        if (currentSocket && currentSocket.readyState === WebSocket.OPEN) {
+            currentSocket.send(JSON.stringify({ "content": null, "content_type": messageType }));
+        }
         const action = user.is_blocked ? unblockUser : blockUser;
         const success = await action(user.id);
         if (success) {
             user.is_blocked = !user.is_blocked;
             lockIcon.textContent = user.is_blocked ? '🔒' : '🔓';
-            renderChat(user);
             
-            // Send a block/unblock message to the user
-            const messageType = user.is_blocked ? 'block' : 'unblock';
-            if (currentSocket && currentSocket.readyState === WebSocket.OPEN) {
-                currentSocket.send(JSON.stringify({ "content": "block", "content_type": messageType }));
-            }
+            // Update blocked status in session storage
+            sessionStorage.setItem('selectedUserIsBlocked', user.is_blocked);
+            
+            renderChat(user);
         }
+        return;
     });
 
     li.appendChild(userInfo);
     li.appendChild(lockIcon);
     li.dataset.userId = user.id;
     li.addEventListener('click', () => {
-        if (currentSocket) currentSocket.close();
+        // if (currentSocket) currentSocket.close();
         renderChat(user);
     });
 
@@ -47,7 +50,12 @@ const createUserListItem = (user, currentSocket) => {
 };
 
 const createMessageElement = (message, userId) => {
+    if (message.content_type != "message" && message.content_type != "invitation") {
+        const span = document.createElement('span');
+        return span;
+    }
     const div = document.createElement('div');
+    console.log("Message sender: ", message.sender?.id && message.sender.id == userId);
     div.className = `message ${message.sender?.id && message.sender.id == userId ? 'my-message' : 'other-message'}`;
 
     if (message.content_type === 'invitation') {
@@ -74,6 +82,8 @@ const createMessageElement = (message, userId) => {
         div.appendChild(invitationText);
         div.appendChild(joinButton);
     } else {
+        console.log("Message created: ", message);
+
         div.textContent = message.content;
     }
 
@@ -94,34 +104,21 @@ async function chatUserList(currentSocket) {
     userListElement.appendChild(ul);
 }
 
+let currentSocket = null;
 export async function renderChat(user) {
     loadLanguage();
-
-    let currentSocket = null;
-    let id = -1;
+    let id = user?.id ?? -1;
     const userId = sessionStorage.getItem('id');
     let userName = null;
     let isBlocked = user?.is_blocked ?? sessionStorage.getItem('selectedUserIsBlocked') === 'true';
-    const imBlocked = user?.im_blocked ?? sessionStorage.getItem('imBlocked') === 'true';
-    
-    if (user && user.room_id != "null") {
-        userName = user.name || sessionStorage.getItem('selectedUserName');
-        id = user.id;
-        const { room_id } = user;
-        currentSocket = startSocket(room_id);
-        sessionStorage.setItem('selectedChatRoom', room_id);
-        sessionStorage.setItem('selectedUserId', id);
-        if (userName) sessionStorage.setItem('selectedUserName', userName);
-        sessionStorage.setItem('selectedUserIsBlocked', user.is_blocked);
-        sessionStorage.setItem('selectedUserImBlocked', user.im_blocked);
-    }
-
+    const imBlocked = user?.im_blocked ?? sessionStorage.getItem('selectedUserImBlocked') === 'true';
+    console.log("isBlocked: ", isBlocked);
+    console.log("imBlocked: ", imBlocked);
     chatUserList(currentSocket);
     if (!user) return;
 
     document.querySelector('.chat-username').textContent = userName;
     const chatMessagesElement = document.getElementById('chatMessages');
-
     if (isBlocked) {
         chatMessagesElement.innerHTML = `
             <div class="blocked-message">
@@ -148,13 +145,25 @@ export async function renderChat(user) {
         return;
     }
 
-    const chat = await getChatMessages(id);
+    const chat = await getChatMessages(user.id);
+    let room_id;
     if (chat) {
         chatMessagesElement.innerHTML = '';
-        chat.reverse().forEach(message => {
+        chat.messages.reverse().forEach(message => {
             chatMessagesElement.appendChild(createMessageElement(message, userId));
         });
         chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
+        room_id = chat.chat.room_id;
+    }   
+
+    if (room_id != "null") {
+        userName = user.name || sessionStorage.getItem('selectedUserName');
+        currentSocket = startSocket(room_id);
+        sessionStorage.setItem('selectedChatRoom', room_id);
+        sessionStorage.setItem('selectedUserId', id);
+        if (userName) sessionStorage.setItem('selectedUserName', userName);
+        sessionStorage.setItem('selectedUserIsBlocked', user.is_blocked);
+        sessionStorage.setItem('selectedUserImBlocked', user.im_blocked);
     }
 }
 
@@ -171,13 +180,22 @@ export async function loadSelectedChatOnPageLoad() {
 function startSocket(room_id) {
     const userId = sessionStorage.getItem('id');
     const url = `ws://${window.location.host}/ws/chat/${room_id}/${userId}`;
-
+    console.log(url);
     const chatSocket = new WebSocket(url);
     chatSocket.onopen = () => console.log('WebSocket connection established');
     chatSocket.onerror = (error) => console.error('WebSocket Error: ', error);
     chatSocket.onmessage = handleWebSocketMessage;
     chatSocket.onclose = () => console.log('WebSocket close');
-    setupChatForm(chatSocket);
+    
+    const isBlocked = sessionStorage.getItem('selectedUserIsBlocked') === 'true';
+    const imBlocked = sessionStorage.getItem('selectedUserImBlocked') === 'true';
+
+    if (!isBlocked && !imBlocked) {
+        createChatForm(chatSocket);
+    } else {
+        deleteChatForm();
+    }
+    
     setupInvitationButton(chatSocket);
 
     return chatSocket;
@@ -185,34 +203,18 @@ function startSocket(room_id) {
 
 function handleWebSocketMessage(e) {
     const data = JSON.parse(e.data);
+    console.log("WebSocket message: ", data);
     const chatMessagesElement = document.getElementById('chatMessages');
     if (data.content_type === 'block' || data.content_type === 'unblock') {
-        const user = { id: data.id, im_blocked: data.content_type === 'block' };
+        const user = { id: data.sender.id, im_blocked: data.content_type === 'block'};
+        sessionStorage.setItem('selectedUserImBlocked', false);
         renderChat(user);
     } else {
+        console.log("WebSocket message: ", e.data);
         const messageElement = createMessageElement(data, sessionStorage.getItem('id'));
         chatMessagesElement.appendChild(messageElement);
         chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
     }
-}
-
-function setupChatForm(chatSocket) {
-    createChatForm();
-    const chatForm = document.getElementById('chatForm');
-    const messageInput = document.getElementById('messageInput');
-
-    chatForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const message = messageInput.value.trim();
-        if (message !== '') {
-            chatSocket.send(JSON.stringify({ "content": message, "content_type": "message" }));
-            messageInput.value = '';
-            const messageElement = createMessageElement({ content: message, sender: { id: sessionStorage.getItem('id') } }, sessionStorage.getItem('id'));
-            const chatMessagesElement = document.getElementById('chatMessages');
-            chatMessagesElement.appendChild(messageElement);
-            chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
-        }
-    });
 }
 
 function setupInvitationButton(chatSocket) {
@@ -231,7 +233,7 @@ function setupInvitationButton(chatSocket) {
                     const chatMessagesElement = document.getElementById('chatMessages');
                     chatMessagesElement.appendChild(messageElement);
                     chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
-                    
+
                     sendInvitationButton.textContent = 'Eliminar invitación';
                     sendInvitationButton.dataset.gameId = createdGame.id;
                 } else {
@@ -239,25 +241,26 @@ function setupInvitationButton(chatSocket) {
                 }
             } else {
                 if (createdGame) {
-                const gameId = createdGame.game_id;
-                const success = await leaveGame(gameId);
-                if (success) {
-                    sendInvitationButton.textContent = 'Invitar partida';
-                    delete sendInvitationButton.dataset.gameId;
-                } else {
-                    console.error('Failed to leave game');
+                    const gameId = createdGame.game_id;
+                    const success = await leaveGame(gameId);
+                    if (success) {
+                        sendInvitationButton.textContent = 'Invitar partida';
+                        delete sendInvitationButton.dataset.gameId;
+                    } else {
+                        console.error('Failed to leave game');
+                    }
                 }
-            }}
+            }
         });
     }
 }
 
 function deleteChatForm() {
-    document.getElementById('sendInvitationButton')?.remove();
-    document.getElementById('chatForm')?.remove();
+    const chatFormContainer = document.getElementById('chat-form-container');
+    chatFormContainer.innerHTML = '';
 }
 
-function createChatForm() {
+function createChatForm(chatSocket) {
     const chatFormContainer = document.getElementById('chat-form-container');
     chatFormContainer.innerHTML = `
         <button id="sendInvitationButton" class="px-3">Invitar partida</button>
@@ -267,4 +270,21 @@ function createChatForm() {
         </form>
     `;
     chatFormContainer.classList.add('d-flex', 'w-100');
+
+    const chatForm = document.getElementById('chatForm');
+    const messageInput = document.getElementById('messageInput');
+
+    chatForm.addEventListener('submit', (e) => {
+        e.preventDefault(); 
+        const message = messageInput.value.trim();
+        if (message !== '') {
+            console.log("Sending message: ", message);
+            chatSocket.send(JSON.stringify({ "content": message, "content_type": "message" }));
+            messageInput.value = '';
+            const messageElement = createMessageElement({ content: message, "content_type": "message", sender: { id: sessionStorage.getItem('id') } }, sessionStorage.getItem('id'));
+            const chatMessagesElement = document.getElementById('chatMessages');
+            chatMessagesElement.appendChild(messageElement);
+            chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
+        }
+    });
 }

@@ -15,7 +15,6 @@ export async function getChats() {
             return chats;
         } else {
             console.error("Fetch failed with status:", response.status);
-            console.log("Response",response);
             return [];
         }
     } catch (error) {
@@ -36,8 +35,8 @@ export async function getChatMessages(chat_id) {
         },
     })
     if (response.ok) {
-        const {messages} = await response.json();
-        return messages;
+        const chats = await response.json();
+        return chats;
     } else if (response.status === 403) {
         return null;
     } else {

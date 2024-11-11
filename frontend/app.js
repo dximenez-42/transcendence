@@ -19,6 +19,7 @@ function loadContent(url, callback) {
 
     fetch(url)
         .then(response => {
+
             if (!response.ok) {
                 throw new Error('Error loading the page');
             }
@@ -33,6 +34,7 @@ function loadContent(url, callback) {
             appDiv.innerHTML = '<h1>404</h1><p>Page not found</p>';
             console.error('Error:', error);
         });
+        
 }
 
 function executeInlineScripts(container) {
@@ -67,7 +69,6 @@ function router() {
         window.location.hash = '#login';
         return;
     }
-
     const routes = {
         '#home': { url: 'home.html', render: renderHome },
         '#chat': { url: 'chat.html', render: loadSelectedChatOnPageLoad },
