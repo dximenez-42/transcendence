@@ -156,26 +156,24 @@ export async function renderChat(user) {
         room_id = chat.chat.room_id;
     }   
 
-    //TODO: Revisar si es necesario
-
-    // if (room_id != "null") {
-    //     userName = user.name || sessionStorage.getItem('selectedUserName');
-    //     currentSocket = startSocket(room_id);
-    //     sessionStorage.setItem('selectedChatRoom', room_id);
-    //     sessionStorage.setItem('selectedUserId', id);
-    //     if (userName) sessionStorage.setItem('selectedUserName', userName);
-    //     sessionStorage.setItem('selectedUserIsBlocked', user.is_blocked);
-    //     sessionStorage.setItem('selectedUserImBlocked', user.im_blocked);
-    // }
+    if (room_id != "null") {
+        userName = user.name || sessionStorage.getItem('selectedUserName');
+        currentSocket = startSocket(room_id);
+        sessionStorage.setItem('selectedChatRoom', room_id);
+        sessionStorage.setItem('selectedUserId', id);
+        if (userName) sessionStorage.setItem('selectedUserName', userName);
+        sessionStorage.setItem('selectedUserIsBlocked', user.is_blocked);
+        sessionStorage.setItem('selectedUserImBlocked', user.im_blocked);
+    }
 }
 
 export async function loadSelectedChatOnPageLoad() {
-    // const selectedRoom = sessionStorage.getItem('selectedChatRoom');
-    // const selectedUserId = sessionStorage.getItem('selectedUserId');
+    const selectedRoom = sessionStorage.getItem('selectedChatRoom');
+    const selectedUserId = sessionStorage.getItem('selectedUserId');
 
-    // if (selectedRoom && selectedUserId) {
-    //     await renderChat({ room_id: selectedRoom, id: selectedUserId });
-    // }
+    if (selectedRoom && selectedUserId) {
+        await renderChat({ room_id: selectedRoom, id: selectedUserId });
+    }
     await renderChat();
 }
 
