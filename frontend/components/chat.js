@@ -139,6 +139,8 @@ export async function renderChat(user) {
         return;
     }
 
+    if (!imBlocked && !isBlocked) createChatForm(currentSocket);
+
     const chat = await getChatMessages(user.id);
     let room_id;
     if (chat) {
