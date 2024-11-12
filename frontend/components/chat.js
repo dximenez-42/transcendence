@@ -42,7 +42,6 @@ const createUserListItem = (user, currentSocket) => {
     li.appendChild(lockIcon);
     li.dataset.userId = user.id;
     li.addEventListener('click', () => {
-        // if (currentSocket) currentSocket.close();
         renderChat(user);
     });
 
@@ -55,7 +54,6 @@ const createMessageElement = (message, userId) => {
         return span;
     }
     const div = document.createElement('div');
-    console.log("Message sender: ", message.sender?.id && message.sender.id == userId);
     div.className = `message ${message.sender?.id && message.sender.id == userId ? 'my-message' : 'other-message'}`;
 
     if (message.content_type === 'invitation') {
@@ -82,8 +80,6 @@ const createMessageElement = (message, userId) => {
         div.appendChild(invitationText);
         div.appendChild(joinButton);
     } else {
-        console.log("Message created: ", message);
-
         div.textContent = message.content;
     }
 
@@ -112,8 +108,6 @@ export async function renderChat(user) {
     let userName = null;
     let isBlocked = user?.is_blocked ?? sessionStorage.getItem('selectedUserIsBlocked') === 'true';
     const imBlocked = user?.im_blocked ?? sessionStorage.getItem('selectedUserImBlocked') === 'true';
-    console.log("isBlocked: ", isBlocked);
-    console.log("imBlocked: ", imBlocked);
     chatUserList(currentSocket);
     if (!user) return;
 
@@ -145,6 +139,8 @@ export async function renderChat(user) {
         return;
     }
 
+    if (!imBlocked && !isBlocked) createChatForm(currentSocket);
+
     const chat = await getChatMessages(user.id);
     let room_id;
     if (chat) {
@@ -155,10 +151,16 @@ export async function renderChat(user) {
         chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
         room_id = chat.chat.room_id;
     }   
-
     if (room_id != "null") {
         userName = user.name || sessionStorage.getItem('selectedUserName');
-        currentSocket = startSocket(room_id);
+        console.log("starting: ", currentSocket)
+        if (!currentSocket || (currentSocket && currentSocket.url.split('/')[5] != room_id)) {
+            if (currentSocket) {
+                currentSocket.close();
+                currentSocket = null;
+            }
+            if (currentSocket === null) currentSocket = startSocket(room_id);
+        }
         sessionStorage.setItem('selectedChatRoom', room_id);
         sessionStorage.setItem('selectedUserId', id);
         if (userName) sessionStorage.setItem('selectedUserName', userName);
@@ -180,9 +182,9 @@ export async function loadSelectedChatOnPageLoad() {
 function startSocket(room_id) {
     const userId = sessionStorage.getItem('id');
     const url = `ws://${window.location.host}/ws/chat/${room_id}/${userId}`;
-    console.log(url);
+    console.log("Starting socket: ", url);
     const chatSocket = new WebSocket(url);
-    chatSocket.onopen = () => console.log('WebSocket connection established to: ', url);
+    chatSocket.onopen = () => console.log('WebSocket opened');
     chatSocket.onerror = (error) => console.error('WebSocket Error: ', error);
     chatSocket.onmessage = handleWebSocketMessage;
     chatSocket.onclose = () => console.log('WebSocket close');
