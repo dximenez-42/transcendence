@@ -19,6 +19,11 @@ const createUserListItem = (user, currentSocket) => {
     lockIcon.textContent = user.is_blocked ? '🔒' : '🔓';
 
     lockIcon.addEventListener('click', async () => {
+        const messageType = user.is_blocked ? 'block' : 'unblock';
+        console.log("Message type: ", messageType);
+        if (currentSocket && currentSocket.readyState === WebSocket.OPEN) {
+            currentSocket.send(JSON.stringify({ "content": null, "content_type": messageType }));
+        }
         const action = user.is_blocked ? unblockUser : blockUser;
         const success = await action(user.id);
         if (success) {
@@ -29,12 +34,6 @@ const createUserListItem = (user, currentSocket) => {
             sessionStorage.setItem('selectedUserIsBlocked', user.is_blocked);
             
             renderChat(user);
-            
-            // Send a block/unblock message to the user
-            const messageType = user.is_blocked ? 'block' : 'unblock';
-            if (currentSocket && currentSocket.readyState === WebSocket.OPEN) {
-                currentSocket.send(JSON.stringify({ "content": null, "content_type": messageType }));
-            }
         }
         return;
     });
@@ -276,7 +275,7 @@ function createChatForm(chatSocket) {
     const messageInput = document.getElementById('messageInput');
 
     chatForm.addEventListener('submit', (e) => {
-        e.preventDefault();
+        e.preventDefault(); 
         const message = messageInput.value.trim();
         if (message !== '') {
             console.log("Sending message: ", message);
