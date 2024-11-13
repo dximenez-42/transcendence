@@ -79,6 +79,19 @@ export class GameInfoHandler {
 		sendData('client_get_rooms', {});
 	}
 
+	////////////////////////////////////////////////////////////////////
+	// Waiting for testing
+	static sendInviteJoinRoom(invitedName, invitedId) {
+
+		sendData('client_invite_user', { 
+			
+			user_name: gameInfo.user_name,
+			invited_name: invitedName,
+			//invited_id: invitedId
+		});
+	}
+	////////////////////////////////////////////////////////////////////
+
 	// for handle the info from server
     static async infoHandler(newInfo) {
 		//console.log('Unknown info:', newInfo);
@@ -328,6 +341,49 @@ export class GameInfoHandler {
 				}
 				//window.location.hash = 'home';
 				break;
+			////////////////////////////////////////////////////////////////////
+			// invite user logic
+			case 'server_invite_user_denied':
+
+				if ('error' in newInfo) {
+					console.log("Invite user denied by server. Reason: " + newInfo.error);
+					alert('Invite user denied by server. Reason: ' + newInfo.error);
+				}
+				break;
+
+			case 'server_invite_user':
+				
+				if ('user_name' in newInfo && 'room_id' in newInfo && window.location.hash !== '#game_online') {
+					
+					const whoInviteMe = newInfo.user_name;
+					const wantToJoin = confirm(newInfo.user_name + ' invite you to join the room, do you want to join?');
+					if (wantToJoin) {
+						sendData('client_join_room', { 
+							room_id: newInfo.room_id 
+						});
+						sendData('client_invite_msg', { 
+			
+							user_name: whoInviteMe,
+							msg: 'I will join.'
+						});
+					} else {
+						sendData('client_invite_msg', { 
+			
+							user_name: whoInviteMe,
+							msg: 'I am busy now.'
+						});
+					}
+				}
+				break;
+			
+			case 'server_invite_msg':
+
+				if ('msg' in newInfo) {
+					console.log('Invite message:', newInfo.msg);
+					console.alert(newInfo.msg);
+				}
+				break;
+			////////////////////////////////////////////////////////////////////
 			default:
                 console.log('Unknown info:', newInfo);
 				break;

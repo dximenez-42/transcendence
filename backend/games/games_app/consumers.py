@@ -85,6 +85,10 @@ class GamesConsumer(AsyncWebsocketConsumer):
                     await self.get_room_list_by_id()
                 case 'client_get_rooms':
                     await self.get_all_rooms()
+                case 'client_invite_user':
+                    await self.invite_user(text_data_json)
+                case 'client_invite_msg':  
+                    await self.invite_msg_handler(text_data_json)
                 # case 'test_game_list':
                 #     await self.test_game_list()
         except json.JSONDecodeError:
@@ -347,3 +351,79 @@ class GamesConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             print("start_room_game error: ", e)
     
+    async def invite_user(self, data_json):
+        
+        # if 'invited_id' not in data_json:
+        #     await self.send(json.dumps({
+        #         'action': 'server_invite_user_denied',
+        #         'error': 'Invited id not provided'
+        #     }))
+        #     return
+        if 'invited_name' not in data_json:
+            await self.send(json.dumps({
+                'action': 'server_invite_user_denied',
+                'error': 'Invited name not provided'
+            }))
+            return
+        
+        # invited_id = data_json['invited_id']
+        invited_name = data_json['invited_name']
+        user_name = self.user_name 
+        obj_invited = None
+        for obj in Game.connected_users_id:
+            if Game.connected_users_id[obj].user_name == invited_name:
+                obj_invited = Game.connected_users_id[obj]
+                break
+        if obj_invited == None:
+            await self.send(json.dumps({
+                'action': 'server_invite_user_denied',
+                'error': 'Invited user not connected'
+            }))
+            return
+        
+        if self.user_id not in Game.rooms:
+            await self.send(json.dumps({
+                'action': 'server_invite_user_denied',
+                'error': 'User not in any room, please create a room first'
+            }))
+            return
+        
+        if obj_invited.user_id in Game.rooms:
+            await self.send(json.dumps({
+                'action': 'server_invite_user_denied',
+                'error': 'Invited user already in a room'
+            }))
+            return
+        
+        if self.user_id in Game.rooms and obj_invited.user_id not in Game.rooms:
+            room_id = Game.rooms[self.user_id]
+            room = Game.room_states[room_id]
+            async with Game.room_locks[room_id]:
+                if room['room_state'] != 'open':
+                    await self.send(json.dumps({
+                        'action': 'server_invite_user_denied',
+                        'error': 'Room is closed'
+                    }))
+                    return
+                await obj_invited.send(json.dumps({
+                    'action': 'server_invite_user',
+                    'room_id': room_id,
+                    'user_name': user_name
+                }))
+                
+    async def invite_msg_handler(self, data_json):
+        
+        user = None
+        if 'user_name' in data_json:
+            for obj in Game.connected_users_id:
+                if Game.connected_users_id[obj].user_name == data_json['user_name']:
+                    user = Game.connected_users_id[obj]
+                    break
+        if user == None:
+            return
+        if 'msg' in data_json:
+            await user.send(json.dumps({
+                'action': 'server_invite_msg',
+                'msg': self.user_name + ": " + data_json['msg']
+            }))
+        

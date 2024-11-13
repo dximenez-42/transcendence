@@ -2,6 +2,7 @@ import { getChatMessages, getChats } from "../api/chat.js";
 import { createGame, joinGame, leaveGame } from "../api/game.js";
 import { loadLanguage } from "../api/languages.js";
 import { blockUser, unblockUser } from "../api/users.js";
+import { GameInfoHandler } from "../game/infoHandler.js";
 
 // Componentes reutilizables
 const createUserListItem = (user, currentSocket) => {
@@ -273,6 +274,21 @@ function createChatForm(chatSocket) {
     `;
     chatFormContainer.classList.add('d-flex', 'w-100');
 
+    ///////////////////////////////////////////////////////////////////////////////
+    // modified by gao for adding the invitation logic to the button
+    const sendInvitationButton = document.getElementById('sendInvitationButton');
+    const invitedName = sessionStorage.getItem('selectedUserName');
+
+    sendInvitationButton.addEventListener('click', () => {
+
+        if (invitedName) {
+            GameInfoHandler.sendInviteJoinRoom(invitedName);
+            console.log(`Invitation sent to: ${invitedName}`);
+        } else {
+            console.error('No user selected for invitation.');
+        }
+    });
+    ///////////////////////////////////////////////////////////////////////////////
     const chatForm = document.getElementById('chatForm');
     const messageInput = document.getElementById('messageInput');
 
