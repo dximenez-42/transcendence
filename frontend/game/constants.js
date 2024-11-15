@@ -38,6 +38,7 @@ export const   gameInfo = {
 	DOMPlayerScoreElement: '',
 	DOMEnamyScoreElement: '',
 	room_list: {},
+	isOverlay: false,
 	// playerScore: 0,
 	// enamyScore: 0,
 	// gameType: '',

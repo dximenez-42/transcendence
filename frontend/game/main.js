@@ -17,10 +17,12 @@ export function showOverlay(content) {
             else
                 console.warn('Overlay content element not found. Skipping showOverlay.');
         }
-        if (overlay)
+        if (overlay) {
             overlay.style.display = 'flex';
-        else
+            gameInfo.isOverlay = true;
+        } else {
             console.warn('Overlay element not found. Skipping showOverlay.');
+        }
         
     }
     return;
@@ -31,10 +33,12 @@ export function hideOverlay() {
     
     if (window.location.hash === '#game_online') {
         const overlay = document.getElementById('overlay');
-        if (overlay)
+        if (overlay){
             overlay.style.display = 'none';
-        else
+            gameInfo.isOverlay = false;
+        } else {
             console.warn('Overlay element not found. Skipping hideOverlay.');
+        }
     }
 }
 

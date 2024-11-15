@@ -169,8 +169,8 @@ export class GameInfoHandler {
 					console.log("Room joined by server.");
 				}
 				////////////////////////////////////////////////////////////////////////
-				// just in case if the user is in the wrong page, it will jump to the online page
-				if (window.location.hash !== '#online')
+				// just in case if the user is in the wrong page, it will jump to the online page (room list page)
+				if (window.location.hash !== '#online' && gameInfo.status === 'off')
 					window.location.hash = 'online';
 				break;
 				////////////////////////////////////////////////////////////////////////
@@ -268,6 +268,11 @@ export class GameInfoHandler {
 				// resetPositionBall(newInfo.ball_x, newInfo.ball_y);
 				// resetPositionPadEnamy(padEdgeCorrect(newInfo.pad_y, PAD_LENGTH, TABLE_HEIGHT));
 				if (gameInfo.status === 'on') {
+					/////////////////////////////////////////////////////////////////
+					// this part is new, just in case when the hideOverlay is rendered before the game is started
+					if (gameInfo.isOverlay && window.location.hash === '#game_online')
+						hideOverlay();
+					/////////////////////////////////////////////////////////////////
 					resetPositionBall(newInfo.ball_x, newInfo.ball_y);
 					resetPositionPadEnamy(padEdgeCorrect(-newInfo['pad_' + gameInfo.opp_name], PAD_LENGTH, TABLE_HEIGHT));
 					resetPositionPadPlayer(padEdgeCorrect(newInfo['pad_' + gameInfo.playerName], PAD_LENGTH, TABLE_HEIGHT));
