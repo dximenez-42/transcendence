@@ -319,7 +319,7 @@ function ifGameOver(scorePlayer, scoreEnamy, callback) {
         window.location.hash = '#home';
         gameInfo.status = 'off';
         gameInfo.winner = gameInfo.playerName;
-        alert('Game Over! Player wins!');
+        alert('Game Over! Player1 wins!');
         if (typeof callback === 'function' && callback()) {
             callback();
         }
@@ -331,7 +331,7 @@ function ifGameOver(scorePlayer, scoreEnamy, callback) {
         window.location.hash = '#home';
         gameInfo.status = 'off';
         gameInfo.winner = gameInfo.enamyName;
-        alert('Game Over! Enamy wins!');
+        alert('Game Over! Player2 wins!');
         if (typeof callback === 'function' && callback()) {
             callback();
         }
