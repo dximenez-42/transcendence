@@ -3,6 +3,7 @@ import { keyStates, setupKeyControls} from './controls.js';
 import { gameInfo, PAD_MOVE_STEP_LENGTH, TABLE_HEIGHT, TABLE_LENGTH, PAD_LENGTH, BK_COLOR, RGB_BALL, RGB_PAD_ENAMY, RGB_PAD_PLAYER, RGB_TABLE, PAD_WIDTH, BALL_RADIUS, getBallSpeed, setBallSpeed} from './constants.js';
 import { padEdgeCorrect} from './edgeJudge.js';
 import { GameInfoHandler } from './infoHandler.js';
+import { start_pause_game } from './main.js';
 
 
 
@@ -112,9 +113,10 @@ export function keyMovePad() {
             }
         }
 
-        if (ifGameOver(playerScore, enamyScore, GameInfoHandler.sendGameOver)) {
+        if (ifGameOver(playerScore, enamyScore, start_pause_game)) {
 
             // setTimeout(() => window.location.reload(), 0); // do not need to reload the page
+            // window.location.hash = '#home';
             return;
         }
 
