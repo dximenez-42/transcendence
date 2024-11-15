@@ -168,7 +168,12 @@ export class GameInfoHandler {
 					gameInfo.room_id = newInfo.room_id;
 					console.log("Room joined by server.");
 				}
+				////////////////////////////////////////////////////////////////////////
+				// just in case if the user is in the wrong page, it will jump to the online page
+				if (window.location.hash !== '#online')
+					window.location.hash = 'online';
 				break;
+				////////////////////////////////////////////////////////////////////////
 			// mybe we can add a alert to show the reason of the denied
 			case 'server_room_joined_denied':
 				if ('error' in newInfo) {
