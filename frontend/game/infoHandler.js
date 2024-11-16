@@ -374,7 +374,7 @@ export class GameInfoHandler {
 						sendData('client_invite_msg', { 
 			
 							user_name: whoInviteMe,
-							msg: 'I will join.'
+							msg: 'I have joined.'
 						});
 						window.location.hash = '#online';
 					} else {
@@ -392,6 +392,9 @@ export class GameInfoHandler {
 				if ('msg' in newInfo) {
 					console.log('Invite message:', newInfo.msg);
 					console.alert(newInfo.msg);
+					if (newInfo.msg === 'I have joined.') {
+						window.location.hash = '#online';
+					}
 				}
 				break;
 			////////////////////////////////////////////////////////////////////
