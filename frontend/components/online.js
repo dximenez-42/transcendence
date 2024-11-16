@@ -770,7 +770,10 @@ export function renderRoomList() {
 export function refreshRoomList() {
 
     const roomList = document.getElementById('room-list');
-    roomList.innerHTML = '';
+    if (roomList)
+        roomList.innerHTML = '';
+    else
+        return;
     if (Object.keys(gameInfo.room_list).length === 0) {
         roomList.innerHTML = '<p>No rooms available</p>';
         addCreateRoomButton();

@@ -391,7 +391,7 @@ export class GameInfoHandler {
 
 				if ('msg' in newInfo) {
 					console.log('Invite message:', newInfo.msg);
-					console.alert(newInfo.msg);
+					// console.log(newInfo.msg);
 					if (newInfo.msg === 'I have joined.') {
 						window.location.hash = '#online';
 					}
