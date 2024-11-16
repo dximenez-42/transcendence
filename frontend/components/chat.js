@@ -107,6 +107,7 @@ export async function renderChat(user) {
     let id = user?.id ?? -1;
     const userId = sessionStorage.getItem('id');
     let userName = null;
+    let userUsername = null;
     let isBlocked = user?.is_blocked ?? sessionStorage.getItem('selectedUserIsBlocked') === 'true';
     const imBlocked = user?.im_blocked ?? sessionStorage.getItem('selectedUserImBlocked') === 'true';
     chatUserList(currentSocket);
@@ -154,6 +155,7 @@ export async function renderChat(user) {
     }   
     if (room_id != "null") {
         userName = user.name || sessionStorage.getItem('selectedUserName');
+        userUsername = user.username || sessionStorage.getItem('selectedUserUsername');
         console.log("starting: ", currentSocket)
         if (!currentSocket || (currentSocket && currentSocket.url.split('/')[5] != room_id)) {
             if (currentSocket) {
@@ -165,8 +167,10 @@ export async function renderChat(user) {
         sessionStorage.setItem('selectedChatRoom', room_id);
         sessionStorage.setItem('selectedUserId', id);
         if (userName) sessionStorage.setItem('selectedUserName', userName);
+        if (userUsername) sessionStorage.setItem('selectedUserUsername', userUsername);
         sessionStorage.setItem('selectedUserIsBlocked', user.is_blocked);
         sessionStorage.setItem('selectedUserImBlocked', user.im_blocked);
+        setupInvitationButton();
     }
 }
 
@@ -199,7 +203,6 @@ function startSocket(room_id) {
         deleteChatForm();
     }
     
-    setupInvitationButton();
 
     return chatSocket;
 }
@@ -222,11 +225,11 @@ function handleWebSocketMessage(e) {
 
 function setupInvitationButton() {
     const sendInvitationButton = document.getElementById('sendInvitationButton');
-    // const invitedName = sessionStorage.getItem('selectedUserName');
-    const invitedName = "dximenez";  // here is has to pass the selected user name to invite
+    const invitedName = sessionStorage.getItem('selectedUserUsername');
+    console.log("############################ SETUP INVITATION BUTTON ############################");
 
     sendInvitationButton.addEventListener('click', () => {
-
+        console.log("Invitation button clicked");
         if (invitedName) {
             GameInfoHandler.sendInviteJoinRoom(invitedName);
             console.log(`Invitation sent to: ${invitedName}`);
@@ -254,18 +257,6 @@ function createChatForm(chatSocket) {
 
     ///////////////////////////////////////////////////////////////////////////////
     // modified by gao for adding the invitation logic to the button
-    const sendInvitationButton = document.getElementById('sendInvitationButton');
-    const invitedName = sessionStorage.getItem('selectedUserName');
-
-    sendInvitationButton.addEventListener('click', () => {
-
-        if (invitedName) {
-            GameInfoHandler.sendInviteJoinRoom(invitedName);
-            console.log(`Invitation sent to: ${invitedName}`);
-        } else {
-            console.error('No user selected for invitation.');
-        }
-    });
     ///////////////////////////////////////////////////////////////////////////////
     const chatForm = document.getElementById('chatForm');
     const messageInput = document.getElementById('messageInput');
