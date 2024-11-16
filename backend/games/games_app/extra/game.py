@@ -3,6 +3,7 @@
 import json
 import asyncio
 import math
+import random
 from asyncio import Lock
 from games_app.extra.utiles import *
 
@@ -177,8 +178,8 @@ async def start_ball_movement(game_id):
 					collide_point = new_ball_y - game_state['pad_' + host_name]
 					normalized_collide_point = collide_point / (PAD_LENGTH / 2)
 					# angle = normalized_collide_point * (math.pi / 2.5)
-					angle = math.pi / 3
-					# angle = ((60 + Math.random() * (70 - 60)) * Math.PI) / 180
+					# angle = math.pi / 3
+					angle = ((60 + random.uniform(0, 10)) * math.pi) / 180
 					speed = math.sqrt(ball_speed_x**2 + ball_speed_y**2) + 0.1
 					game_state['ball_speed_x'] = abs(speed * math.cos(angle))
 					game_state['ball_speed_y'] = speed * math.sin(angle)
@@ -196,8 +197,8 @@ async def start_ball_movement(game_id):
 					collide_point = new_ball_y - game_state['pad_' + oppo_name]
 					normalized_collide_point = collide_point / (PAD_LENGTH / 2)
 					# angle = normalized_collide_point * (math.pi / 2.5)
-					angle = math.pi / 3
-					# angle = ((60 + Math.random() * (70 - 60)) * Math.PI) / 180
+					# angle = math.pi / 3
+					angle = ((60 + random.uniform(0, 10)) * math.pi) / 180
 					speed = math.sqrt(ball_speed_x**2 + ball_speed_y**2) + 0.1
 					game_state['ball_speed_x'] = -abs(speed * math.cos(angle))
 					game_state['ball_speed_y'] = speed * math.sin(angle)
