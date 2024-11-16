@@ -199,7 +199,7 @@ function startSocket(room_id) {
         deleteChatForm();
     }
     
-    setupInvitationButton(chatSocket);
+    setupInvitationButton();
 
     return chatSocket;
 }
@@ -220,42 +220,20 @@ function handleWebSocketMessage(e) {
     }
 }
 
-function setupInvitationButton(chatSocket) {
+function setupInvitationButton() {
     const sendInvitationButton = document.getElementById('sendInvitationButton');
-    let createdGame = null;
-    if (sendInvitationButton) {
-        sendInvitationButton.addEventListener('click', async () => {
-            if (sendInvitationButton.textContent === 'Invitar partida') {
-                // Lógica para enviar invitación
-                createdGame = await createGame();
+    // const invitedName = sessionStorage.getItem('selectedUserName');
+    const invitedName = "dximenez";  // here is has to pass the selected user name to invite
 
-                if (createdGame) {
-                    const invitationMessage = { content: "required", content_type: 'invitation', game_id: createdGame.id };
-                    chatSocket.send(JSON.stringify(invitationMessage));
-                    const messageElement = createMessageElement({ content_type: 'invitation', sender: { id: sessionStorage.getItem('id') }, game_id: createdGame.id }, sessionStorage.getItem('id'));
-                    const chatMessagesElement = document.getElementById('chatMessages');
-                    chatMessagesElement.appendChild(messageElement);
-                    chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
+    sendInvitationButton.addEventListener('click', () => {
 
-                    sendInvitationButton.textContent = 'Eliminar invitación';
-                    sendInvitationButton.dataset.gameId = createdGame.id;
-                } else {
-                    console.error('Failed to create game');
-                }
-            } else {
-                if (createdGame) {
-                    const gameId = createdGame.game_id;
-                    const success = await leaveGame(gameId);
-                    if (success) {
-                        sendInvitationButton.textContent = 'Invitar partida';
-                        delete sendInvitationButton.dataset.gameId;
-                    } else {
-                        console.error('Failed to leave game');
-                    }
-                }
-            }
-        });
-    }
+        if (invitedName) {
+            GameInfoHandler.sendInviteJoinRoom(invitedName);
+            console.log(`Invitation sent to: ${invitedName}`);
+        } else {
+            console.error('No user selected for invitation.');
+        }
+    });
 }
 
 function deleteChatForm() {

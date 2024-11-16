@@ -376,6 +376,7 @@ export class GameInfoHandler {
 							user_name: whoInviteMe,
 							msg: 'I will join.'
 						});
+						window.location.hash = '#online';
 					} else {
 						sendData('client_invite_msg', { 
 			
