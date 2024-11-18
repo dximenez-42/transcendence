@@ -19,7 +19,7 @@ export const   gameInfo = {
 	enamyName: '',
 	winner: '',
 	socketConnection: false,
-	gameOver: false,
+	gameOver: true,
 	game_socket: null,
 	user_name: '',
 	user_id: '',

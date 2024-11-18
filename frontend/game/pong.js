@@ -308,18 +308,21 @@ export function setDomCanvas(id) {
 
 function ifGameOver(scorePlayer, scoreEnamy, callback) {
 
-    if (gameInfo.gameOver === true) {
-        return false;
-    }
+    // if (gameInfo.gameOver === true) {
+    //     return false;
+    // }
 
     if (scorePlayer === 5) {
 
         gameInfo.winner = gameInfo.playerName;
         gameInfo.gameOver = true;
+        if (window.location.hash === '#game') {
+            alert('Game Over! Player1 wins!');
+        }
         window.location.hash = '#home';
         gameInfo.status = 'off';
         gameInfo.winner = gameInfo.playerName;
-        alert('Game Over! Player1 wins!');
+        
         if (typeof callback === 'function' && callback()) {
             callback();
         }
@@ -328,10 +331,11 @@ function ifGameOver(scorePlayer, scoreEnamy, callback) {
 
         gameInfo.winner = gameInfo.enamyName;
         gameInfo.gameOver = true;
+        if (window.location.hash === '#game')
+            alert('Game Over! Player2 wins!');
         window.location.hash = '#home';
         gameInfo.status = 'off';
         gameInfo.winner = gameInfo.enamyName;
-        alert('Game Over! Player2 wins!');
         if (typeof callback === 'function' && callback()) {
             callback();
         }

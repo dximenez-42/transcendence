@@ -167,8 +167,8 @@ export function setGame(HTMLcanvasID, HTMLplayerNameID, HTMLenamyNameID, HTMLpla
 		console.log('Game type set to online');
 		// createWebSocket(cur_gameInfoHandler);
 	} else {
-		console.error('Invalid game type.');
-		window.location.hash = "#vs_settings";
+		//console.alert('Invalid game type.');
+        setGameType('local');
 	}
 }
 
@@ -196,6 +196,7 @@ function createGameController() {
             //     clearInterval(intervalIdBall);
             gameState = false;
             ballState = false;
+            //gameInfo.gameOver = true;
             pauseTimer(intervalIdTimerRef);
             console.log('Game paused');
         } else {
@@ -206,6 +207,7 @@ function createGameController() {
             //     intervalIdBall = setInterval(GameInfoHandler.sendPositionSyn, 1000 / FPS_INFO);
             gameState = true;
             ballState = true;
+            gameInfo.gameOver = false;
             console.log('Game started');
         }
     };
