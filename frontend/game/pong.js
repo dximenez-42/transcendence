@@ -173,13 +173,13 @@ function adjustBallSpeed() {
         
         setBallSpeed(getBallSpeed() + 0.1);
     }
-    console.log(getBallSpeed());
+    // console.log(getBallSpeed());
 }
 
 export function setGameType(type) {
 
     gameType = type;
-    console.log("gameType selected: " + type);
+    // console.log("gameType selected: " + type);
 }
 
 export function getGameType() {

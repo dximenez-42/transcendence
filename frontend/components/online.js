@@ -830,7 +830,7 @@ function addCreateRoomButton() {
     createRoomButton.textContent = 'Create Room';
 
     createRoomButton.addEventListener('click', function() {
-        console.log('Create Room button clicked!');
+        // console.log('Create Room button clicked!');
 
         GameInfoHandler.sendCreateRoom();
     });
@@ -871,7 +871,7 @@ function addNewRoomUI(name, number, room_id) {
         const startButton = document.createElement('button');
         startButton.textContent = 'Start';
         startButton.addEventListener('click', function() {
-            console.log(`Room ${name}: Start button clicked!`);
+            // console.log(`Room ${name}: Start button clicked!`);
 
             GameInfoHandler.sendStartGame();
         });
@@ -880,7 +880,7 @@ function addNewRoomUI(name, number, room_id) {
         const leaveButton = document.createElement('button');
         leaveButton.textContent = 'Leave';
         leaveButton.addEventListener('click', function() {
-            console.log(`Room ${name}: Leave button clicked!`);
+            // console.log(`Room ${name}: Leave button clicked!`);
 
             GameInfoHandler.sendLeaveRoom();
         });
@@ -902,7 +902,7 @@ function addNewRoomUI(name, number, room_id) {
         const joinButton = document.createElement('button');
         joinButton.textContent = 'leave';
         joinButton.addEventListener('click', function() {
-            console.log(`Room ${name}: leave button clicked!`);
+            // console.log(`Room ${name}: leave button clicked!`);
 
             GameInfoHandler.sendLeaveRoom();
         });

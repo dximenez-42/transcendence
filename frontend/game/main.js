@@ -14,14 +14,14 @@ export function showOverlay(content) {
         if (content) {
             if (contentUI)
                 contentUI.textContent = content;
-            else
-                console.warn('Overlay content element not found. Skipping showOverlay.');
+            else {}
+                // console.warn('Overlay content element not found. Skipping showOverlay.');
         }
         if (overlay) {
             overlay.style.display = 'flex';
             gameInfo.isOverlay = true;
         } else {
-            console.warn('Overlay element not found. Skipping showOverlay.');
+            // console.warn('Overlay element not found. Skipping showOverlay.');
         }
         
     }
@@ -37,7 +37,7 @@ export function hideOverlay() {
             overlay.style.display = 'none';
             gameInfo.isOverlay = false;
         } else {
-            console.warn('Overlay element not found. Skipping hideOverlay.');
+            // console.warn('Overlay element not found. Skipping hideOverlay.');
         }
     }
 }
@@ -106,7 +106,7 @@ export function renderGameOnline() {
 	hideNav();
     setGameType('online');
 	setGame('gameWindow', 'playerName', 'enamyName', 'playerScore', 'enamyScore')
-    console.log('gameType:', getGameType());
+    // console.log('gameType:', getGameType());
     showOverlay('Waiting for starting the game');
     // if (gameInfo.socketConnection === true) // if the connection is already established then we can control the game
     //     start_pause_game();
@@ -130,7 +130,7 @@ export function renderGame(){  // render_local_game
 				alert('Please select a game type first.');
 				return;
 			} else {
-                console.log('gameStatue=> ', gameInfo.isLocalGameOver);
+                // console.log('gameStatue=> ', gameInfo.isLocalGameOver);
 				start_pause_game();
                 if (gameInfo.isLocalGameOver)
                     buttonStart.textContent = 'Start';
@@ -140,7 +140,7 @@ export function renderGame(){  // render_local_game
 			}
 		});
 	}else {
-		console.log('buttonStart not found');
+		// console.log('buttonStart not found');
 	}
 
 }
@@ -170,10 +170,10 @@ export function setGame(HTMLcanvasID, HTMLplayerNameID, HTMLenamyNameID, HTMLpla
 
 	if (getGameType() === 'local') {
 		// setGameType(gameType);
-		console.log('Game type set to local');
+		// console.log('Game type set to local');
 	} else if (getGameType() === 'online') {
 		// setGameType(gameType);
-		console.log('Game type set to online');
+		// console.log('Game type set to online');
 		// createWebSocket(cur_gameInfoHandler);
 	} else {
 		//console.alert('Invalid game type.');
@@ -196,7 +196,7 @@ function createGameController() {
             return;
         }
 
-        console.log('gameType:', getGameType());
+        // console.log('gameType:', getGameType());
 
         if (gameState) {
 
@@ -207,7 +207,7 @@ function createGameController() {
             ballState = false;
             gameInfo.isLocalGameOver = true;
             pauseTimer(intervalIdTimerRef);
-            console.log('Game paused');
+            // console.log('Game paused');
         } else {
 
             intervalId = setInterval(keyMovePad, 1000 / FPS);
@@ -217,7 +217,7 @@ function createGameController() {
             gameState = true;
             ballState = true;
             gameInfo.isLocalGameOver = false;
-            console.log('Game started');
+            // console.log('Game started');
         }
     };
 }

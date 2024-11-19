@@ -104,14 +104,14 @@ export class GameInfoHandler {
 					sendData('client_init_info', { 		
 						confirmed: true,
 					});
-					console.log('Confirmation success by client.');
+					// console.log('Confirmation success by client.');
 					// console.log("Connection confirmed by server.\nMessage send successfully.");
 				} else {
 
 					sendData('client_init_info', {
 						confirmed: false,
 					});
-					console.warn('Confirmation failed by client.');
+					// console.warn('Confirmation failed by client.');
 
 					// console.error("Confirmation failed by client.");
 					// gameInfo.game_socket.close(); 
@@ -124,7 +124,7 @@ export class GameInfoHandler {
 				// if is reconnection , it has to jump to the page of the game
 				// //////////////////////////////////////
 				// write the logic here
-				console.log('server_game_matched');
+				// console.log('server_game_matched');
 				if (window.location.hash !== '#game_online')
 					window.location.hash = 'game_online';
 				// //////////////////////////////////////
@@ -140,16 +140,16 @@ export class GameInfoHandler {
 					gameInfo.playerName = gameInfo.user_name;
 					gameInfo.enamyName = gameInfo.opp_name;
 					gameInfo.status = 'on';
-					console.log('game started, ====================== start game ======================');
+					// console.log('game started, ====================== start game ======================');
 					start_pause_game();
 				}
-				console.log('>>>>>>>>>>>>> End of server_game_matched <<<<<<<<<<<');
+				// console.log('>>>>>>>>>>>>> End of server_game_matched <<<<<<<<<<<');
 				break;
 			// when the room is created, the server will send the room id to the client
 			case 'server_room_created':
 				if ('room_id' in newInfo) {
 					gameInfo.room_id = newInfo.room_id;
-					console.log("Room created by server.");
+					// console.log("Room created by server.");
 				} else {
 					console.error("Room creation failed.");
 				}
@@ -157,7 +157,7 @@ export class GameInfoHandler {
 			// mybe we can add a alert to show the reason of the denied
 			case 'server_room_created_denied':
 				if ('error' in newInfo) {
-					console.error("Room creation denied by server. Reason: " + newInfo.error);
+					// console.error("Room creation denied by server. Reason: " + newInfo.error);
 					alert('Room creation denied by server. Reason: ' + newInfo.error);
 				}
 				break;
@@ -165,7 +165,7 @@ export class GameInfoHandler {
 			case 'server_room_joined':
 				if ('room_id' in newInfo) {
 					gameInfo.room_id = newInfo.room_id;
-					console.log("Room joined by server.");
+					// console.log("Room joined by server.");
 				}
 				////////////////////////////////////////////////////////////////////////
 				// just in case if the user is in the wrong page, it will jump to the online page (room list page)
@@ -176,34 +176,34 @@ export class GameInfoHandler {
 			// mybe we can add a alert to show the reason of the denied
 			case 'server_room_joined_denied':
 				if ('error' in newInfo) {
-					console.error("Room join denied by server. Reason: " + newInfo.error);
+					// console.error("Room join denied by server. Reason: " + newInfo.error);
 					alert('Room join denied by server. Reason: ' + newInfo.error);
 				}
 				break;
 			// no need to modify, unless we want to alert the user
 			case 'server_room_left_success':
 				gameInfo.room_id = '';
-				console.log("Room left successfully.");
+				// console.log("Room left successfully.");
 				break;
 			// mybe we can add a alert to show the reason of the denied
 			case 'server_room_left_error':
 				if ('error' in newInfo) {
-					console.error("Room leave failed. Reason: " + newInfo.error);
+					// console.error("Room leave failed. Reason: " + newInfo.error);
 					alert('Room leave failed. Reason: ' + newInfo.error);
 				}
 				break;
 			// a response from the server for the request of the room info by client, tecnically we will not use this, will , just in case
 			case 'server_info_room':
 				if ('room_info' in newInfo) {
-					console.log("Room info received from server.");
-					console.log(newInfo.room_info);
+					// console.log("Room info received from server.");
+					// console.log(newInfo.room_info);
 					// aqui se puede abordar la logica del room
 				}
 				break;
 			// will not use this, just in case
 			case 'server_info_room_error':
 				if ('error' in newInfo) {
-					console.error("Room info failed. Reason: " + newInfo.error);
+					// console.error("Room info failed. Reason: " + newInfo.error);
 					alert('Room info failed. Reason: ' + newInfo.error);
 				}
 				break;
@@ -211,13 +211,13 @@ export class GameInfoHandler {
 			case 'server_game_started_waiting':
 				if (window.location.hash !== '#game_online')
 					window.location.hash = 'game_online';
-				console.log("Game started waiting for another player to join.");
+				// console.log("Game started waiting for another player to join.");
 				showOverlay('Waiting');
 				break;
 			// when you are not the host but you want to start the game, the server will deny the request
 			case 'server_game_start_denied':
 				if ('error' in newInfo) {
-					console.error("Game start denied by server. Reason: " + newInfo.error);
+					// console.error("Game start denied by server. Reason: " + newInfo.error);
 					alert('Game start denied by server. Reason: ' + newInfo.error);
 				}
 				break;
@@ -228,9 +228,9 @@ export class GameInfoHandler {
 					gameInfo.room_list = newInfo.room_list;
 					if (gameInfo.status === 'off' && window.location.hash === '#online')
 						refreshRoomList();
-					console.log("Room list updated by server.");
-					console.log(newInfo);
-					console.log(newInfo.room_list);
+					// console.log("Room list updated by server.");
+					// console.log(newInfo);
+					// console.log(newInfo.room_list);
 				}
 				break;
 			// every time when the room list is updated, the server will send the room list to the client
@@ -254,9 +254,9 @@ export class GameInfoHandler {
 					// ]
 					// the first element is the host name, the second element is the number of players, the third element is the room state
 					// so you can refresh the room list by using the above function
-					console.log("Room list updated by server.");
-					console.log(newInfo);
-					console.log(newInfo.room_list);
+					// console.log("Room list updated by server.");
+					// console.log(newInfo);
+					// console.log(newInfo.room_list);
 					// aqui se puede abordar la logica de la lista de rooms
 				}
 				break;
@@ -286,7 +286,7 @@ export class GameInfoHandler {
 				break;
 			// when your game is over but there is also another player in the room, the server will send this message
 			case 'server_game_waiting_result':
-				console.log("Waiting for the game result.");
+				// console.log("Waiting for the game result.");
 				showOverlay('Waiting for all games result in the room');
 				
 				if (gameInfo.status === 'on'){
@@ -296,11 +296,11 @@ export class GameInfoHandler {
 					gameInfo.game_id = '';
 					gameInfo.status = 'off';
 					start_pause_game();
-					console.log('====================== pause game ======================');
+					// console.log('====================== pause game ======================');
 				} 
 				break;
 			case 'server_game_seek_battle':
-				console.log("Seeking for a battle.");
+				// console.log("Seeking for a battle.");
 				showOverlay('Seeking next battle if there is one o waiting result');
 				if (gameInfo.status === 'on'){
 					gameInfo.opp_id = '';
@@ -309,13 +309,13 @@ export class GameInfoHandler {
 					gameInfo.game_id = '';
 					gameInfo.status = 'off';
 					start_pause_game();
-					console.log('====================== pause game ======================');
+					// console.log('====================== pause game ======================');
 				}
 				break;
 				
 			// when all the games in the room are over, the server will send the result to the client
 			case 'server_game_over':
-				console.log('server_game_over');
+				// console.log('server_game_over');
 				if ('result' in newInfo) {
 					gameInfo.result = getRankingListByResults(newInfo.result);
 					
@@ -331,8 +331,8 @@ export class GameInfoHandler {
 					// after showing the result, the result should be cleared
 					// gameInfo.result = [];
 					//////////////////////////////////////
-					console.log("Game over by server.");
-					console.log(gameInfo.result);
+					// console.log("Game over by server.");
+					// console.log(gameInfo.result);
 				}
 				//alert('Game Over'); // this is not that necessary, can be removed
 				window.location.hash = 'game_rank';
@@ -343,7 +343,7 @@ export class GameInfoHandler {
 					gameInfo.game_id = '';
 					gameInfo.status = 'off';
 					start_pause_game();
-					console.log('====================== pause game ======================');
+					// console.log('====================== pause game ======================');
 				}
 				//window.location.hash = 'home';
 				break;
@@ -352,7 +352,7 @@ export class GameInfoHandler {
 			case 'server_invite_user_denied':
 
 				if ('error' in newInfo) {
-					console.log("Invite user denied by server. Reason: " + newInfo.error);
+					// console.log("Invite user denied by server. Reason: " + newInfo.error);
 					alert('Invite user denied by server. Reason: ' + newInfo.error);
 				}
 				break;
@@ -362,7 +362,10 @@ export class GameInfoHandler {
 				if ('user_name' in newInfo && 'room_id' in newInfo && window.location.hash !== '#game_online') {
 					
 					const whoInviteMe = newInfo.user_name;
-					const wantToJoin = confirm(newInfo.user_name + ' invite you to join the room, do you want to join?');
+					let wantToJoin = false;
+					if (window.location.hash !== '#game')
+						wantToJoin = confirm(newInfo.user_name + ' invite you to join the room, do you want to join?');
+
 					if (wantToJoin) {
 						sendData('client_join_room', { 
 							room_id: newInfo.room_id 
@@ -388,16 +391,16 @@ export class GameInfoHandler {
 			case 'server_invite_msg':
 
 
-				console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Invite message from: ' + newInfo.user_name);
+				// console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Invite message from: ' + newInfo.user_name);
 				alert('response message: ' + newInfo.msg);
 				if ('joinState' in newInfo) 
 					if (newInfo['joinState'])
-						console.log ('The user has joined the room.=========================');
+						// console.log ('The user has joined the room.=========================');
 						window.location.hash = '#online';
 				break;
 			////////////////////////////////////////////////////////////////////
 			default:
-                console.log('Unknown info:', newInfo);
+                // console.log('Unknown info:', newInfo);
 				break;
         }
     }

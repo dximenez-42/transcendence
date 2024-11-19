@@ -97,7 +97,7 @@ function router() {
     //////////////////////////////////////// // add new code modifyed by gao
     gameInfo.user_name = sessionStorage.getItem('username');
     gameInfo.user_id = sessionStorage.getItem('auth_token');
-    console.log('router gameInfo:', gameInfo);
+    // console.log('router gameInfo:', gameInfo);
     createWebSocket();
     ////////////////////////////////////////
 }

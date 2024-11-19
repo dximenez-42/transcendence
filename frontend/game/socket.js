@@ -16,7 +16,7 @@ export async function createWebSocket() {
 
     if (!gameInfo.user_name || !gameInfo.user_id) {
         if (retryCount < 3) {
-            console.log("Retrying WebSocket creation due to missing user_name...");
+            // console.log("Retrying WebSocket creation due to missing user_name...");
             retryCount++;
             setTimeout(createWebSocket, 100);
             return;
@@ -27,13 +27,13 @@ export async function createWebSocket() {
     
     if (!gameInfo.game_socket || gameInfo.game_socket.readyState === WebSocket.CLOSED) {
 
-        console.log("Creating WebSocket connection: ", 'ws://' + window.location.host + '/ws/games/' + gameInfo.user_name + '/' + gameInfo.user_id);
+        // console.log("Creating WebSocket connection: ", 'ws://' + window.location.host + '/ws/games/' + gameInfo.user_name + '/' + gameInfo.user_id);
         gameInfo.game_socket = new WebSocket('ws://' + window.location.host + '/ws/games/' + gameInfo.user_name + '/' + gameInfo.user_id);
         
         // when the connection is established
         gameInfo.game_socket.onopen = function(event) {
 
-            console.log("Client WebSocket connection established.");
+            // console.log("Client WebSocket connection established.");
             gameInfo.socketConnection = true;
             //reconnectTimes = 0;
             startHeartbeat();
@@ -65,7 +65,7 @@ export async function createWebSocket() {
             // 判断游戏状态, 当游戏正在进行的情况下, 应该暂停游戏, 并且将游戏状态变更为暂停 //
             //////////////////////////////////////////////////////////////////////
 
-            console.log('Client WebSocket connection closed:', event);
+            // console.log('Client WebSocket connection closed:', event);
             gameInfo.socketConnection = false;
             stopHeartbeat();
             attemptReconnection();
@@ -77,7 +77,7 @@ export async function createWebSocket() {
         };
     } else {
 
-        console.log("WebSocket connection already established or connecting.");
+        // console.log("WebSocket connection already established or connecting.");
     }
 }
 
@@ -88,7 +88,7 @@ function startHeartbeat() {
 
         if (missedPings >= MAX_MISSED_PONGS) {
 
-            console.log("Closing WebSocket due to missed pongs.");
+            // console.log("Closing WebSocket due to missed pongs.");
             //GameInfoHandler.sendGameOver();
             gameInfo.game_socket.close();
             stopHeartbeat();
@@ -160,13 +160,13 @@ export async function sendData(action, data) {
     if (gameInfo.game_socket && gameInfo.game_socket.readyState === WebSocket.OPEN) {
         try {
             await gameInfo.game_socket.send(JSON.stringify(message));
-            console.log("Message sent to WebSocket:", message);
+            // console.log("Message sent to WebSocket:", message);
         } catch (error) {
             console.error("Failed to send message to WebSocket:", error);
         }
     } else {
         console.error("WebSocket is not open.");
-        console.log('gameInfo:', gameInfo);
+        // console.log('gameInfo:', gameInfo);
         
         // alert("Connection to the server is lost. Please try again later.");
         // window.location.reload(); // refresh the page wen the connection is lost

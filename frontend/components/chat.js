@@ -156,7 +156,7 @@ export async function renderChat(user) {
     if (room_id != "null") {
         userName = user.name || sessionStorage.getItem('selectedUserName');
         userUsername = user.username || sessionStorage.getItem('selectedUserUsername');
-        console.log("starting: ", currentSocket)
+        // console.log("starting: ", currentSocket)
         if (!currentSocket || (currentSocket && currentSocket.url.split('/')[5] != room_id)) {
             if (currentSocket) {
                 currentSocket.close();
@@ -187,9 +187,9 @@ export async function loadSelectedChatOnPageLoad() {
 function startSocket(room_id) {
     const userId = sessionStorage.getItem('id');
     const url = `ws://${window.location.host}/ws/chat/${room_id}/${userId}`;
-    console.log("Starting socket: ", url);
+    // console.log("Starting socket: ", url);
     const chatSocket = new WebSocket(url);
-    chatSocket.onopen = () => console.log('WebSocket opened');
+    // chatSocket.onopen = () => console.log('WebSocket opened');
     chatSocket.onerror = (error) => console.error('WebSocket Error: ', error);
     chatSocket.onmessage = handleWebSocketMessage;
     chatSocket.onclose = () => console.log('WebSocket close');
@@ -209,14 +209,14 @@ function startSocket(room_id) {
 
 function handleWebSocketMessage(e) {
     const data = JSON.parse(e.data);
-    console.log("WebSocket message: ", data);
+    // console.log("WebSocket message: ", data);
     const chatMessagesElement = document.getElementById('chatMessages');
     if (data.content_type === 'block' || data.content_type === 'unblock') {
         const user = { id: data.sender.id, im_blocked: data.content_type === 'block'};
         sessionStorage.setItem('selectedUserImBlocked', false);
         renderChat(user);
     } else {
-        console.log("WebSocket message: ", e.data);
+        // console.log("WebSocket message: ", e.data);
         const messageElement = createMessageElement(data, sessionStorage.getItem('id'));
         chatMessagesElement.appendChild(messageElement);
         chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
@@ -226,14 +226,14 @@ function handleWebSocketMessage(e) {
 function setupInvitationButton() {
     const sendInvitationButton = document.getElementById('sendInvitationButton');
     const invitedName = sessionStorage.getItem('selectedUserUsername');
-    console.log("############################ SETUP INVITATION BUTTON ############################");
+    // console.log("############################ SETUP INVITATION BUTTON ############################");
 
     sendInvitationButton.addEventListener('click', () => {
-        console.log("Invitation button clicked");
+        // console.log("Invitation button clicked");
         if (invitedName) {
             alert(`Invitation is sending to ${invitedName}, please wait!`);
             GameInfoHandler.sendInviteJoinRoom(invitedName);
-            console.log(`Invitation sent to: ${invitedName}`);
+            // console.log(`Invitation sent to: ${invitedName}`);
         } else {
             console.error('No user selected for invitation.');
         }
@@ -266,7 +266,7 @@ function createChatForm(chatSocket) {
         e.preventDefault(); 
         const message = messageInput.value.trim();
         if (message !== '') {
-            console.log("Sending message: ", message);
+            // console.log("Sending message: ", message);
             chatSocket.send(JSON.stringify({ "content": message, "content_type": "message" }));
             messageInput.value = '';
             const messageElement = createMessageElement({ content: message, "content_type": "message", sender: { id: sessionStorage.getItem('id') } }, sessionStorage.getItem('id'));
