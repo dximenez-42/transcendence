@@ -12,14 +12,14 @@ export const BALL_RADIUS = 4;
 export const GAME_TIME = 150;
 export const FPS_INFO = 20;
 export const BK_COLOR = 0x0b1215;
-export var   ballSpeed = 1;
+export var   ballSpeed = 1.3;
 export const   gameInfo = {
 	
 	playerName: '',
 	enamyName: '',
 	winner: '',
 	socketConnection: false,
-	gameOver: true,
+	isLocalGameOver: true,
 	game_socket: null,
 	user_name: '',
 	user_id: '',

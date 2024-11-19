@@ -114,7 +114,11 @@ export function renderGameOnline() {
 
 
 export function renderGame(){  // render_local_game
-	const buttonStart = document.getElementById('pause');
+	const buttonStart = document.getElementById('pause'); // init test is 'Start'
+    if (gameInfo.isLocalGameOver)
+        buttonStart.textContent = 'Start';
+    else
+        buttonStart.textContent = 'Pause';
 	hideNav();
 
 	setGame('gameWindow', 'playerName', 'enamyName', 'playerScore', 'enamyScore')
@@ -126,7 +130,12 @@ export function renderGame(){  // render_local_game
 				alert('Please select a game type first.');
 				return;
 			} else {
+                console.log('gameStatue=> ', gameInfo.isLocalGameOver);
 				start_pause_game();
+                if (gameInfo.isLocalGameOver)
+                    buttonStart.textContent = 'Start';
+                else
+                    buttonStart.textContent = 'Pause';
 				//startTimer(150);
 			}
 		});
@@ -196,7 +205,7 @@ function createGameController() {
             //     clearInterval(intervalIdBall);
             gameState = false;
             ballState = false;
-            //gameInfo.gameOver = true;
+            gameInfo.isLocalGameOver = true;
             pauseTimer(intervalIdTimerRef);
             console.log('Game paused');
         } else {
@@ -207,7 +216,7 @@ function createGameController() {
             //     intervalIdBall = setInterval(GameInfoHandler.sendPositionSyn, 1000 / FPS_INFO);
             gameState = true;
             ballState = true;
-            gameInfo.gameOver = false;
+            gameInfo.isLocalGameOver = false;
             console.log('Game started');
         }
     };

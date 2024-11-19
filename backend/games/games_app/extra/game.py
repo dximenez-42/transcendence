@@ -179,7 +179,7 @@ async def start_ball_movement(game_id):
 					normalized_collide_point = collide_point / (PAD_LENGTH / 2)
 					# angle = normalized_collide_point * (math.pi / 2.5)
 					# angle = math.pi / 3
-					angle = ((60 + random.uniform(0, 10)) * math.pi) / 180
+					angle = ((30 + random.uniform(0, 30)) * math.pi) / 180
 					speed = math.sqrt(ball_speed_x**2 + ball_speed_y**2) + 0.1
 					game_state['ball_speed_x'] = abs(speed * math.cos(angle))
 					game_state['ball_speed_y'] = speed * math.sin(angle)
@@ -198,7 +198,7 @@ async def start_ball_movement(game_id):
 					normalized_collide_point = collide_point / (PAD_LENGTH / 2)
 					# angle = normalized_collide_point * (math.pi / 2.5)
 					# angle = math.pi / 3
-					angle = ((60 + random.uniform(0, 10)) * math.pi) / 180
+					angle = ((30 + random.uniform(0, 30)) * math.pi) / 180
 					speed = math.sqrt(ball_speed_x**2 + ball_speed_y**2) + 0.1
 					game_state['ball_speed_x'] = -abs(speed * math.cos(angle))
 					game_state['ball_speed_y'] = speed * math.sin(angle)

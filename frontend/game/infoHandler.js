@@ -132,7 +132,6 @@ export class GameInfoHandler {
 				// console.log("Game matched by server.");
 				hideOverlay();
 				if (gameInfo.status === 'off'){
-					gameInfo.gameOver = false;
 					gameInfo.opp_name = newInfo.opp_name;
 					gameInfo.opp_id = newInfo.opp_id;
 					gameInfo.game_id = newInfo.game_id;
@@ -291,7 +290,6 @@ export class GameInfoHandler {
 				showOverlay('Waiting for all games result in the room');
 				
 				if (gameInfo.status === 'on'){
-					gameInfo.gameOver = true;
 					gameInfo.opp_id = '';
 					gameInfo.opp_name = '';
 					gameInfo.winner = '';
@@ -305,7 +303,6 @@ export class GameInfoHandler {
 				console.log("Seeking for a battle.");
 				showOverlay('Seeking next battle if there is one o waiting result');
 				if (gameInfo.status === 'on'){
-					gameInfo.gameOver = true;
 					gameInfo.opp_id = '';
 					gameInfo.opp_name = '';
 					gameInfo.winner = '';
@@ -340,7 +337,6 @@ export class GameInfoHandler {
 				//alert('Game Over'); // this is not that necessary, can be removed
 				window.location.hash = 'game_rank';
 				if (gameInfo.status === 'on'){
-					gameInfo.gameOver = true;
 					gameInfo.opp_id = '';
 					gameInfo.opp_name = '';
 					gameInfo.winner = '';

@@ -62,6 +62,12 @@ export function keyMovePad() {
 
     } else if (gameType === 'local') {
 
+        if (window.location.hash !== '#game' && gameInfo.isLocalGameOver === false){
+            start_pause_game();
+            resetBall();
+            setBallSpeed(1.3);
+        }
+
         if (keyStates['w'])
             resetPositionPadPlayer (padEdgeCorrect(padYPositionPlayer -= PAD_MOVE_STEP_LENGTH, PAD_LENGTH, TABLE_HEIGHT));
         if (keyStates['s'])
@@ -308,19 +314,19 @@ export function setDomCanvas(id) {
 
 function ifGameOver(scorePlayer, scoreEnamy, callback) {
 
-    // if (gameInfo.gameOver === true) {
+    // if (gameInfo.isLocalGameOver === true) {
     //     return false;
     // }
 
     if (scorePlayer === 5) {
 
         gameInfo.winner = gameInfo.playerName;
-        gameInfo.gameOver = true;
+        // gameInfo.isLocalGameOver = true;
         if (window.location.hash === '#game') {
             alert('Game Over! Player1 wins!');
+            window.location.hash = '#home';
         }
-        window.location.hash = '#home';
-        gameInfo.status = 'off';
+        // window.location.hash = '#home';
         gameInfo.winner = gameInfo.playerName;
         
         if (typeof callback === 'function' && callback()) {
@@ -330,11 +336,12 @@ function ifGameOver(scorePlayer, scoreEnamy, callback) {
     } else if (scoreEnamy === 5) {
 
         gameInfo.winner = gameInfo.enamyName;
-        gameInfo.gameOver = true;
-        if (window.location.hash === '#game')
+        // gameInfo.isLocalGameOver = true;
+        if (window.location.hash === '#game'){
             alert('Game Over! Player2 wins!');
-        window.location.hash = '#home';
-        gameInfo.status = 'off';
+            window.location.hash = '#home';
+        }
+        // window.location.hash = '#home';
         gameInfo.winner = gameInfo.enamyName;
         if (typeof callback === 'function' && callback()) {
             callback();
