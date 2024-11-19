@@ -374,14 +374,16 @@ export class GameInfoHandler {
 						sendData('client_invite_msg', { 
 			
 							user_name: whoInviteMe,
-							msg: 'I have joined.'
+							msg: 'I have joined.',
+							joinState: true
 						});
 						window.location.hash = '#online';
 					} else {
 						sendData('client_invite_msg', { 
 			
 							user_name: whoInviteMe,
-							msg: 'I am busy now.'
+							msg: 'I am busy now.',
+							joinState: false
 						});
 					}
 				}
@@ -389,15 +391,13 @@ export class GameInfoHandler {
 			
 			case 'server_invite_msg':
 
+
+				console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Invite message from: ' + newInfo.user_name);
 				alert('response message: ' + newInfo.msg);
-				if ('msg' in newInfo) {
-					console.log('Invite message:', newInfo.msg);
-					//alert('Invite message: ' + newInfo.msg);
-					// console.log(newInfo.msg);
-					if (newInfo.msg === 'I have joined.') {
+				if ('joinState' in newInfo) 
+					if (newInfo['joinState'])
+						console.log ('The user has joined the room.=========================');
 						window.location.hash = '#online';
-					}
-				}
 				break;
 			////////////////////////////////////////////////////////////////////
 			default:

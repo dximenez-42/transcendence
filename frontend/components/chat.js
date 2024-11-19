@@ -231,6 +231,7 @@ function setupInvitationButton() {
     sendInvitationButton.addEventListener('click', () => {
         console.log("Invitation button clicked");
         if (invitedName) {
+            alert(`Invitation is sending to ${invitedName}, please wait!`);
             GameInfoHandler.sendInviteJoinRoom(invitedName);
             console.log(`Invitation sent to: ${invitedName}`);
         } else {

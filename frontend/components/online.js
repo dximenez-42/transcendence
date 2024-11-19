@@ -892,7 +892,7 @@ function addNewRoomUI(name, number, room_id) {
         const joinButton = document.createElement('button');
         joinButton.textContent = 'Join';
         joinButton.addEventListener('click', function() {
-            console.log(`Room ${name}: Join button clicked!`);
+            
             GameInfoHandler.sendJoinRoom(name);
         });
 

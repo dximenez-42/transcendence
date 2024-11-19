@@ -421,9 +421,11 @@ class GamesConsumer(AsyncWebsocketConsumer):
                     break
         if user == None:
             return
-        if 'msg' in data_json:
+        if 'msg' in data_json and 'joinState' in data_json:
+            print ('invite_msg_handler:', data_json)
             await user.send(json.dumps({
                 'action': 'server_invite_msg',
-                'msg': self.user_name + ": " + data_json['msg']
+                'msg': self.user_name + ": " + data_json['msg'],
+                'joinState': data_json['joinState']
             }))
         
