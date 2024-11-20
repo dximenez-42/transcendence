@@ -130,20 +130,22 @@ export class GameInfoHandler {
 				// //////////////////////////////////////
 					
 				// console.log("Game matched by server.");
-				hideOverlay();
-				if (gameInfo.status === 'off'){
-					gameInfo.opp_name = newInfo.opp_name;
-					gameInfo.opp_id = newInfo.opp_id;
-					gameInfo.game_id = newInfo.game_id;
-					gameInfo.DOMEnamyNameElement.innerHTML = newInfo.opp_name;
-					gameInfo.DOMPlayerNameElement.innerHTML = gameInfo.user_name;
-					gameInfo.playerName = gameInfo.user_name;
-					gameInfo.enamyName = gameInfo.opp_name;
-					gameInfo.status = 'on';
-					// console.log('game started, ====================== start game ======================');
-					start_pause_game();
-				}
-				// console.log('>>>>>>>>>>>>> End of server_game_matched <<<<<<<<<<<');
+				setTimeout(() => {
+					hideOverlay();
+					if (gameInfo.status === 'off'){
+						gameInfo.opp_name = newInfo.opp_name;
+						gameInfo.opp_id = newInfo.opp_id;
+						gameInfo.game_id = newInfo.game_id;
+						gameInfo.DOMEnamyNameElement.innerHTML = newInfo.opp_name;
+						gameInfo.DOMPlayerNameElement.innerHTML = gameInfo.user_name;
+						gameInfo.playerName = gameInfo.user_name;
+						gameInfo.enamyName = gameInfo.opp_name;
+						gameInfo.status = 'on';
+						// console.log('game started, ====================== start game ======================');
+						start_pause_game();
+					}
+					// console.log('>>>>>>>>>>>>> End of server_game_matched <<<<<<<<<<<');
+				}, 1000);
 				break;
 			// when the room is created, the server will send the room id to the client
 			case 'server_room_created':
@@ -158,7 +160,7 @@ export class GameInfoHandler {
 			case 'server_room_created_denied':
 				if ('error' in newInfo) {
 					// console.error("Room creation denied by server. Reason: " + newInfo.error);
-					alert('Room creation denied by server. Reason: ' + newInfo.error);
+					alert('Room creatiojn denied by server. Reason: ' + newInfo.error);
 				}
 				break;
 			// when the room is joined, the server will send the room id to the client

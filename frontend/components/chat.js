@@ -218,8 +218,10 @@ function handleWebSocketMessage(e) {
     } else {
         // console.log("WebSocket message: ", e.data);
         const messageElement = createMessageElement(data, sessionStorage.getItem('id'));
-        chatMessagesElement.appendChild(messageElement);
-        chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
+        if (chatMessagesElement) {
+            chatMessagesElement.appendChild(messageElement);
+            chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
+        }
     }
 }
 
