@@ -40,6 +40,9 @@ export async function getBlockedUsers() {
             const users = await response.json();
             // console.log(users.blocked);
             return users.blocked;
+        } else if (response.status === 401) {
+            sessionStorage.clear();
+            window.location.hash = '#login';
         } else {
             console.error("Fetch failed with status:", response.status);
             // console.log("Response", response);
@@ -64,6 +67,9 @@ export async function blockUser(userId) {
         if (response.ok) {
             // console.log("User Blocked successfully");
             return true;
+        } else if (response.status === 401) {
+            sessionStorage.clear();
+            window.location.hash = '#login';
         }
     } catch (error) {
         console.error("There was a problem blocking user:", error.message);
@@ -84,6 +90,9 @@ export async function unblockUser(userId) {
         if (response.ok) {
             // console.log("User Blocked successfully");
             return true;
+        } else if (response.status === 401) {
+            sessionStorage.clear();
+            window.location.hash = '#login';
         }
     } catch (error) {
         console.error("There was a problem blocking user:", error.message);
@@ -110,6 +119,9 @@ export async function updateUsername(newName) {
             sessionStorage.setItem('name', newName);
             // console.log("Username updated successfully");
             return true;
+        } else if (response.status === 401) {
+            sessionStorage.clear();
+            window.location.hash = '#login';
         }
     } catch (error) {
         console.error("There was a problem updating username:", error.message);

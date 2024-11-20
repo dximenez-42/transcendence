@@ -13,6 +13,9 @@ export async function getTournaments() {
         if (response.ok) {
             const tournaments = await response.json();
             return tournaments.data;
+        } else if (response.status === 401) {
+            sessionStorage.clear();
+            window.location.hash = '#login';
         } else {
             console.error("Fetch failed with status:", response.status);
             // console.log("Response",response);
@@ -46,6 +49,9 @@ export async function createTournament() {
             const res = await response.json();
             // console.log(res);
             return res;
+        } else if (response.status === 401) {
+            sessionStorage.clear();
+            window.location.hash = '#login';
         } else {
             console.error("Fetch failed with status:", response.status);
             // console.log("Response error:",response);
@@ -70,6 +76,9 @@ export async function leaveTournament(tournamentId) {
         if (response.ok) {
             // console.log("Tournament left successfully");
             return true;
+        } else if (response.status === 401) {
+            sessionStorage.clear();
+            window.location.hash = '#login';
         }
         else {
             throw new Error('Failed to leave Tournament');
@@ -93,6 +102,9 @@ export async function joinTournament(tournamentId) {
         });
         if (response.status == 400) {
             return false;
+        } else if (response.status === 401) {
+            sessionStorage.clear();
+            window.location.hash = '#login';
         }
         return response.ok;
     } catch (error) {

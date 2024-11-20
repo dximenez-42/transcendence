@@ -14,6 +14,9 @@ export async function getGames() {
             const games = await response.json();
             // console.log(games.data)
             return games.data;
+        } else if (response.status === 401) {
+            sessionStorage.clear();
+            window.location.hash = '#login';
         } else {
             console.error("Fetch failed with status:", response.status);
             // console.log("Response", response);
@@ -40,6 +43,9 @@ export async function createGame() {
         if (response.ok) {
             const res = await response.json();
             return res;
+        } else if (response.status === 401) {
+            sessionStorage.clear();
+            window.location.hash = '#login';
         } else {
             console.error("Fetch failed with status:", response.status);
             // console.log("Response error:", response);
@@ -62,11 +68,13 @@ export async function joinGame(id) {
         },
     });
 
-    if (response.status === 404) {
-        return false;
-    }
     if (response.ok) {
         return response.ok;
+    } else if (response.status === 401) {
+        sessionStorage.clear();
+        window.location.hash = '#login';
+    } else if (response.status === 404) {
+        return false;
     } else {
         console.error("Fetch failed with status:", response.status);
         // console.log("Response error:", response);
@@ -84,7 +92,12 @@ export async function leaveGame(gameId) {
                 'Content-Type': 'application/json',
             },
         });
-        return response.ok;
+        if (response.ok)
+            return true;
+        else if (response.status === 401) {
+            sessionStorage.clear();
+            window.location.hash = '#login';
+        }
     } catch (error) {
         console.error('Error leaving game:', error.message);
     }
