@@ -21,7 +21,7 @@ const createUserListItem = (user, currentSocket) => {
 
     lockIcon.addEventListener('click', async () => {
         const messageType = user.is_blocked ? 'block' : 'unblock';
-        console.log("Message type: ", messageType);
+        // console.log("Message type: ", messageType);
         if (currentSocket && currentSocket.readyState === WebSocket.OPEN) {
             currentSocket.send(JSON.stringify({ "content": null, "content_type": messageType }));
         }
@@ -73,7 +73,7 @@ const createMessageElement = (message, userId) => {
             joinButton.onclick = async () => {
                 const joined = await joinGame(message.game_id);
                 if (joined) {
-                    console.log("Joined game");
+                    // console.log("Joined game");
                 }
             };
         }

@@ -18,7 +18,7 @@ async function renderTournamentList() {
 
     tournaments.forEach(tournament => {
         const isUserTournament = tournament.host_username === storedUsername;
-        console.log(isUserTournament);
+        // console.log(isUserTournament);
         renderTournament(tournament, container, isUserTournament, userJoinedGame, userJoinedTournament);
     });
 
@@ -46,7 +46,7 @@ function createTournamentDiv(tournament, isUserTournament, userJoinedGame, userJ
     const tournamentDiv = document.createElement('div');
     tournamentDiv.className = isUserTournament ? 'my-game-card' : 'tournament-card';
     const isDisabled = false;
-    console.log(userJoinedGame, userJoinedTournament, isUserTournament, tournament);
+    // console.log(userJoinedGame, userJoinedTournament, isUserTournament, tournament);
     tournamentDiv.innerHTML = `
         <div class="col-4">
             <h2>${tournament.name}</h2>
@@ -172,13 +172,13 @@ function setupLeaveGameButton(gameDiv, gameId, buttonContainer) {
     leaveButton.addEventListener('click', async () => {
         if (await leaveGame(gameId)) {
             handleSuccessfulLeaveGame(buttonContainer, gameDiv);
-            console.log("left game successfully 2");
+            // console.log("left game successfully 2");
         }
     });
 }
 
 function handleSuccessfulLeaveGame(buttonContainer, gameDiv) {
-    console.log("handleSuccessfulLeaveGame");
+    // console.log("handleSuccessfulLeaveGame");
     replaceWithCreateGameButton(buttonContainer, gameDiv);
     enableCreateGameButton();
     enableCreateTournamentButton();

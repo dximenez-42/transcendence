@@ -15,7 +15,7 @@ export async function getTournaments() {
             return tournaments.data;
         } else {
             console.error("Fetch failed with status:", response.status);
-            console.log("Response",response);
+            // console.log("Response",response);
             return [];
         }
     } catch (error) {
@@ -44,11 +44,11 @@ export async function createTournament() {
 
         if (response.ok) {
             const res = await response.json();
-            console.log(res);
+            // console.log(res);
             return res;
         } else {
             console.error("Fetch failed with status:", response.status);
-            console.log("Response error:",response);
+            // console.log("Response error:",response);
             return [];
         }
     } catch (error) {
@@ -68,7 +68,7 @@ export async function leaveTournament(tournamentId) {
             },
         });
         if (response.ok) {
-            console.log("Tournament left successfully");
+            // console.log("Tournament left successfully");
             return true;
         }
         else {
@@ -81,7 +81,7 @@ export async function leaveTournament(tournamentId) {
 
 // Endpoint to join a tournament
 export async function joinTournament(tournamentId) {
-    console.log("Joining Tournament", tournamentId);
+    // console.log("Joining Tournament", tournamentId);
     const url = `/api/tournaments/join/${tournamentId}`;
     const token = sessionStorage.getItem('auth_token');
     try {

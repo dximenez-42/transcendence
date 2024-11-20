@@ -12,11 +12,11 @@ export async function getGames() {
 
         if (response.ok) {
             const games = await response.json();
-            console.log(games.data)
+            // console.log(games.data)
             return games.data;
         } else {
             console.error("Fetch failed with status:", response.status);
-            console.log("Response", response);
+            // console.log("Response", response);
             return [];
         }
     } catch (error) {
@@ -42,7 +42,7 @@ export async function createGame() {
             return res;
         } else {
             console.error("Fetch failed with status:", response.status);
-            console.log("Response error:", response);
+            // console.log("Response error:", response);
             return [];
         }
     } catch (error) {
@@ -69,7 +69,7 @@ export async function joinGame(id) {
         return response.ok;
     } else {
         console.error("Fetch failed with status:", response.status);
-        console.log("Response error:", response);
+        // console.log("Response error:", response);
         return [];
     }
 }
