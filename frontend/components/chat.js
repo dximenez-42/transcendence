@@ -2,6 +2,7 @@ import { getChatMessages, getChats } from "../api/chat.js";
 import { createGame, joinGame, leaveGame } from "../api/game.js";
 import { loadLanguage } from "../api/languages.js";
 import { blockUser, unblockUser } from "../api/users.js";
+import { GameInfoHandler } from "../game/infoHandler.js";
 
 // Componentes reutilizables
 const createUserListItem = (user, currentSocket) => {
@@ -19,18 +20,21 @@ const createUserListItem = (user, currentSocket) => {
     lockIcon.textContent = user.is_blocked ? '🔒' : '🔓';
 
     lockIcon.addEventListener('click', async () => {
+        const messageType = user.is_blocked ? 'block' : 'unblock';
+        // console.log("Message type: ", messageType);
+        if (currentSocket && currentSocket.readyState === WebSocket.OPEN) {
+            currentSocket.send(JSON.stringify({ "content": null, "content_type": messageType }));
+        }
         const action = user.is_blocked ? unblockUser : blockUser;
         const success = await action(user.id);
         if (success) {
             user.is_blocked = !user.is_blocked;
             lockIcon.textContent = user.is_blocked ? '🔒' : '🔓';
+            
+            // Update blocked status in session storage
+            sessionStorage.setItem('selectedUserIsBlocked', user.is_blocked);
+            
             renderChat(user);
-
-            // Send a block/unblock message to the user
-            const messageType = user.is_blocked ? 'block' : 'unblock';
-            if (currentSocket && currentSocket.readyState === WebSocket.OPEN) {
-                currentSocket.send(JSON.stringify({ "content": null, "content_type": messageType }));
-            }
         }
         return;
     });
@@ -39,7 +43,6 @@ const createUserListItem = (user, currentSocket) => {
     li.appendChild(lockIcon);
     li.dataset.userId = user.id;
     li.addEventListener('click', () => {
-        if (currentSocket) currentSocket.close();
         renderChat(user);
     });
 
@@ -70,7 +73,7 @@ const createMessageElement = (message, userId) => {
             joinButton.onclick = async () => {
                 const joined = await joinGame(message.game_id);
                 if (joined) {
-                    console.log("Joined game");
+                    // console.log("Joined game");
                 }
             };
         }
@@ -101,11 +104,12 @@ async function chatUserList(currentSocket) {
 let currentSocket = null;
 export async function renderChat(user) {
     loadLanguage();
-    let id = -1;
+    let id = user?.id ?? -1;
     const userId = sessionStorage.getItem('id');
     let userName = null;
+    let userUsername = null;
     let isBlocked = user?.is_blocked ?? sessionStorage.getItem('selectedUserIsBlocked') === 'true';
-    const imBlocked = user?.im_blocked ?? sessionStorage.getItem('imBlocked') === 'true';
+    const imBlocked = user?.im_blocked ?? sessionStorage.getItem('selectedUserImBlocked') === 'true';
     chatUserList(currentSocket);
     if (!user) return;
 
@@ -137,8 +141,9 @@ export async function renderChat(user) {
         return;
     }
 
+    if (!imBlocked && !isBlocked) createChatForm(currentSocket);
+
     const chat = await getChatMessages(user.id);
-    console.log(chat);
     let room_id;
     if (chat) {
         chatMessagesElement.innerHTML = '';
@@ -148,22 +153,25 @@ export async function renderChat(user) {
         chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
         room_id = chat.chat.room_id;
     }   
-
     if (room_id != "null") {
         userName = user.name || sessionStorage.getItem('selectedUserName');
-        currentSocket = startSocket(room_id);
+        userUsername = user.username || sessionStorage.getItem('selectedUserUsername');
+        // console.log("starting: ", currentSocket)
+        if (!currentSocket || (currentSocket && currentSocket.url.split('/')[5] != room_id)) {
+            if (currentSocket) {
+                currentSocket.close();
+                currentSocket = null;
+            }
+            if (currentSocket === null) currentSocket = startSocket(room_id);
+        }
         sessionStorage.setItem('selectedChatRoom', room_id);
         sessionStorage.setItem('selectedUserId', id);
         if (userName) sessionStorage.setItem('selectedUserName', userName);
+        if (userUsername) sessionStorage.setItem('selectedUserUsername', userUsername);
         sessionStorage.setItem('selectedUserIsBlocked', user.is_blocked);
         sessionStorage.setItem('selectedUserImBlocked', user.im_blocked);
+        setupInvitationButton();
     }
-
-
-
-
-
-
 }
 
 export async function loadSelectedChatOnPageLoad() {
@@ -179,96 +187,67 @@ export async function loadSelectedChatOnPageLoad() {
 function startSocket(room_id) {
     const userId = sessionStorage.getItem('id');
     const url = `ws://${window.location.host}/ws/chat/${room_id}/${userId}`;
-    console.log(url);
+    // console.log("Starting socket: ", url);
     const chatSocket = new WebSocket(url);
-    chatSocket.onopen = () => console.log('WebSocket connection established');
+    // chatSocket.onopen = () => console.log('WebSocket opened');
     chatSocket.onerror = (error) => console.error('WebSocket Error: ', error);
     chatSocket.onmessage = handleWebSocketMessage;
     chatSocket.onclose = () => console.log('WebSocket close');
-    setupChatForm(chatSocket);
-    setupInvitationButton(chatSocket);
+    
+    const isBlocked = sessionStorage.getItem('selectedUserIsBlocked') === 'true';
+    const imBlocked = sessionStorage.getItem('selectedUserImBlocked') === 'true';
+
+    if (!isBlocked && !imBlocked) {
+        createChatForm(chatSocket);
+    } else {
+        deleteChatForm();
+    }
+    
 
     return chatSocket;
 }
 
 function handleWebSocketMessage(e) {
-    console.log("WebSocket message: ", e.data);
     const data = JSON.parse(e.data);
+    // console.log("WebSocket message: ", data);
     const chatMessagesElement = document.getElementById('chatMessages');
     if (data.content_type === 'block' || data.content_type === 'unblock') {
-        const user = { id: data.id, im_blocked: data.content_type === 'block' };
+        const user = { id: data.sender.id, im_blocked: data.content_type === 'block'};
+        sessionStorage.setItem('selectedUserImBlocked', false);
         renderChat(user);
     } else {
+        // console.log("WebSocket message: ", e.data);
         const messageElement = createMessageElement(data, sessionStorage.getItem('id'));
-        chatMessagesElement.appendChild(messageElement);
-        chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
+        if (chatMessagesElement) {
+            chatMessagesElement.appendChild(messageElement);
+            chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
+        }
     }
 }
 
-function setupChatForm(chatSocket) {
-    createChatForm();
-    const chatForm = document.getElementById('chatForm');
-    const messageInput = document.getElementById('messageInput');
+function setupInvitationButton() {
+    const sendInvitationButton = document.getElementById('sendInvitationButton');
+    const invitedName = sessionStorage.getItem('selectedUserUsername');
+    // console.log("############################ SETUP INVITATION BUTTON ############################");
 
-    chatForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const message = messageInput.value.trim();
-        if (message !== '') {
-            console.log("Sending message: ", message);
-            chatSocket.send(JSON.stringify({ "content": message, "content_type": "message" }));
-            messageInput.value = '';
-            const messageElement = createMessageElement({ content: message, "content_type": "message", sender: { id: sessionStorage.getItem('id') } }, sessionStorage.getItem('id'));
-            const chatMessagesElement = document.getElementById('chatMessages');
-            chatMessagesElement.appendChild(messageElement);
-            chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
+    sendInvitationButton.addEventListener('click', () => {
+        // console.log("Invitation button clicked");
+        if (invitedName) {
+            alert(`Invitation is sending to ${invitedName}, please wait!`);
+            GameInfoHandler.sendInviteJoinRoom(invitedName);
+            // console.log(`Invitation sent to: ${invitedName}`);
+        } else {
+            console.error('No user selected for invitation.');
         }
     });
 }
 
-function setupInvitationButton(chatSocket) {
-    const sendInvitationButton = document.getElementById('sendInvitationButton');
-    let createdGame = null;
-    if (sendInvitationButton) {
-        sendInvitationButton.addEventListener('click', async () => {
-            if (sendInvitationButton.textContent === 'Invitar partida') {
-                // Lógica para enviar invitación
-                createdGame = await createGame();
-
-                if (createdGame) {
-                    const invitationMessage = { content: "required", content_type: 'invitation', game_id: createdGame.id };
-                    chatSocket.send(JSON.stringify(invitationMessage));
-                    const messageElement = createMessageElement({ content_type: 'invitation', sender: { id: sessionStorage.getItem('id') }, game_id: createdGame.id }, sessionStorage.getItem('id'));
-                    const chatMessagesElement = document.getElementById('chatMessages');
-                    chatMessagesElement.appendChild(messageElement);
-                    chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
-
-                    sendInvitationButton.textContent = 'Eliminar invitación';
-                    sendInvitationButton.dataset.gameId = createdGame.id;
-                } else {
-                    console.error('Failed to create game');
-                }
-            } else {
-                if (createdGame) {
-                    const gameId = createdGame.game_id;
-                    const success = await leaveGame(gameId);
-                    if (success) {
-                        sendInvitationButton.textContent = 'Invitar partida';
-                        delete sendInvitationButton.dataset.gameId;
-                    } else {
-                        console.error('Failed to leave game');
-                    }
-                }
-            }
-        });
-    }
-}
-
 function deleteChatForm() {
-    document.getElementById('sendInvitationButton')?.remove();
-    document.getElementById('chatForm')?.remove();
+    const chatFormContainer = document.getElementById('chat-form-container');
+    chatFormContainer.innerHTML = '';
 }
 
-function createChatForm() {
+function createChatForm(chatSocket) {
     const chatFormContainer = document.getElementById('chat-form-container');
     chatFormContainer.innerHTML = `
         <button id="sendInvitationButton" class="px-3">Invitar partida</button>
@@ -278,4 +257,24 @@ function createChatForm() {
         </form>
     `;
     chatFormContainer.classList.add('d-flex', 'w-100');
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // modified by gao for adding the invitation logic to the button
+    ///////////////////////////////////////////////////////////////////////////////
+    const chatForm = document.getElementById('chatForm');
+    const messageInput = document.getElementById('messageInput');
+
+    chatForm.addEventListener('submit', (e) => {
+        e.preventDefault(); 
+        const message = messageInput.value.trim();
+        if (message !== '') {
+            // console.log("Sending message: ", message);
+            chatSocket.send(JSON.stringify({ "content": message, "content_type": "message" }));
+            messageInput.value = '';
+            const messageElement = createMessageElement({ content: message, "content_type": "message", sender: { id: sessionStorage.getItem('id') } }, sessionStorage.getItem('id'));
+            const chatMessagesElement = document.getElementById('chatMessages');
+            chatMessagesElement.appendChild(messageElement);
+            chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
+        }
+    });
 }

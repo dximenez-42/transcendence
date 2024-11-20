@@ -13,6 +13,9 @@ export async function getChats() {
         if (response.ok) {
             const {chats} = await response.json();
             return chats;
+        } else if (response.status === 401) {
+            sessionStorage.clear();
+            window.location.hash = '#login';
         } else {
             console.error("Fetch failed with status:", response.status);
             return [];
@@ -37,6 +40,9 @@ export async function getChatMessages(chat_id) {
     if (response.ok) {
         const chats = await response.json();
         return chats;
+    } else if (response.status === 401) {
+        sessionStorage.clear();
+        window.location.hash = '#login';
     } else if (response.status === 403) {
         return null;
     } else {

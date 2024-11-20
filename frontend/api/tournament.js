@@ -13,9 +13,12 @@ export async function getTournaments() {
         if (response.ok) {
             const tournaments = await response.json();
             return tournaments.data;
+        } else if (response.status === 401) {
+            sessionStorage.clear();
+            window.location.hash = '#login';
         } else {
             console.error("Fetch failed with status:", response.status);
-            console.log("Response",response);
+            // console.log("Response",response);
             return [];
         }
     } catch (error) {
@@ -44,11 +47,14 @@ export async function createTournament() {
 
         if (response.ok) {
             const res = await response.json();
-            console.log(res);
+            // console.log(res);
             return res;
+        } else if (response.status === 401) {
+            sessionStorage.clear();
+            window.location.hash = '#login';
         } else {
             console.error("Fetch failed with status:", response.status);
-            console.log("Response error:",response);
+            // console.log("Response error:",response);
             return [];
         }
     } catch (error) {
@@ -68,8 +74,11 @@ export async function leaveTournament(tournamentId) {
             },
         });
         if (response.ok) {
-            console.log("Tournament left successfully");
+            // console.log("Tournament left successfully");
             return true;
+        } else if (response.status === 401) {
+            sessionStorage.clear();
+            window.location.hash = '#login';
         }
         else {
             throw new Error('Failed to leave Tournament');
@@ -81,7 +90,7 @@ export async function leaveTournament(tournamentId) {
 
 // Endpoint to join a tournament
 export async function joinTournament(tournamentId) {
-    console.log("Joining Tournament", tournamentId);
+    // console.log("Joining Tournament", tournamentId);
     const url = `/api/tournaments/join/${tournamentId}`;
     const token = sessionStorage.getItem('auth_token');
     try {
@@ -93,6 +102,9 @@ export async function joinTournament(tournamentId) {
         });
         if (response.status == 400) {
             return false;
+        } else if (response.status === 401) {
+            sessionStorage.clear();
+            window.location.hash = '#login';
         }
         return response.ok;
     } catch (error) {

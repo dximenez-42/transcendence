@@ -420,6 +420,31 @@ justify-content: end;
 }
 
 
+#gameWindow {
+    position: relative;
+}
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10; 
+    font-size: 2rem;
+    color: black;
+    display: none; 
+}
+
+.overlay-text {
+    font-weight: bold;
+}
+
+
 
 /*404*/
 
@@ -537,3 +562,73 @@ justify-content: end;
 
 /* Fuente pixelada (asegúrate de incluir la fuente en tu proyecto o usa una similar) */
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+
+/* Estilos para el área de room */
+
+.room-header, .rank-header {
+
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+#room-list, #rank-list {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 70%;
+    width: 70%; 
+    border: 1px solid #ccc; 
+    position: absolute; /* 让其相对于页面进行定位 */
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); /* 偏移自身宽高的一半，确保完美居中 */
+}
+
+.room, .rank {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 80%; /* 根据你的需要调整宽度 */
+    padding: 10px;
+    border: 1px solid #ccc; /* 可选：给每个房间加一个边框 */
+    margin-bottom: 10px; /* 可选：房间之间的间隔 */
+}
+
+.room-button {
+    justify-content: space-between;
+    border: none;
+    cursor: pointer;
+}
+
+.room-button button {
+    padding: 10px;
+    border: 1px solid #ccc;
+    background-color: #000000;
+    color:#ffffff;
+    cursor: pointer;
+}
+
+.room-button button:hover {
+    background-color: #ffffff;
+    color:#000000;
+}
+
+.room-button button:active {
+    background-color: #808080;
+    color:#ffffff;
+}
+
+#create-room, #back-home {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px;
+    background-color: #818181;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    border: 1 solid #ccc;
+}

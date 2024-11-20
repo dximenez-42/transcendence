@@ -1,14 +1,46 @@
-import { keyMovePad, setGameType, getGameType, setDomPlayerScore, setDomEnamyScore, setDomCanvas} from './pong.js';
-import { FPS, FPS_BALL, GAME_TIME} from './constants.js';
-import { createWebSocket } from './socket.js';
+import { keyMovePad, setGameType, getGameType, setPlayerScore, setEnamyScore, setDomCanvas} from './pong.js';
+import { FPS, GAME_TIME, gameInfo} from './constants.js'; // modifyed by gao
 import { GameInfoHandler } from './infoHandler.js';
 import { hideNav, showNav } from '../components/home.js';
-import { createGame, getGames } from '../api/game.js';
-import { loadLanguage } from '../api/languages.js';
 
 let timer = GAME_TIME;
 // ------------- GAME SETTINGS ----------------
 
+export function showOverlay(content) {
+
+    if (window.location.hash === '#game_online') {
+        const contentUI = document.getElementById('overlay-content');
+        const overlay = document.getElementById('overlay');
+        if (content) {
+            if (contentUI)
+                contentUI.textContent = content;
+            else {}
+                // console.warn('Overlay content element not found. Skipping showOverlay.');
+        }
+        if (overlay) {
+            overlay.style.display = 'flex';
+            gameInfo.isOverlay = true;
+        } else {
+            // console.warn('Overlay element not found. Skipping showOverlay.');
+        }
+        
+    }
+    return;
+}
+
+
+export function hideOverlay() {
+    
+    if (window.location.hash === '#game_online') {
+        const overlay = document.getElementById('overlay');
+        if (overlay){
+            overlay.style.display = 'none';
+            gameInfo.isOverlay = false;
+        } else {
+            // console.warn('Overlay element not found. Skipping hideOverlay.');
+        }
+    }
+}
 
 export function selectMode() {
 	const buttonLocalGame = document.getElementById('localGameButton');
@@ -25,13 +57,20 @@ export function selectMode() {
 		buttonOnlineGame.addEventListener('click', () => {
 			setGameType('online');
 			window.location.hash = "online";
+            //window.location.hash = "game_online";
 		});
     }
 }
 
-// ----------------------------------------
+//  --------------------------------------------------------------------------------------------------------------------------
+// |this function will be called to start or pause the game, for online mode, it will start render or stop render the game    |
+// |only local game it will caculate the game logic and render the game, for online mode, it will only render the game        |
+// |when this function is called secend time, it will pause the game                                                          |   
+// |for local mode, it will pause the game and stop the game logic                                                            |
+// |for online mode, it will only stop the game render                                                                        |
+//  --------------------------------------------------------------------------------------------------------------------------
+export let start_pause_game = createGameController();  
 
-export let startGame = createGameController();
 
 function startTimer(intervalIdTimerRef) {
     let display = document.getElementById("timer-display");
@@ -62,11 +101,24 @@ function pauseTimer(intervalIdTimerRef) {
     }
 }
 
+export function renderGameOnline() {
+
+	hideNav();
+    setGameType('online');
+	setGame('gameWindow', 'playerName', 'enamyName', 'playerScore', 'enamyScore')
+    // console.log('gameType:', getGameType());
+    showOverlay('Waiting for starting the game');
+    // if (gameInfo.socketConnection === true) // if the connection is already established then we can control the game
+    //     start_pause_game();
+}
 
 
-
-export function renderGame(){
-	const buttonStart = document.getElementById('pause');
+export function renderGame(){  // render_local_game
+	const buttonStart = document.getElementById('pause'); // init test is 'Start'
+    if (gameInfo.isLocalGameOver)
+        buttonStart.textContent = 'Start';
+    else
+        buttonStart.textContent = 'Pause';
 	hideNav();
 
 	setGame('gameWindow', 'playerName', 'enamyName', 'playerScore', 'enamyScore')
@@ -78,64 +130,54 @@ export function renderGame(){
 				alert('Please select a game type first.');
 				return;
 			} else {
-				startGame();
+                // console.log('gameStatue=> ', gameInfo.isLocalGameOver);
+				start_pause_game();
+                if (gameInfo.isLocalGameOver)
+                    buttonStart.textContent = 'Start';
+                else
+                    buttonStart.textContent = 'Pause';
 				//startTimer(150);
 			}
 		});
 	}else {
-		console.log('buttonStart not found');
+		// console.log('buttonStart not found');
 	}
 
 }
 
-// function infoHandler(newInfo, HTMLplayerNameID, HTMLenamyNameID) {
-//     switch (newInfo.action) {
-//         case 'initInfo':
-//             if (HTMLenamyNameID && HTMLplayerNameID) {
-//                 const elementPlayerName = document.getElementById(HTMLplayerNameID);
-//                 const elementEnamyName = document.getElementById(HTMLenamyNameID);
-//                 elementEnamyName.innerHTML = newInfo.enamyName;
-//                 elementPlayerName.innerHTML = newInfo.playerName;
-//                 setPlayerId(newInfo.userId);
-//             }
-//             break;
-//         case 'updatePad':
-//             setPositionPad(newInfo.newPosition, meshPadEnamy);
-//             break;
-//         case 'updateBall':
-//             setPositionBall(newInfo.newPosition, meshBall);
-//             break;
-//         case 'gameOver':
-//             alert('Game Over');
-//             closeWebSocket();
-//             break;
-//         default:
-//             console.error('Invalid info type from server.');
-//     }
-// }
-
 export function setGame(HTMLcanvasID, HTMLplayerNameID, HTMLenamyNameID, HTMLplayerScoreID, HTMLenamyScoreID) {
 
-	setDomEnamyScore(HTMLenamyScoreID);
-	setDomPlayerScore(HTMLplayerScoreID);
+    gameInfo.DOMPlayerNameID = HTMLplayerNameID;
+    gameInfo.DOMEnamyNameID = HTMLenamyNameID;
+    gameInfo.DOMEnamyScoreID = HTMLenamyScoreID;
+    gameInfo.DOMPlayerScoreID = HTMLplayerScoreID;
+    gameInfo.DOMPlayerNameElement = document.getElementById(HTMLplayerNameID);
+    gameInfo.DOMEnamyNameElement = document.getElementById(HTMLenamyNameID);
+    gameInfo.DOMPlayerScoreElement = document.getElementById(HTMLplayerScoreID);
+    gameInfo.DOMEnamyScoreElement = document.getElementById(HTMLenamyScoreID);
+    setEnamyScore();
+	setPlayerScore();
 	setDomCanvas(HTMLcanvasID);
-    let cur_gameInfoHandler = new GameInfoHandler (HTMLplayerNameID, HTMLenamyNameID);
+
+    if (gameInfo.playerName === '' || gameInfo.enamyName === '') {
+        gameInfo.DOMEnamyNameElement.innerHTML = 'Player 2';
+        gameInfo.DOMPlayerNameElement.innerHTML = 'Player 1';
+    }else {
+
+        gameInfo.DOMEnamyNameElement.innerHTML  = gameInfo.enamyName;
+        gameInfo.DOMPlayerNameElement.innerHTML = gameInfo.playerName;
+    }
+
 	if (getGameType() === 'local') {
-
-		const elementPlayerName = document.getElementById(HTMLplayerNameID);
-		const elementEnamyName = document.getElementById(HTMLenamyNameID);
-		elementEnamyName.innerHTML = 'Player 2';
-		elementPlayerName.innerHTML = 'Player 1';
 		// setGameType(gameType);
-		console.log('Game type set to local');
+		// console.log('Game type set to local');
 	} else if (getGameType() === 'online') {
-
 		// setGameType(gameType);
-		console.log('Game type set to online');
-		createWebSocket(cur_gameInfoHandler);
+		// console.log('Game type set to online');
+		// createWebSocket(cur_gameInfoHandler);
 	} else {
-		console.error('Invalid game type.');
-		window.location.href = "#home";
+		//console.alert('Invalid game type.');
+        setGameType('local');
 	}
 }
 
@@ -143,37 +185,39 @@ function createGameController() {
 
 	let gameState = false;
     let intervalId = null;
-    let intervalIdBall = null;
+    //let intervalIdBall = null;
     let ballState = false;
     let intervalIdTimerRef = { current: null };
 
-    return function startGame() {
+    return function start_pause_game() {
 
 		if (getGameType() === '') {
             alert('Please select a game type first.');
             return;
         }
 
-        console.log('gameType:', getGameType());
+        // console.log('gameType:', getGameType());
 
         if (gameState) {
 
             clearInterval(intervalId);
-            if (getGameType() === 'online')
-                clearInterval(intervalIdBall);
+            // if (getGameType() === 'online')
+            //     clearInterval(intervalIdBall);
             gameState = false;
             ballState = false;
+            gameInfo.isLocalGameOver = true;
             pauseTimer(intervalIdTimerRef);
-            console.log('Game paused');
+            // console.log('Game paused');
         } else {
 
             intervalId = setInterval(keyMovePad, 1000 / FPS);
             startTimer(intervalIdTimerRef);
-            if (getGameType() === 'online')
-                intervalIdBall = setInterval(GameInfoHandler.sendPositionBall, 1000 / FPS_BALL);
+            // if (getGameType() === 'online')
+            //     intervalIdBall = setInterval(GameInfoHandler.sendPositionSyn, 1000 / FPS_INFO);
             gameState = true;
             ballState = true;
-            console.log('Game started');
+            gameInfo.isLocalGameOver = false;
+            // console.log('Game started');
         }
     };
 }

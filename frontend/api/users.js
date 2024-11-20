@@ -17,16 +17,16 @@ export async function getUser() {
         window.location.hash = '#login';
     } else {
         console.error("Fetch failed with status:", response.status);
-        console.log("Response error:", response);
+        // console.log("Response error:", response);
         return [];
     }
 }
 
 export async function getBlockedUsers() {
     const url = 'api/users/blocked';
-    console.log(url);
+    // console.log(url);
     const token = sessionStorage.getItem('auth_token');
-    console.log(token);
+    // console.log(token);
 
     try {
         const response = await fetch(url, {
@@ -38,11 +38,14 @@ export async function getBlockedUsers() {
 
         if (response.ok) {
             const users = await response.json();
-            console.log(users.blocked);
+            // console.log(users.blocked);
             return users.blocked;
+        } else if (response.status === 401) {
+            sessionStorage.clear();
+            window.location.hash = '#login';
         } else {
             console.error("Fetch failed with status:", response.status);
-            console.log("Response", response);
+            // console.log("Response", response);
             return [];
         }
     } catch (error) {
@@ -62,8 +65,11 @@ export async function blockUser(userId) {
             },
         })
         if (response.ok) {
-            console.log("User Blocked successfully");
+            // console.log("User Blocked successfully");
             return true;
+        } else if (response.status === 401) {
+            sessionStorage.clear();
+            window.location.hash = '#login';
         }
     } catch (error) {
         console.error("There was a problem blocking user:", error.message);
@@ -82,8 +88,11 @@ export async function unblockUser(userId) {
             },
         })
         if (response.ok) {
-            console.log("User Blocked successfully");
+            // console.log("User Blocked successfully");
             return true;
+        } else if (response.status === 401) {
+            sessionStorage.clear();
+            window.location.hash = '#login';
         }
     } catch (error) {
         console.error("There was a problem blocking user:", error.message);
@@ -108,8 +117,11 @@ export async function updateUsername(newName) {
         })
         if (response.ok) {
             sessionStorage.setItem('name', newName);
-            console.log("Username updated successfully");
+            // console.log("Username updated successfully");
             return true;
+        } else if (response.status === 401) {
+            sessionStorage.clear();
+            window.location.hash = '#login';
         }
     } catch (error) {
         console.error("There was a problem updating username:", error.message);

@@ -1,6 +1,9 @@
 import { createGame, getGames, joinGame, leaveGame } from '../api/game.js'
 import { loadLanguage } from '../api/languages.js';
 import { createTournament, getTournaments, joinTournament, leaveTournament } from '../api/tournament.js';
+import { gameInfo } from '../game/constants.js';
+import { GameInfoHandler } from '../game/infoHandler.js';
+import { getSimpleRoomList } from '../game/utiles.js';
 
 
 // Tournament list functions
@@ -15,7 +18,7 @@ async function renderTournamentList() {
 
     tournaments.forEach(tournament => {
         const isUserTournament = tournament.host_username === storedUsername;
-        console.log(isUserTournament);
+        // console.log(isUserTournament);
         renderTournament(tournament, container, isUserTournament, userJoinedGame, userJoinedTournament);
     });
 
@@ -43,7 +46,7 @@ function createTournamentDiv(tournament, isUserTournament, userJoinedGame, userJ
     const tournamentDiv = document.createElement('div');
     tournamentDiv.className = isUserTournament ? 'my-game-card' : 'tournament-card';
     const isDisabled = false;
-    console.log(userJoinedGame, userJoinedTournament, isUserTournament, tournament);
+    // console.log(userJoinedGame, userJoinedTournament, isUserTournament, tournament);
     tournamentDiv.innerHTML = `
         <div class="col-4">
             <h2>${tournament.name}</h2>
@@ -169,13 +172,13 @@ function setupLeaveGameButton(gameDiv, gameId, buttonContainer) {
     leaveButton.addEventListener('click', async () => {
         if (await leaveGame(gameId)) {
             handleSuccessfulLeaveGame(buttonContainer, gameDiv);
-            console.log("left game successfully 2");
+            // console.log("left game successfully 2");
         }
     });
 }
 
 function handleSuccessfulLeaveGame(buttonContainer, gameDiv) {
-    console.log("handleSuccessfulLeaveGame");
+    // console.log("handleSuccessfulLeaveGame");
     replaceWithCreateGameButton(buttonContainer, gameDiv);
     enableCreateGameButton();
     enableCreateTournamentButton();
@@ -753,4 +756,217 @@ export function renderonline() {
 
 export function renderLocal() {
     // Implementation for local rendering
+}
+
+
+
+export function renderRoomList() {
+
+    GameInfoHandler.sendGetRoomList();
+    refreshRoomList();
+    
+}
+
+export function refreshRoomList() {
+
+    const roomList = document.getElementById('room-list');
+    if (roomList)
+        roomList.innerHTML = '';
+    else
+        return;
+    if (Object.keys(gameInfo.room_list).length === 0) {
+        roomList.innerHTML = '<p>No rooms available</p>';
+        addCreateRoomButton();
+        return;
+    } else {
+        let isRoomHost = false;
+        let isInRoom = false;
+        const simpleList = getSimpleRoomList(gameInfo.room_list);
+        for (const room of simpleList) {
+            const [host_name, numbers, room_state, room_id] = room;
+            if (gameInfo.user_name === host_name)
+                isRoomHost = true;
+            if (room_state !== "closed") {
+                addNewRoomUI(host_name, numbers, room_id);
+            }
+        }
+        for (const room in gameInfo.room_list) {
+            const player_ids = gameInfo.room_list[room].player_ids;
+            for (const player_id of player_ids) {
+                if (player_id === gameInfo.user_id) {
+                    isInRoom = true;
+                    break;
+                }
+            }
+        }
+
+        // if (isInRoom)
+        //     console.log('You are in a room');
+        // else
+        //     console.log('You are not in a room');
+
+        // if (isRoomHost)
+        //     console.log('You are a room host');
+        // else
+        //     console.log('You are not a room host');
+
+        if (gameInfo.room_id === '' && !isRoomHost && !isInRoom) //{
+            addCreateRoomButton();
+        //     console.log('Create Room button added');
+        // } else {
+        //     console.log('Create Room button not added');
+        // }
+    }
+}
+
+function addCreateRoomButton() {
+    const roomList = document.getElementById('room-list');
+    
+    const createButtonContainer = document.createElement('div');
+    createButtonContainer.id = 'create-button';
+
+    const createRoomButton = document.createElement('button');
+    createRoomButton.id = 'create-room';
+    createRoomButton.textContent = 'Create Room';
+
+    createRoomButton.addEventListener('click', function() {
+        // console.log('Create Room button clicked!');
+
+        GameInfoHandler.sendCreateRoom();
+    });
+
+    createButtonContainer.appendChild(createRoomButton);
+    
+    roomList.appendChild(createButtonContainer);
+}
+
+
+
+function addNewRoomUI(name, number, room_id) {
+
+    let isHost = false;
+    let isInRoom = false;
+    if (room_id === gameInfo.room_id) 
+        isInRoom = true;
+    if (name === gameInfo.user_name && number >= 2) 
+        isHost = true;
+
+    const roomList = document.getElementById('room-list');
+    const room = document.createElement('div');
+    room.className = 'room';
+
+    const roomName = document.createElement('div');
+    roomName.className = 'room-name';
+    roomName.textContent = name;
+
+    const roomPlayers = document.createElement('div');
+    roomPlayers.className = 'room-players';
+    roomPlayers.textContent = number;
+
+    const roomButton = document.createElement('div');
+    roomButton.className = 'room-button';
+
+    if (isHost) {
+        // 创建 "Start" 按钮并添加事件
+        const startButton = document.createElement('button');
+        startButton.textContent = 'Start';
+        startButton.addEventListener('click', function() {
+            // console.log(`Room ${name}: Start button clicked!`);
+
+            GameInfoHandler.sendStartGame();
+        });
+
+        // 创建 "Leave" 按钮并添加事件
+        const leaveButton = document.createElement('button');
+        leaveButton.textContent = 'Leave';
+        leaveButton.addEventListener('click', function() {
+            // console.log(`Room ${name}: Leave button clicked!`);
+
+            GameInfoHandler.sendLeaveRoom();
+        });
+
+        roomButton.appendChild(startButton);
+        roomButton.appendChild(leaveButton);
+    } else if (!isInRoom) {
+        // 创建 "Join" 按钮并添加事件
+        const joinButton = document.createElement('button');
+        joinButton.textContent = 'Join';
+        joinButton.addEventListener('click', function() {
+            
+            GameInfoHandler.sendJoinRoom(name);
+        });
+
+        roomButton.appendChild(joinButton);
+    } else {
+
+        const joinButton = document.createElement('button');
+        joinButton.textContent = 'leave';
+        joinButton.addEventListener('click', function() {
+            // console.log(`Room ${name}: leave button clicked!`);
+
+            GameInfoHandler.sendLeaveRoom();
+        });
+
+        roomButton.appendChild(joinButton);
+    }
+
+    room.appendChild(roomName);
+    room.appendChild(roomPlayers);
+    room.appendChild(roomButton);
+    roomList.appendChild(room);
+}
+
+export function renderRankList() {
+
+    let rankList = gameInfo.result;
+    const rankListDiv = document.getElementById('rank-list');
+    rankListDiv.innerHTML = '';
+    if (Object.keys(rankList).length === 0) {
+        rankListDiv.innerHTML = '<p>No ranks available</p>';
+        return;
+    }
+    for (const [name, score] of Object.entries(rankList)) {
+        addNewRankUI(name, score);
+    }
+    addBackButton();
+}
+
+function addNewRankUI(name, score) {
+
+    const rankList = document.getElementById('rank-list');
+    const rank = document.createElement('div');
+    rank.className = 'rank';
+
+    const rankName = document.createElement('div');
+    rankName.className = 'rank-name';
+    rankName.textContent = name;
+
+    const rankScore = document.createElement('div');
+    rankScore.className = 'rank-score';
+    rankScore.textContent = score;
+
+    rank.appendChild(rankName);
+    rank.appendChild(rankScore);
+    rankList.appendChild(rank);
+}
+
+function addBackButton() {
+
+    const rankList = document.getElementById('rank-list');
+    
+    const createButtonContainer = document.createElement('div');
+    createButtonContainer.id = 'back-button';
+
+    const createBackButton = document.createElement('button');
+    createBackButton.id = 'back-home';
+    createBackButton.textContent = 'Back Home';
+
+    createBackButton.addEventListener('click', function() {
+        
+        window.location.hash = '#home';
+    });
+
+    createButtonContainer.appendChild(createBackButton);
+    
+    rankList.appendChild(createButtonContainer);
 }

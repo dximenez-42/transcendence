@@ -28,6 +28,7 @@ DEBUG = os.getenv('DJANGO_DEBUG')
 
 ALLOWED_HOSTS = ['auth-backend']
 
+SECURE_CROSS_ORIGIN_OPENER_POLICY=None
 
 # Application definition
 

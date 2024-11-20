@@ -5,9 +5,9 @@ export function setUserSession(userId="123456", username="carlosga", email="john
     localStorage.setItem('username', username);
     localStorage.setItem('email', email);
 
-    console.log('User session set:', {
-        userId: userId,
-        username: username,
-        email: email
-    });
+    // console.log('User session set:', {
+    //     userId: userId,
+    //     username: username,
+    //     email: email
+    // });
 }
